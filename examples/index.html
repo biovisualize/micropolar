@@ -90,7 +90,6 @@ function renderLinePlot(div){
         .call(radialAxis);
 
     var radialLinePlot = d3.custom.RadialLinePlot().axis(radialAxis);
-    var radialDotPlot = d3.custom.RadialDotPlot().axis(radialAxis);
 
     container.call(radialLinePlot);
 }
@@ -107,8 +106,6 @@ function renderDotPlot(div){
         minorTicks: 1
     });
 
-    var radialDotPlot = d3.custom.RadialDotPlot().axis(radialAxis).config({dotRadius: 3});
-
     var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var data = d3.range(0, 100).map(function(deg, index){
           return [~~(scaleRandom(rndSnd()) * 1000), ~~(scaleRandom(rndSnd()) * 100)];
@@ -117,7 +114,9 @@ function renderDotPlot(div){
     var container = div.datum(data)
         .call(radialAxis);
 
-    container.call(radialDotPlot)
+    var radialDotPlot = d3.custom.RadialDotPlot().axis(radialAxis).config({dotRadius: 3});
+
+    container.call(radialDotPlot);
 }
 
 function renderCircularBarChart(div){
@@ -131,14 +130,14 @@ function renderCircularBarChart(div){
         radialAxisTheta: 0
     });
 
-    var circularBarChart = d3.custom.CircularBarChart().axis(radialAxis);
-
     var data = d3.range(0, 20).map(function(deg, index){
           return [deg * 50 + 50, ~~(Math.random() * index * 5 - 15)];
         });
 
     var container = div.datum(data)
         .call(radialAxis);
+
+    var circularBarChart = d3.custom.CircularBarChart().axis(radialAxis);
 
     container.call(circularBarChart)
 }
@@ -157,14 +156,14 @@ function renderPolarAreaChart(div){
         radialTicksSuffix: '%'
     });
 
-    var polarAreaChart = d3.custom.PolarAreaChart().axis(radialAxis);
-
     var data = d3.range(0, 12).map(function(deg, index){
           return [deg * 50 + 50, ~~(Math.random() * 10 + 5)];
         });
 
     var container = div.datum(data)
         .call(radialAxis);
+
+    var polarAreaChart = d3.custom.PolarAreaChart().axis(radialAxis);
 
     container.call(polarAreaChart)
 }
@@ -186,8 +185,6 @@ function renderClock(div){
         tickLength: 5
     });
 
-    var clock = d3.custom.Clock().axis(radialAxis);
-
     var data = d3.range(0, 16).map(function(deg, index){
           return [deg * 50 + 50, ~~(Math.random() * 15)];
         });
@@ -195,10 +192,12 @@ function renderClock(div){
     var container = div.datum(data)
         .call(radialAxis);
 
+    var clock = d3.custom.Clock().axis(radialAxis);
+
     container.call(clock);
 }
 
-var examples = [renderLinePlot, renderDotPlot, renderCircularBarChart, renderPolarAreaChart, renderClock]
+var examples = [renderLinePlot, renderDotPlot, renderCircularBarChart, renderPolarAreaChart, renderClock];
 
 d3.select('.container').selectAll('div.chart')
     .data(examples)

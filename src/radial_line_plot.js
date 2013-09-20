@@ -4,15 +4,11 @@ d3.custom.RadialLinePlot = function module() {
     var config = {
         lineStrokeSize: 1,
     };
-    var axis = null;
-
+    var radialScale, angularScale, axisConfig;
     var dispatch = d3.dispatch('customHover');
+
     function exports(_selection) {
         _selection.each(function(_data, _index) {
-
-            var radialScale = axis.radialScale();
-            var angularScale = axis.angularScale();
-            var axisConfig = axis.config();
 
             var line = d3.svg.line.radial()
                 .radius(function(d) { return radialScale(d[1]); })
@@ -24,15 +20,14 @@ d3.custom.RadialLinePlot = function module() {
                 .data([0]);
             geometry.enter().append('path').attr({'class': 'mark'});
 
-            // Update geometry
             geometryGroup.select('path.mark')
                 .datum(_data)
-                // .attr({d: line, transform: 'rotate('+axisConfig.originTheta+') scale('+(axisConfig.flip?-1:1)+', 1)'});
                 .attr({
                     d: line, 
                     transform: 'rotate('+(axisConfig.originTheta + 90)+')',
                     'stroke-width': config.lineStrokeSize + 'px'
                 });
+
         });
     }
     exports.config = function(_x) {
@@ -40,9 +35,10 @@ d3.custom.RadialLinePlot = function module() {
         for(x in _x) if(x in config) config[x] = _x[x];
         return this;
     };
-    exports.axis = function(_x){  
-        if (!arguments.length) return axis;
-        axis = _x;
+    exports.axis = function(_axis){  
+        radialScale = _axis.radialScale();
+        angularScale = _axis.angularScale();
+        axisConfig = _axis.config();
         return this;
     };
     d3.rebind(exports, dispatch, 'on');

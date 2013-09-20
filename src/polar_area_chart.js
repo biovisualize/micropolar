@@ -4,15 +4,12 @@ d3.custom.PolarAreaChart = function module() {
     var config = {
         dotRadius: 5,
     };
-    var axis = null;
-
+    var radialScale, angularScale, axisConfig;
     var dispatch = d3.dispatch('customHover');
+    
     function exports(_selection) {
         _selection.each(function(_data, _index) {
 
-            var radialScale = axis.radialScale();
-            var angularScale = axis.angularScale();
-            var axisConfig = axis.config();
             var triangleAngle = (360 / _data.length) * Math.PI / 180 / 2;
             
             var geometryGroup = d3.select(this).select('svg g.geometry');
@@ -36,9 +33,10 @@ d3.custom.PolarAreaChart = function module() {
         for(x in _x) if(x in config) config[x] = _x[x];
         return this;
     };
-    exports.axis = function(_x){  
-        if (!arguments.length) return axis;
-        axis = _x;
+    exports.axis = function(_axis){  
+        radialScale = _axis.radialScale();
+        angularScale = _axis.angularScale();
+        axisConfig = _axis.config();
         return this;
     };
     d3.rebind(exports, dispatch, 'on');
