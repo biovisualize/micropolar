@@ -20,7 +20,8 @@ d3.custom.RadialAxis = function module() {
         tickLength: null,
         rewriteTicks: null,
         tickOrientation: 'angular', // 'radial', 'angular', 'horizontal'
-        container: d3.select('body')
+        container: d3.select('body'),
+        margin: 10
     };
     var dispatch = d3.dispatch('hover');
 
@@ -29,7 +30,7 @@ d3.custom.RadialAxis = function module() {
             .datum(_datum)
             .each(function(_data, _index) {
 
-                var radius = Math.min(config.width, config.height) / 2 - 30;
+                var radius = Math.min(config.width, config.height) / 2 - config.margin;
                 var extent = d3.extent(_data.map(function(d, i){ return d[1]; }));
                 radialScale = d3.scale.linear()
                     .domain(config.radialDomain || extent)
@@ -54,11 +55,13 @@ d3.custom.RadialAxis = function module() {
 
                 var skeleton = '<svg class="chart"> \
                         <g class="chart-group"> \
+                            <circle class="background-circle"></circle> \
                             <g class="angular axis"></g> \
                            <g class="geometry"></g> \
                            <g class="radial axis"> \
                                 <circle class="outside-circle"></circle> \
                             </g> \
+                            <g class="guides"><line></line><circle></circle></g> \
                         </g> \
                     </svg>';
 
@@ -72,6 +75,7 @@ d3.custom.RadialAxis = function module() {
                 
                 var svg = container.select('svg');
                 svg.attr({width: config.width, height: config.height})
+                    .style({'pointer-events': 'none'});
 
                 var chartGroup = svg.select('.chart-group')
                     .attr('transform', 'translate(' + config.width / 2 + ',' + config.height / 2 + ')');
@@ -86,7 +90,8 @@ d3.custom.RadialAxis = function module() {
                     gridCircles.exit().remove();
                 }
 
-                radialAxis.selectAll('circle.outside-circle').attr('r', radius);
+                radialAxis.select('circle.outside-circle').attr({r: radius});
+                svg.select('circle.background-circle').attr({r: radius}).style({'fill': 'white'});
 
                 if(config.showRadialAxis){
                     var axis = d3.svg.axis()
@@ -143,6 +148,33 @@ d3.custom.RadialAxis = function module() {
                     });
 
                 if (config.rewriteTicks) ticks.text(function(d, i){ return config.rewriteTicks(this.textContent, i); })
+
+                svg.select('.geometry').style({'pointer-events': 'all'});
+                var guides = svg.select('.guides');
+                chartGroup.on('mousemove.angular-guide', function(d, i){ 
+                        var mousePos = d3.mouse(svg.node());
+                        var mouseX = mousePos[0] - radius - config.margin;
+                        var mouseY = mousePos[1] - radius - config.margin;
+                        var mouseAngle = (Math.atan2(mouseY, mouseX) + Math.PI) / Math.PI * 180;
+                        guides.select('line')
+                            .attr({x1: 0, y1: 0, x2: -radius, y2: 0, transform: 'rotate('+mouseAngle+')'})
+                            .style({stroke: 'grey', opacity: 1});
+                     })
+                    .on('mouseout.angular-guide', function(d, i){ guides.select('line').style({opacity: 0}); });
+
+                chartGroup.on('mousemove.radial-guide', function(d, i){ 
+                        var mousePos = d3.mouse(svg.node());
+                        var mouseX = mousePos[0] - radius - config.margin;
+                        var mouseY = mousePos[1] - radius - config.margin;
+                        var r = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+                        guides.select('circle')
+                            .attr({r: r})
+                            .style({stroke: 'grey', fill: 'none', opacity: 1});
+                     })
+                    .on('mouseout.radial-guide', function(d, i){ 
+                        guides.select('circle').style({opacity: 0}); 
+                    });
+
             });
     }
     exports.config = function(_x) {

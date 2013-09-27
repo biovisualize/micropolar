@@ -11,7 +11,7 @@
     <script type='text/javascript' src="../src/circular_bar_chart.js"></script>
     <script type='text/javascript' src="../src/polar_area_chart.js"></script>
     <script type='text/javascript' src="../src/clock.js"></script>
-    <script type='text/javascript' src="./timbre.dev.js"></script>
+    <!--<script type='text/javascript' src="./timbre.dev.js"></script>-->
 
     <style>
         .axis text{
@@ -53,9 +53,14 @@
             fill: orange;
             fill-opacity: 0.5;
         }
-
         g.polar-area path.mark{
             fill: none;
+        }
+        circle.mark:hover, rect.mark:hover, path.mark:hover{
+            stroke: green;
+            fill: limegreen;
+            fill-opacity: 1;
+            pointer-events: all !important;
         }
     </style>
 </head>
