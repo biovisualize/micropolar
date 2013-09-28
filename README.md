@@ -1,6 +1,6 @@
 <img src="https://raw.github.com/biovisualize/micropolar/gh-pages/micropolar_black.png" width="250"/><br />
-<span style="font-size: 54px;color: black">micropolar</span><br />
-<br />
+
+#micropolar
 A tiny polar charts library made with D3.js. See it in action [here](http://micropolar.org/).
 
 ##Usage
