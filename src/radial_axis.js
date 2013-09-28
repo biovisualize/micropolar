@@ -1,6 +1,7 @@
-d3.custom = d3.custom || {};
+micropolar = {};
+micropolar.chart = {};
 
-d3.custom.RadialAxis = function module() {
+micropolar.chart.RadialAxis = function module() {
     var config = {
         height: 500,
         width: 500,
@@ -20,13 +21,13 @@ d3.custom.RadialAxis = function module() {
         tickLength: null,
         rewriteTicks: null,
         tickOrientation: 'angular', // 'radial', 'angular', 'horizontal'
-        container: d3.select('body'),
+        containerSelector: 'body',
         margin: 10
     };
     var dispatch = d3.dispatch('hover');
 
     function exports(_datum) {
-        config.container
+        d3.select(config.containerSelector)
             .datum(_datum)
             .each(function(_data, _index) {
 
@@ -179,7 +180,7 @@ d3.custom.RadialAxis = function module() {
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        for(x in _x) if(x in config) config[x] = _x[x];
+        micropolar._override(_x, config);
         return this;
     };
     exports.radialScale = function(_x){  

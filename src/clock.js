@@ -1,18 +1,17 @@
-d3.custom = d3.custom || {};
-
-d3.custom.Clock = function module() {
+micropolar.chart.Clock = function module() {
     var config = {
         axis: null,
-        container: d3.select('body')
+        containerSelector: 'body'
     };
     var dispatch = d3.dispatch('hover');
 
     function exports(_datum) {
-        config.container
+
+        d3.select(config.containerSelector)
             .datum(_datum)
             .each(function(_data, _index) {
 
-                config.axis.config({container: d3.select(this)})
+                config.axis.config({containerSelector: this})
                 config.axis(_datum);
 
                 radialScale = config.axis.radialScale();
@@ -28,7 +27,7 @@ d3.custom.Clock = function module() {
                 var geometryGroup =svg.select('g.geometry');
 
                 var geometry = geometryGroup.selectAll('rect.mark')
-                    .data([0, 4, 8]);
+                    .data(_data);
                 geometry.enter().append('rect').attr({'class': 'mark'});
                 geometry.attr({
                     x: function(d, i){ return -handsWidth[i]/2; },
@@ -46,7 +45,7 @@ d3.custom.Clock = function module() {
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        for(x in _x) if(x in config) config[x] = _x[x];
+        micropolar._override(_x, config);
         return this;
     };
     d3.rebind(exports, dispatch, 'on');

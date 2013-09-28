@@ -5,196 +5,23 @@
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title></title> 
     <script type='text/javascript' src="../lib/d3.js"></script>
-    <script type='text/javascript' src="../src/radial_axis.js"></script>
-    <script type='text/javascript' src="../src/radial_line_plot.js"></script>
-    <script type='text/javascript' src="../src/radial_dot_plot.js"></script>
-    <script type='text/javascript' src="../src/circular_bar_chart.js"></script>
-    <script type='text/javascript' src="../src/polar_area_chart.js"></script>
-    <script type='text/javascript' src="../src/clock.js"></script>
-    <!--<script type='text/javascript' src="./timbre.dev.js"></script>-->
-
-    <style>
-        .axis text{
-            font: 10px sans-serif;
-            text-shadow:
-            -1px 0px 0 #fff,
-            1px -1px 0 #fff,
-            -1px 1px 0 #fff,
-            1px 1px 0 #fff; 
-        }
-        svg.clock text{
-            font: 20px sans-serif;
-            fill: grey;
-        }
-        .axis line.minor,
-        .axis circle{
-            fill: none;
-            stroke: #777;
-            stroke-width: 1px;
-            stroke-dasharray: 1,4;
-        }
-        .axis line.major{
-            stroke: silver;
-            stroke-width: 1px;
-            stroke-dasharray: none;
-        }
-        circle.outside-circle{
-            fill: none;
-            stroke: gray;
-            stroke-width: 1px;
-            stroke-dasharray: none;
-        }
-        line.mark{
-            fill: none;
-            stroke: red;
-        }
-        circle.mark, rect.mark, path.mark{
-            stroke: red;
-            fill: orange;
-            fill-opacity: 0.5;
-        }
-        g.polar-area path.mark{
-            fill: none;
-        }
-        circle.mark:hover, rect.mark:hover, path.mark:hover{
-            stroke: green;
-            fill: limegreen;
-            fill-opacity: 1;
-            pointer-events: all !important;
-        }
-    </style>
+    <script type='text/javascript' src="../micropolar.js"></script>
+    <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 <body>
 
-<div class="container"></div>
-<canvas id="canvas"></canvas>
+<div id="container1"></div>
+<div id="container2"></div>
+<div id="container3"></div>
+<div id="container4"></div>
+<div id="container5"></div>
 
 <script>
-
-function rndSnd() {
-    return (Math.random()*2-1)+(Math.random()*2-1)+(Math.random()*2-1);
-}
-
-function renderLinePlot(div){
-
-    var radialAxis = d3.custom.RadialAxis().config({
-        height: 300, width: 300, 
-        radialDomain: [0, 2], 
-        angularDomain: [0, 360, 45], 
-        flip: false,
-        originTheta: 0,
-        radialAxisTheta: -30,
-        angularTicksSuffix: 'º'
-    });
-
-    var data = d3.range(0, 721, 1).map(function(deg, index){
-          return [deg, index/720*2];
-        });
-
-    // radialAxis.config({container: div})
-    // radialAxis(data);
-
-    var radialLinePlot = d3.custom.RadialLinePlot().config({axis: radialAxis, container: div});
-    radialLinePlot(data);
-}
-
-function renderDotPlot(div){
-
-    var radialAxis = d3.custom.RadialAxis().config({
-        height: 300, width: 300, 
-        radialDomain: [0, 100], 
-        angularDomain: [0, 1000, 50], 
-        flip: false,
-        originTheta: 0,
-        radialAxisTheta: 0,
-        minorTicks: 1
-    });
-
-    var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
-    var data = d3.range(0, 100).map(function(deg, index){
-          return [~~(scaleRandom(rndSnd()) * 1000), ~~(scaleRandom(rndSnd()) * 100)];
-        });
-
-    var radialDotPlot = d3.custom.RadialDotPlot().config({axis: radialAxis, container: div, dotRadius: 3});
-    radialDotPlot(data);
-
-}
-
-function renderCircularBarChart(div){
-
-    var radialAxis = d3.custom.RadialAxis().config({
-        height: 300, width: 300, 
-        radialDomain: [-40, 100], 
-        angularDomain: [0, 1000, 50], 
-        flip: true,
-        originTheta: 0,
-        radialAxisTheta: 0
-    });
-
-    var data = d3.range(0, 20).map(function(deg, index){
-          return [deg * 50 + 50, ~~(Math.random() * index * 5 - 15)];
-        });
-
-    var circularBarChart = d3.custom.CircularBarChart().config({axis: radialAxis, container: div});
-    circularBarChart(data);
-}
-
-function renderPolarAreaChart(div){
-
-    var radialAxis = d3.custom.RadialAxis().config({
-        height: 300, width: 300, 
-        radialDomain: [0, 20], 
-        angularDomain: ['North', 'East', 'South', 'West'], 
-        flip: true,
-        originTheta: -90,
-        radialAxisTheta: -30,
-        minorTicks: 2,
-        radialTicksSuffix: '%'
-    });
-
-    var data = d3.range(0, 12).map(function(deg, index){
-          return [deg * 50 + 50, ~~(Math.random() * 10 + 5)];
-        });
-
-    var polarAreaChart = d3.custom.PolarAreaChart().config({axis: radialAxis, container: div});
-    polarAreaChart(data);
-}
-
-function renderClock(div){
-
-    var radialAxis = d3.custom.RadialAxis().config({
-        height: 300, width: 300, 
-        labelOffset: -15,
-        angularDomain: [0, 12], 
-        flip: true,
-        originTheta: -90,
-        radialAxisTheta: -30,
-        minorTicks: 9,
-        showRadialAxis: false,
-        showRadialCircle: false,
-        rewriteTicks: function(d, i){ return (d === '0')? '12': d; },
-        tickOrientation: 'horizontal',
-        tickLength: 5
-    });
-
-    var data = d3.range(0, 16).map(function(deg, index){
-          return [deg * 50 + 50, ~~(Math.random() * 15)];
-        });
-
-    var clock = d3.custom.Clock().config({axis: radialAxis, container: div});
-    clock(data);
-}
-
-var examples = [renderLinePlot, renderDotPlot, renderCircularBarChart, renderPolarAreaChart, renderClock];
-
-d3.select('.container').selectAll('div.chart')
-    .data(examples)
-    .enter().append('div')
-    .attr({'class': 'chart'})
-    .each(function(d, i){
-        d3.select(this).call(d);
-    });
-
+ micropolar.factory.linePlot({containerSelector: '#container1'});
+ micropolar.factory.dotPlot({containerSelector: '#container2'});
+ micropolar.factory.barChart({containerSelector: '#container3'});
+ micropolar.factory.areaChart({containerSelector: '#container4'});
+ micropolar.factory.clock({containerSelector: '#container5'});
 </script>
 
 </body>

@@ -1,19 +1,17 @@
-d3.custom = d3.custom || {};
-
-d3.custom.CircularBarChart = function module() {
+micropolar.chart.CircularBarChart = function module() {
     var config = {
         dotRadius: 5,
         axis: null,
-        container: d3.select('body')
+        containerSelector: 'body'
     };
     var dispatch = d3.dispatch('hover');
 
      function exports(_datum) {
-        config.container
+        d3.select(config.containerSelector)
             .datum(_datum)
             .each(function(_data, _index) {
 
-                config.axis.config({container: d3.select(this)})
+                config.axis.config({container: this})
                 config.axis(_datum);
 
                 radialScale = config.axis.radialScale();
@@ -38,7 +36,7 @@ d3.custom.CircularBarChart = function module() {
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        for(x in _x) if(x in config) config[x] = _x[x];
+        micropolar._override(_x, config);
         return this;
     };
     d3.rebind(exports, dispatch, 'on');
