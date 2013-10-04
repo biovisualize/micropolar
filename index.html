@@ -1,229 +1,46 @@
 <!DOCTYPE html>
+
 <html>
 <head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title></title>
-<link rel="stylesheet" href="toast.css">
-<link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title></title> 
+    <script type='text/javascript' src="./d3.js"></script>
+    <script type='text/javascript' src="./micropolar.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="./style.css">
 
-<script type='text/javascript' src="./d3.js"></script>
-<script type='text/javascript' src="./src/radial_axis.js"></script>
-<script type='text/javascript' src="./src/radial_line_plot.js"></script>
-<script type='text/javascript' src="./src/radial_dot_plot.js"></script>
-<script type='text/javascript' src="./src/circular_bar_chart.js"></script>
-<script type='text/javascript' src="./src/polar_area_chart.js"></script>
-<script type='text/javascript' src="./src/clock.js"></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-<style>
-div{
-	/*border: 1px solid silver;*/
-}
-body{
-	font-family: 'Raleway', sans-serif;
-	font-size: 12px;
-}
-p{
-	margin-bottom: 12px;
-}
-#banner{
-	text-align:center;
-}
-.logo{
-	font-family: 'Raleway', sans-serif;
-	font-size: 32px;
-}
-
-.axis text{
-    font: 10px sans-serif;
-    text-shadow:
-    -1px 0px 0 #fff,
-    1px -1px 0 #fff,
-    -1px 1px 0 #fff,
-    1px 1px 0 #fff; 
-}
-svg.clock text{
-    font: 20px sans-serif;
-    fill: grey;
-}
-.axis line.minor,
-.axis circle{
-    fill: none;
-    stroke: #777;
-    stroke-width: 1px;
-    stroke-dasharray: 1,4;
-}
-.axis line.major{
-    stroke: silver;
-    stroke-width: 1px;
-    stroke-dasharray: none;
-}
-circle.outside-circle{
-    fill: none;
-    stroke: gray;
-    stroke-width: 1px;
-    stroke-dasharray: none;
-}
-line.mark{
-    fill: none;
-    stroke: red;
-}
-circle.mark, rect.mark, path.mark{
-    stroke: red;
-    fill: orange;
-    fill-opacity: 0.5;
-}
-
-g.polar-area path.mark{
-    fill: none;
-}
-</style>
+        ga('create', 'UA-38721366-2', 'micropolar.org');
+        ga('send', 'pageview');
+    </script>
 </head>
 <body>
 
 <div class="container">
-	<div class="grid">
-		<div class="unit span-grid" id="banner">
-			<img src="micropolar_600.png" />
-		</div>
-		<div class="unit span-grid" id="logo">
-			<div class="logo"><img src="micropolar_black.png" width="50"/>Micropolar</div><p>Micropolar is a minimalist polar chart library <br>based on a flexible polar axis implementation.</p>
-			<a href="https://github.com/biovisualize/micropolar/">GitHub</a>
-		</div>
-		<!-- <div class="unit one-of-two"> -->
-			<div class="example"></div>
-		<!-- </div> -->
-	</div>
+    <div id="banner">
+        <img src="micropolar_600.png" />
+    </div>
+    <div id="logo">
+        <div class="logo"><img src="micropolar_black.png" width="50"/></div>
+        Micropolar is a minimalist polar chart library <br>based on a flexible polar axis implementation.<br>
+        <a href="https://github.com/biovisualize/micropolar/">GitHub</a>
+    </div>
+
+    <div class="example-container"></div>
 </div>
 
-<div class="container"></div>
-
 <script>
-
-function rndSnd() {
-    return (Math.random()*2-1)+(Math.random()*2-1)+(Math.random()*2-1);
+var container = d3.select('.example-container');
+for(chart in micropolar.factory){
+    container.append('div').classed(chart, true);
+    micropolar.factory[chart]({containerSelector: '.' + chart});
 }
-
-function renderLinePlot(div){
-
-    var radialAxis = d3.custom.RadialAxis().config({
-        height: 275, width: 275, 
-        radialDomain: [0, 2], 
-        angularDomain: [0, 360, 45], 
-        flip: false,
-        originTheta: 0,
-        radialAxisTheta: -30,
-        angularTicksSuffix: 'º'
-    });
-
-    var data = d3.range(0, 721, 1).map(function(deg, index){
-          return [deg, index/720*2];
-        });
-
-    // radialAxis.config({container: div})
-    // radialAxis(data);
-
-    var radialLinePlot = d3.custom.RadialLinePlot().config({axis: radialAxis, container: div});
-    radialLinePlot(data);
-}
-
-function renderDotPlot(div){
-
-    var radialAxis = d3.custom.RadialAxis().config({
-        height: 275, width: 275, 
-        radialDomain: [0, 100], 
-        angularDomain: [0, 1000, 50], 
-        flip: false,
-        originTheta: 0,
-        radialAxisTheta: 0,
-        minorTicks: 1
-    });
-
-    var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
-    var data = d3.range(0, 100).map(function(deg, index){
-          return [~~(scaleRandom(rndSnd()) * 1000), ~~(scaleRandom(rndSnd()) * 100)];
-        });
-
-    var radialDotPlot = d3.custom.RadialDotPlot().config({axis: radialAxis, container: div, dotRadius: 3});
-    radialDotPlot(data);
-
-}
-
-function renderCircularBarChart(div){
-
-    var radialAxis = d3.custom.RadialAxis().config({
-        height: 275, width: 275, 
-        radialDomain: [-40, 100], 
-        angularDomain: [0, 1000, 50], 
-        flip: true,
-        originTheta: 0,
-        radialAxisTheta: 0
-    });
-
-    var data = d3.range(0, 20).map(function(deg, index){
-          return [deg * 50 + 50, ~~(Math.random() * index * 5 - 15)];
-        });
-
-    var circularBarChart = d3.custom.CircularBarChart().config({axis: radialAxis, container: div});
-    circularBarChart(data);
-}
-
-function renderPolarAreaChart(div){
-
-    var radialAxis = d3.custom.RadialAxis().config({
-        height: 275, width: 275, 
-        radialDomain: [0, 20], 
-        angularDomain: ['North', 'East', 'South', 'West'], 
-        flip: true,
-        originTheta: -90,
-        radialAxisTheta: -30,
-        minorTicks: 2,
-        radialTicksSuffix: '%'
-    });
-
-    var data = d3.range(0, 12).map(function(deg, index){
-          return [deg * 50 + 50, ~~(Math.random() * 10 + 5)];
-        });
-
-    var polarAreaChart = d3.custom.PolarAreaChart().config({axis: radialAxis, container: div});
-    polarAreaChart(data);
-}
-
-function renderClock(div){
-
-    var radialAxis = d3.custom.RadialAxis().config({
-        height: 275, width: 275, 
-        labelOffset: -15,
-        angularDomain: [0, 12], 
-        flip: true,
-        originTheta: -90,
-        radialAxisTheta: -30,
-        minorTicks: 9,
-        showRadialAxis: false,
-        showRadialCircle: false,
-        rewriteTicks: function(d, i){ return (d === '0')? '12': d; },
-        tickOrientation: 'horizontal',
-        tickLength: 5
-    });
-
-    var data = d3.range(0, 16).map(function(deg, index){
-          return [deg * 50 + 50, ~~(Math.random() * 15)];
-        });
-
-    var clock = d3.custom.Clock().config({axis: radialAxis, container: div});
-    clock(data);
-}
-
-var examples = [renderLinePlot, renderDotPlot, renderCircularBarChart, renderPolarAreaChart, renderClock];
-
-d3.select('.example').selectAll('div.chart')
-    .data(examples)
-    .enter().append('div')
-    .attr({'class': 'chart unit one-of-three'})
-    .each(function(d, i){
-        d3.select(this).call(d);
-    });
-
 </script>
 
 </body>
-<html>
+</html>

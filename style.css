@@ -1,0 +1,80 @@
+div{
+    /*border: #eee 1px solid;*/
+}
+.example-container{
+    display:inline-block;
+}
+.example-container>div{
+    float: left;
+    padding: 0px;
+    margin: 20px;
+}
+body{
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    font-family: 'Raleway', sans-serif;
+    font-size: 12px;
+}
+#banner{
+    text-align: center;
+}
+.container{
+    width: 900px;
+    margin:0 auto;
+    text-align: left;
+}
+a{
+    color: black;
+}
+
+
+
+.axis text{
+    font: 10px sans-serif;
+    text-shadow:
+    -1px 0px 0 #fff,
+    1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+    1px 1px 0 #fff; 
+}
+svg.clock text{
+    font: 20px sans-serif;
+    fill: grey;
+}
+.axis line.minor,
+.axis circle{
+    fill: none;
+    stroke: #777;
+    stroke-width: 1px;
+    stroke-dasharray: 1,4;
+}
+.axis line.major{
+    stroke: silver;
+    stroke-width: 1px;
+    stroke-dasharray: none;
+}
+circle.outside-circle{
+    fill: none;
+    stroke: gray;
+    stroke-width: 1px;
+    stroke-dasharray: none;
+}
+line.mark{
+    fill: none;
+    stroke: red;
+}
+circle.mark, rect.mark, path.mark{
+    stroke: red;
+    fill: orange;
+    fill-opacity: 0.5;
+}
+g.polar-area path.mark{
+    fill: none;
+}
+circle.mark:hover, rect.mark:hover, path.mark:hover{
+    stroke: green;
+    fill: limegreen;
+    fill-opacity: 1;
+    pointer-events: all !important;
+}
