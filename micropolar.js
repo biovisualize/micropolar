@@ -1,4 +1,4 @@
-micropolar = {};
+micropolar = {version: '0.1.0'};
 micropolar.chart = {};
 
 micropolar.chart.RadialAxis = function module() {
