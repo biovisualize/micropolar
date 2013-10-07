@@ -24,7 +24,7 @@ micropolar.factory.dotPlot({
 	size: 300
 });
 ```
-Every chart is composed of very configurable axis composed with a geometry module. The current chart types are linePlot, dotPlot, barChart, areaChart and clock. You can easily extend micropolar with new chart types, or gain full control over every parameters, by looking at these factory implementations. 
+Every chart is composed of a very configurable axis and a geometry module. The current chart types are linePlot, dotPlot, barChart, areaChart and clock. You can easily extend micropolar with new chart types, or gain full control over every parameters, by looking at these factory implementations. 
 
 ##Roadmap
 * Live examples
