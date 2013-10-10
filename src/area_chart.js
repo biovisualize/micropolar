@@ -26,7 +26,11 @@ micropolar.AreaChart = function module() {
                         var h = config.radialScale(d[1]); 
                         var baseW = Math.tan(triangleAngle) * h;
                         return 'M'+[[0, 0], [h, baseW], [h, -baseW]].join('L')+'Z' },
+<<<<<<< HEAD:src/polar_area_chart.js
+                    transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta + (angularScale(i))) +')'}
+=======
                     transform: function(d, i){ return 'rotate('+ (config.axisConfig.originTheta - 90 + (config.angularScale(i))) +')'}
+>>>>>>> upstream/master:src/area_chart.js
                     // transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
                 })
                 .style(markStyle);
