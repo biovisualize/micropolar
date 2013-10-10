@@ -111,7 +111,7 @@ micropolar.Axis = function module() {
                 if(config.showRadialCircle){
                     var gridCircles = radialAxis.selectAll('circle.grid-circle')
                         .data(radialScale.ticks(5));
-                    var gridCirclesEnter = gridCircles.enter().append('circle')
+                    gridCircles.enter().append('circle')
                         .attr({'class': 'grid-circle'})
                         .style(lineStyle);
                     gridCircles.attr('r', radialScale);
@@ -170,6 +170,7 @@ micropolar.Axis = function module() {
                     .classed('major', function(d, i){ return (i % (config.minorTicks+1) == 0) })
                     .classed('minor', function(d, i){ return !(i % (config.minorTicks+1) == 0) })
                     .style(lineStyle);
+                angularAxisEnter.selectAll('.minor').style({stroke: '#eee'})
 
                 angularAxisEnter.append('text')
                     .attr({'class': 'axis-text'})

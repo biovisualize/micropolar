@@ -11,6 +11,7 @@
     <script type='text/javascript' src="../src/bar_chart.js"></script>
     <script type='text/javascript' src="../src/clock.js"></script>
     <script type='text/javascript' src="../src/area_chart.js"></script>
+    <script type='text/javascript' src="../src/stacked_area_chart.js"></script>
     <script type='text/javascript' src="../src/dot_plot.js"></script>
     <script type='text/javascript' src="../src/line_plot.js"></script>
     <script type='text/javascript' src="../src/factory.js"></script>
@@ -19,34 +20,97 @@
 <body>
 
 <div id="container1"></div>
+<div id="container2"></div>
 
 <script>
 
-    var data = [["0","0.7"],["1","0.63"],["2","0.65"],["3","0.57"]];
-    data = data.map(function(d, i){ return d.map(function(db, ib){ return parseFloat(db); }); });
-
-    var plot = micropolar.DotPlot().config({ dotRadius: 8 });
-    // var plot = micropolar.LinePlot();
-    // var plot = micropolar.AreaChart();
-    // var plot = micropolar.BarChart();
-    // var plot = micropolar.Clock();
+    var polarPlot = micropolar.LinePlot();
 
     var config = {
-        geometry: [plot],
-        data: data,
-        height: 500, 
-        width: 500, 
-        // additionalAngularEndTick: false,
-        radialDomain: [0.5, 0.75],
-        // radialDomain: [0, 0.75],
+        geometry: [polarPlot],
+        data: d3.range(0, 365, 5).map(function(deg, index){
+            var a = 25;
+            var radius = a * (Math.cos(deg * Math.PI / 180));
+            return [deg, (radius - 25 ) / 2];
+        }),
+        height: 300, 
+        width: 300, 
+        additionalAngularEndTick: false,
+        angularTicksStep: 20,
+        angularTicksSuffix: 'º',
+        minorTicks: 1,
         flip: true,
         originTheta: -90,
-        radialAxisTheta: -30,
+        radialAxisTheta: -90,
+        radialTicksSuffix: 'dB',
         containerSelector: '#container1'
     };
 
     var polarAxis = micropolar.Axis().config(config);
+    polarAxis();
 
+
+
+
+    var data = [
+            [ "Apr 1854", 1.4, "Disease"],
+            [ "May 1854", 6.2, "Disease"],
+            [ "Jun 1854", 4.7, "Disease"],
+            [ "Jul 1854", 150, "Disease"],
+            [ "Aug 1854", 328.5, "Disease"],
+            [ "Sep 1854", 312.2, "Disease"],
+            [ "Oct 1854", 197, "Disease"],
+            [ "Nov 1854", 340.6, "Disease"],
+            [ "Dec 1854", 631.5, "Disease"],
+            [ "Jan 1855", 1022.8, "Disease"],
+            [ "Feb 1855", 822.8, "Disease"],
+            [ "Mar 1855", 480.3, "Disease"],
+            [ "Apr 1854", 0, "Wounds"],
+            [ "May 1854", 0, "Wounds"],
+            [ "Jun 1854", 0, "Wounds"],
+            [ "Jul 1854", 0, "Wounds"],
+            [ "Aug 1854", 0.4, "Wounds"],
+            [ "Sep 1854", 32.1, "Wounds"],
+            [ "Oct 1854", 51.7, "Wounds"],
+            [ "Nov 1854", 115.8, "Wounds"],
+            [ "Dec 1854", 41.7, "Wounds"],
+            [ "Jan 1855", 30.7, "Wounds"],
+            [ "Feb 1855", 16.3, "Wounds"],
+            [ "Mar 1855", 12.8, "Wounds"],
+            [ "Apr 1854", 7, "Other"],
+            [ "May 1854", 4.6, "Other"],
+            [ "Jun 1854", 2.5, "Other"],
+            [ "Jul 1854", 9.6, "Other"],
+            [ "Aug 1854", 11.9, "Other"],
+            [ "Sep 1854", 27.7, "Other"],
+            [ "Oct 1854", 50.1, "Other"],
+            [ "Nov 1854", 42.8, "Other"],
+            [ "Dec 1854", 48, "Other"],
+            [ "Jan 1855", 120, "Other"],
+            [ "Feb 1855", 140.1, "Other"],
+            [ "Mar 1855", 68.6, "Other"] 
+        ];
+
+    var polarPlot = micropolar.StackedAreaChart();
+
+    var config = {
+        data: data,
+        geometry: [polarPlot],
+        containerSelector: '#container2',
+        width: 300,
+        height: 300,
+        flip: true,
+        additionalAngularEndTick: false,
+        data: data,
+        originTheta: -90,
+        radialAxisTheta: -30,
+        radialDomain: [0, 1174],
+        margin: 35,
+        angularDomain: ["Apr 1854", "May 1854", "Jun 1854", "Jul 1854", "Aug 1854", "Sep 1854", "Oct 1854", "Nov 1854", "Dec 1854", "Jan 1855", "Feb 1855", "Mar 1855"]
+    };
+
+
+    var polarAxis = micropolar.Axis().config(config);
     polarAxis();
 
 

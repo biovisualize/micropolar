@@ -14,7 +14,6 @@ micropolar.Clock = function module() {
             .datum(config.axisConfig.data)
             .each(function(_data, _index) {
 
-                var triangleAngle = (360 / _data.length) * Math.PI / 180 / 2;
                 var radius = config.radialScale.range()[1];
                 var handsHeight = [radius / 1.3, radius / 1.5, radius / 1.5];
                 var handsWidth = [radius / 15, radius / 10, radius / 30];

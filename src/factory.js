@@ -68,7 +68,6 @@ function barChart(_config){
 
     var polarPlot = micropolar.BarChart();
 
-    var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
         geometry: [polarPlot],
         data: d3.range(0, 20).map(function(deg, index){
@@ -100,7 +99,6 @@ function areaChart(_config){
 
     var polarPlot = micropolar.AreaChart();
 
-    var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
         geometry: [polarPlot],
         data: d3.range(0, 12).map(function(deg, index){
@@ -133,7 +131,6 @@ function clock(_config){
 
     var polarPlot = micropolar.Clock();
 
-    var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
         geometry: [polarPlot],
         data: [12, 4, 8],
