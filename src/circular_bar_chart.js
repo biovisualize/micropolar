@@ -1,8 +1,10 @@
 micropolar.chart.CircularBarChart = function module() {
     var config = {
-        dotRadius: 5,
         axis: null,
-        containerSelector: 'body'
+        containerSelector: 'body',
+        dotRadius: 5,
+        fill: 'orange',
+        stroke: 'red'
     };
     var dispatch = d3.dispatch('hover');
 
@@ -20,6 +22,8 @@ micropolar.chart.CircularBarChart = function module() {
             
                 var geometryGroup = d3.select(this).select('svg g.geometry');
 
+                var markStyle = {fill: config.fill, stroke: config.stroke};
+
                 var barW = 12;
                 var geometry = geometryGroup.selectAll('rect.mark')
                     .data(_data);
@@ -30,7 +34,8 @@ micropolar.chart.CircularBarChart = function module() {
                         width: barW, 
                         height: function(d, i){ return radialScale(d[1]); }, 
                         transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
-                    });
+                    })
+                .style(markStyle);
 
         });
     }
@@ -41,4 +46,4 @@ micropolar.chart.CircularBarChart = function module() {
     };
     d3.rebind(exports, dispatch, 'on');
     return exports;
-}
+};

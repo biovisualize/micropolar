@@ -19,17 +19,34 @@
 <body>
 
 <div id="container1"></div>
-<div id="container2"></div>
-<div id="container3"></div>
-<div id="container4"></div>
-<div id="container5"></div>
 
 <script>
- micropolar.factory.linePlot({containerSelector: '#container1'});
- micropolar.factory.dotPlot({containerSelector: '#container2'});
- micropolar.factory.barChart({containerSelector: '#container3'});
- micropolar.factory.areaChart({containerSelector: '#container4'});
- micropolar.factory.clock({containerSelector: '#container5'});
+
+    var data = [["0","0.7"],["1","0.63"],["2","0.65"],["3","0.57"]];
+    data = data.map(function(d, i){ return d.map(function(db, ib){ return parseFloat(db); }); });
+
+    var config = {
+        data: data,
+        height: 250, 
+        width: 250, 
+        additionalAngularEndTick: true,
+        radialDomain: [0.5, 0.75],
+        flip: true,
+        originTheta: -90,
+        angularTickOrientation: 'horizontal',
+        radialAxisTheta: -30,
+        containerSelector: '#container1'
+    };
+
+    var radialAxis = micropolar.chart.RadialAxis().config(config);
+
+    var radialLinePlot = micropolar.chart.RadialDotPlot()
+        .config({
+            axis: radialAxis, 
+            containerSelector: config.containerSelector
+        });
+    radialLinePlot();
+
 </script>
 
 </body>

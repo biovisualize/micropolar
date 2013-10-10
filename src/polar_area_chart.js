@@ -1,8 +1,10 @@
 micropolar.chart.PolarAreaChart = function module() {
     var config = {
-        dotRadius: 5,
         axis: null,
-        containerSelector: 'body'
+        containerSelector: 'body',
+        dotRadius: 5,
+        fill: 'orange',
+        stroke: 'red'
     };
     var dispatch = d3.dispatch('hover');
 
@@ -23,6 +25,8 @@ micropolar.chart.PolarAreaChart = function module() {
                 
                 var geometryGroup = d3.select(this).select('svg g.geometry');
 
+                var markStyle = {fill: config.fill, stroke: config.stroke};
+
                 var geometry = geometryGroup.selectAll('path.mark')
                     .data(_data);
                 geometry.enter().append('path').attr({'class': 'mark'});
@@ -34,6 +38,7 @@ micropolar.chart.PolarAreaChart = function module() {
                     transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(i))) +')'}
                     // transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
                 })
+                .style(markStyle);
 
         });
     }
@@ -44,4 +49,4 @@ micropolar.chart.PolarAreaChart = function module() {
     };
     d3.rebind(exports, dispatch, 'on');
     return exports;
-}
+};

@@ -1,7 +1,9 @@
 micropolar.chart.Clock = function module() {
     var config = {
         axis: null,
-        containerSelector: 'body'
+        containerSelector: 'body',
+        fill: 'orange',
+        stroke: 'red'
     };
     var dispatch = d3.dispatch('hover');
 
@@ -26,6 +28,8 @@ micropolar.chart.Clock = function module() {
                 var svg = d3.select(this).select('svg').classed('clock', true);
                 var geometryGroup =svg.select('g.geometry');
 
+                var markStyle = {fill: config.fill, stroke: config.stroke};
+
                 var geometry = geometryGroup.selectAll('rect.mark')
                     .data(_data);
                 geometry.enter().append('rect').attr({'class': 'mark'});
@@ -36,10 +40,13 @@ micropolar.chart.Clock = function module() {
                     height: function(d, i){ return handsHeight[i]; }, 
                     transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d))) +')'}
                 })
+                .style(markStyle);
 
                 geometryGroup.selectAll('circle.mark')
                     .data([0])
-                    .enter().append('circle').attr({'class': 'mark'}).attr({r: radius / 10}).style({'fill-opacity': 1});
+                    .enter().append('circle').attr({'class': 'mark'})
+                    .attr({r: radius / 10}).style({'fill-opacity': 1})
+                    .style(markStyle);
 
             });
     }
@@ -50,4 +57,4 @@ micropolar.chart.Clock = function module() {
     };
     d3.rebind(exports, dispatch, 'on');
     return exports;
-}
+};

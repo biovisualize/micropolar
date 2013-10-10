@@ -1,8 +1,10 @@
 micropolar.chart.RadialDotPlot = function module() {
     var config = {
-        dotRadius: 5,
         axis: null,
-        containerSelector: 'body'
+        containerSelector: 'body',
+        dotRadius: 5,
+        fill: 'orange',
+        stroke: 'red'
     };
     var dispatch = d3.dispatch('hover');
 
@@ -20,14 +22,17 @@ micropolar.chart.RadialDotPlot = function module() {
 
                 var geometryGroup = d3.select(this).select('svg g.geometry');
 
+                var markStyle = {fill: config.fill, stroke: config.stroke};
+
                 var geometry = geometryGroup.selectAll('circle.mark')
                     .data(_data);
                 geometry.enter().append('circle').attr({'class': 'mark'});
                 geometry.attr({
-                        cy: function(d, i){ return radialScale(d[1]); }, 
-                        r: config.dotRadius, 
-                        transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
-                    });
+                    cy: function(d, i){ return radialScale(d[1]); }, 
+                    r: config.dotRadius, 
+                    transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
+                })
+                .style(markStyle);
 
         });
     }
@@ -38,4 +43,4 @@ micropolar.chart.RadialDotPlot = function module() {
     };
     d3.rebind(exports, dispatch, 'on');
     return exports;
-}
+};

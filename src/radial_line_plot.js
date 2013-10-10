@@ -1,14 +1,15 @@
 micropolar.chart.RadialLinePlot = function module() {
     var config = {
-        lineStrokeSize: 1,
         axis: null,
-        containerSelector: 'body'
+        containerSelector: 'body',
+        lineStrokeSize: 2,
+        stroke: 'orange'
     };
     var dispatch = d3.dispatch('hover');
 
-    function exports(_datum) {
+    function exports() {
         d3.select(config.containerSelector)
-            .datum(_datum)
+            .datum(config.data)
             .each(function(_data, _index) {
 
                 config.axis.config({containerSelector: this})
@@ -24,6 +25,8 @@ micropolar.chart.RadialLinePlot = function module() {
                 
                 var geometryGroup = d3.select(this).select('svg g.geometry').classed('polar-area', true);
 
+                var markStyle = {fill: 'none', 'stroke-width': config.lineStrokeSize, stroke: config.stroke, 'pointer-events': 'stroke'};
+
                 var geometry = geometryGroup.selectAll('path.mark')
                     .data([0]);
                 geometry.enter().append('path').attr({'class': 'mark'});
@@ -34,7 +37,8 @@ micropolar.chart.RadialLinePlot = function module() {
                         d: line, 
                         transform: 'rotate('+(axisConfig.originTheta + 90)+')',
                         'stroke-width': config.lineStrokeSize + 'px'
-                });
+                })
+                .style(markStyle);
 
         });
     }
@@ -45,4 +49,4 @@ micropolar.chart.RadialLinePlot = function module() {
     };
     d3.rebind(exports, dispatch, 'on');
     return exports;
-}
+};

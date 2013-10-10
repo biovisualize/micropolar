@@ -1,14 +1,13 @@
 function linePlot(_config){
 
     if(_config && _config.size){
-        _config.width = _config.size;
-        _config.height = _config.size;
+        _config.width = _config.height = _config.size;
     }
 
     var config = {
         data: d3.range(0, 721, 1).map(function(deg, index){ return [deg, index/720*2]; }),
         height: 250, 
-        width: 300, 
+        width: 250, 
         angularDomain: [0, 360, 45], 
         flip: false,
         originTheta: 0,
@@ -32,8 +31,7 @@ function linePlot(_config){
 function dotPlot(_config){
 
     if(_config && _config.size){
-        _config.width = _config.size;
-        _config.height = _config.size;
+        _config.width = _config.height = _config.size;
     }
 
     var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
@@ -41,7 +39,8 @@ function dotPlot(_config){
         data: d3.range(0, 100).map(function(deg, index){ 
             return [~~(scaleRandom(micropolar._rndSnd()) * 1000), ~~(scaleRandom(micropolar._rndSnd()) * 100)]; 
         }),
-        height: 250, width: 250, 
+        height: 250, 
+        width: 250, 
         angularDomain: [0, 1000, 50], 
         flip: false,
         originTheta: 0,
@@ -66,15 +65,15 @@ function dotPlot(_config){
 function barChart(_config){
 
     if(_config && _config.size){
-        _config.width = _config.size;
-        _config.height = _config.size;
+        _config.width = _config.height = _config.size;
     }
 
     var config = {
         data: d3.range(0, 20).map(function(deg, index){
           return [deg * 50 + 50, ~~(Math.random() * index * 5 - 15)];
         }),
-        height: 250, width: 250, 
+        height: 250, 
+        width: 250, 
         radialDomain: [-40, 100], 
         angularDomain: [0, 1000, 50], 
         flip: true,
@@ -97,11 +96,16 @@ function barChart(_config){
 
 function areaChart(_config){
 
+	if(_config && _config.size){
+        _config.width = _config.height = _config.size;
+    }
+
     var config = {
         data: d3.range(0, 12).map(function(deg, index){
           return [deg * 50 + 50, ~~(Math.random() * 10 + 5)];
         }),
-        height: 250, width: 250, 
+        height: 250, 
+        width: 250, 
         radialDomain: [0, 20], 
         angularDomain: ['North', 'East', 'South', 'West'], 
         flip: true,
@@ -126,9 +130,14 @@ function areaChart(_config){
 
 function clock(_config){
 
+	if(_config && _config.size){
+        _config.width = _config.height = _config.size;
+    }
+
     var config = {
         data: [0, 4, 8],
-        height: 250, width: 250, 
+        height: 250, 
+        width: 250, 
         labelOffset: -15,
         angularDomain: [0, 12], 
         flip: true,
