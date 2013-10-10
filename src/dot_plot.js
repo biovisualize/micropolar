@@ -1,36 +1,29 @@
-micropolar.chart.RadialDotPlot = function module() {
+micropolar.DotPlot = function module() {
     var config = {
-        axis: null,
         containerSelector: 'body',
-        dotRadius: 5,
+        dotRadius: 3,
         fill: 'orange',
-        stroke: 'red'
+        stroke: 'red',
+        radialScale: null,
+        angularScale: null,
+        axisConfig: null
     };
     var dispatch = d3.dispatch('hover');
 
-    function exports(_datum) {
+    function exports() {
         d3.select(config.containerSelector)
-            .datum(_datum)
+            .datum(config.axisConfig.data)
             .each(function(_data, _index) {
 
-                config.axis.config({container: this})
-                config.axis(_datum);
-
-                radialScale = config.axis.radialScale();
-                angularScale = config.axis.angularScale();
-                axisConfig = config.axis.config();
-
-                var geometryGroup = d3.select(this).select('svg g.geometry');
-
                 var markStyle = {fill: config.fill, stroke: config.stroke};
-
+                var geometryGroup = d3.select(this).select('svg g.geometry').classed('dot-plot', true);;
                 var geometry = geometryGroup.selectAll('circle.mark')
                     .data(_data);
                 geometry.enter().append('circle').attr({'class': 'mark'});
                 geometry.attr({
-                    cy: function(d, i){ return radialScale(d[1]); }, 
+                    cy: function(d, i){ return config.radialScale(d[1]); }, 
                     r: config.dotRadius, 
-                    transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
+                    transform: function(d, i){ return 'rotate('+ (config.axisConfig.originTheta - 90 + (config.angularScale(d[0]))) +')'}
                 })
                 .style(markStyle);
 

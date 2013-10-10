@@ -1,35 +1,29 @@
-micropolar.chart.Clock = function module() {
+micropolar.Clock = function module() {
     var config = {
-        axis: null,
         containerSelector: 'body',
         fill: 'orange',
-        stroke: 'red'
+        stroke: 'red',
+        radialScale: null,
+        angularScale: null,
+        axisConfig: null
     };
     var dispatch = d3.dispatch('hover');
 
-    function exports(_datum) {
-
+    function exports() {
         d3.select(config.containerSelector)
-            .datum(_datum)
+            .datum(config.axisConfig.data)
             .each(function(_data, _index) {
 
-                config.axis.config({containerSelector: this})
-                config.axis(_datum);
-
-                radialScale = config.axis.radialScale();
-                angularScale = config.axis.angularScale();
-                axisConfig = config.axis.config();
-
                 var triangleAngle = (360 / _data.length) * Math.PI / 180 / 2;
-                var radius = radialScale.range()[1];
+                var radius = config.radialScale.range()[1];
                 var handsHeight = [radius / 1.3, radius / 1.5, radius / 1.5];
                 var handsWidth = [radius / 15, radius / 10, radius / 30];
-                
-                var svg = d3.select(this).select('svg').classed('clock', true);
-                var geometryGroup =svg.select('g.geometry');
+
+                _data = [0, 4, 8]; // hardocded
+                config.angularScale.domain([0, 12]); // hardocded 
 
                 var markStyle = {fill: config.fill, stroke: config.stroke};
-
+                var geometryGroup = d3.select(this).select('svg g.geometry').classed('clock', true);;
                 var geometry = geometryGroup.selectAll('rect.mark')
                     .data(_data);
                 geometry.enter().append('rect').attr({'class': 'mark'});
@@ -38,7 +32,7 @@ micropolar.chart.Clock = function module() {
                     y: function(d, i){ return i==2 ? -radius/5 : 0 }, 
                     width: function(d, i){ return handsWidth[i]; }, 
                     height: function(d, i){ return handsHeight[i]; }, 
-                    transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d))) +')'}
+                    transform: function(d, i){ return 'rotate('+ (config.axisConfig.originTheta - 90 + (config.angularScale(d))) +')'}
                 })
                 .style(markStyle);
 

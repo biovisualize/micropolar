@@ -1,13 +1,15 @@
 micropolar = {version: '0.1.0'};
-micropolar.chart = {};
+
 /*
 TODO:
 -better evaluation of number of radial and angular ticks
 -move hover guides to a plugin
 */
 
-micropolar.chart.RadialAxis = function module() {
+micropolar.Axis = function module() {
     var config = {
+        geometry: [],
+        data: null,
         height: 500,
         width: 500,
         radialDomain: null,
@@ -15,7 +17,7 @@ micropolar.chart.RadialAxis = function module() {
         angularTicksStep: 1,
         flip: true,
         originTheta: 0,
-        labelOffset: 6,
+        labelOffset: 10,
         radialAxisTheta: -45,
         radialTicksSuffix: '',
         angularTicksSuffix: '',
@@ -26,19 +28,23 @@ micropolar.chart.RadialAxis = function module() {
         minorTicks: 0,
         tickLength: null,
         rewriteTicks: null,
-        angularTickOrientation: 'angular', // 'radial', 'angular', 'horizontal'
+        angularTickOrientation: 'horizontal', // 'radial', 'angular', 'horizontal'
         radialTickOrientation: 'horizontal', // 'angular', 'horizontal'
         containerSelector: 'body',
-        margin: 20,
-        additionalAngularEndTick: false
+        margin: 25,
+        additionalAngularEndTick: true
     };
     var dispatch = d3.dispatch('hover'),
     	radialScale, angularScale;
 
     function exports(){
         d3.select(config.containerSelector)
-            .datum(_datum)
+            .datum(config.data)
             .each(function(_data, _index) {
+
+
+                // Scales
+                ////////////////////////////////////////////////////////////////////
 
                 var radius = Math.min(config.width, config.height) / 2 - config.margin;
                 var extent = d3.extent(_data.map(function(d, i){ return d[1]; }));
@@ -62,6 +68,10 @@ micropolar.chart.RadialAxis = function module() {
                 angularScale = d3.scale.linear()
                     .domain(angularDomain.slice(0, 2))
                     .range(config.flip? [0, 360] : [360, 0]);
+
+
+                // CHart skeleton
+                ////////////////////////////////////////////////////////////////////
 
                 var skeleton = '<svg class="chart"> \
                         <g class="chart-group"> \
@@ -93,6 +103,10 @@ micropolar.chart.RadialAxis = function module() {
                 var chartGroup = svg.select('.chart-group')
                     .attr('transform', 'translate(' + config.width / 2 + ',' + config.height / 2 + ')');
 
+
+                // Radial axis
+                ////////////////////////////////////////////////////////////////////
+
                 var radialAxis = svg.select('.radial.axis');
                 if(config.showRadialCircle){
                     var gridCircles = radialAxis.selectAll('circle.grid-circle')
@@ -113,18 +127,33 @@ micropolar.chart.RadialAxis = function module() {
                     var axis = d3.svg.axis()
                         .scale(radialScale)
                         .ticks(5)
+                        .tickSize(5);
                     var radialAxis = svg.select('.radial.axis').call(axis)  
                         .attr({transform: 'rotate('+ (config.radialAxisTheta) +')'});
                     radialAxis.selectAll('.domain').style(lineStyle);
                     radialAxis.selectAll('g>text')
-                    	.text(function(d, i){ return this.textContent + config.radialTicksSuffix; })
+                        .text(function(d, i){ return this.textContent + config.radialTicksSuffix; })
                     	.style(fontStyle)
+                        .style({
+                            'text-anchor': 'start'
+                        })
                     	.attr({
+                            x: 0,
+                            y: 0,
+                            dx: 0,
+                            dy: 0,
                     		transform: function(d, i){ 
-                    			return 'rotate(' + (-config.radialAxisTheta) + ') translate(' + [fontStyle['font-size'], -fontStyle['font-size']] + ')';
+                                if(config.radialTickOrientation === 'horizontal') return 'rotate(' + (-config.radialAxisTheta) + ') translate(' + [0, fontStyle['font-size']] + ')';
+                                else return 'translate(' + [0, fontStyle['font-size']] + ')';
                     		}
-                    	})
+                    	});
+                    radialAxis.selectAll('g>line')
+                        .style({stroke: 'black'});
                 }
+
+
+                // Angular axis
+                ////////////////////////////////////////////////////////////////////
  
                 var angularAxis = svg.select('.angular.axis')
                   .selectAll('g.angular-tick')
@@ -173,6 +202,23 @@ micropolar.chart.RadialAxis = function module() {
                     .style(fontStyle);
 
                 if (config.rewriteTicks) ticks.text(function(d, i){ return config.rewriteTicks(this.textContent, i); })
+
+
+                // Geometry
+                ////////////////////////////////////////////////////////////////////
+
+                var that = this;
+                config.geometry.forEach(function(d, i){ 
+                    d.config({
+                        axisConfig: config, 
+                        radialScale: radialScale, 
+                        angularScale: angularScale,
+                        containerSelector: that
+                    })();
+                });
+
+                // Hover guides
+                ////////////////////////////////////////////////////////////////////
 
                 //TODO: get this out
                 function getMousePos(){ 

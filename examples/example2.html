@@ -6,13 +6,13 @@
     <title></title> 
     <script type='text/javascript' src="../lib/d3.js"></script>
     <!--<script type='text/javascript' src="../micropolar.js"></script>-->
-    <script type='text/javascript' src="../src/radial_axis.js"></script>
+    <script type='text/javascript' src="../src/axis.js"></script>
     <script type='text/javascript' src="../src/util.js"></script>
-    <script type='text/javascript' src="../src/circular_bar_chart.js"></script>
+    <script type='text/javascript' src="../src/bar_chart.js"></script>
     <script type='text/javascript' src="../src/clock.js"></script>
-    <script type='text/javascript' src="../src/polar_area_chart.js"></script>
-    <script type='text/javascript' src="../src/radial_dot_plot.js"></script>
-    <script type='text/javascript' src="../src/radial_line_plot.js"></script>
+    <script type='text/javascript' src="../src/area_chart.js"></script>
+    <script type='text/javascript' src="../src/dot_plot.js"></script>
+    <script type='text/javascript' src="../src/line_plot.js"></script>
     <script type='text/javascript' src="../src/factory.js"></script>
     <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
@@ -25,27 +25,30 @@
     var data = [["0","0.7"],["1","0.63"],["2","0.65"],["3","0.57"]];
     data = data.map(function(d, i){ return d.map(function(db, ib){ return parseFloat(db); }); });
 
+    var plot = micropolar.DotPlot().config({ dotRadius: 8 });
+    // var plot = micropolar.LinePlot();
+    // var plot = micropolar.AreaChart();
+    // var plot = micropolar.BarChart();
+    // var plot = micropolar.Clock();
+
     var config = {
+        geometry: [plot],
         data: data,
-        height: 250, 
-        width: 250, 
-        additionalAngularEndTick: true,
+        height: 500, 
+        width: 500, 
+        // additionalAngularEndTick: false,
         radialDomain: [0.5, 0.75],
+        // radialDomain: [0, 0.75],
         flip: true,
         originTheta: -90,
-        angularTickOrientation: 'horizontal',
         radialAxisTheta: -30,
         containerSelector: '#container1'
     };
 
-    var radialAxis = micropolar.chart.RadialAxis().config(config);
+    var polarAxis = micropolar.Axis().config(config);
 
-    var radialLinePlot = micropolar.chart.RadialDotPlot()
-        .config({
-            axis: radialAxis, 
-            containerSelector: config.containerSelector
-        });
-    radialLinePlot();
+    polarAxis();
+
 
 </script>
 

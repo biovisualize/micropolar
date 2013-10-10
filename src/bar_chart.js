@@ -1,39 +1,35 @@
-micropolar.chart.CircularBarChart = function module() {
+micropolar.BarChart = function module() {
     var config = {
-        axis: null,
         containerSelector: 'body',
         dotRadius: 5,
         fill: 'orange',
-        stroke: 'red'
+        stroke: 'red',
+        radialScale: null,
+        angularScale: null,
+        axisConfig: null
     };
     var dispatch = d3.dispatch('hover');
 
-     function exports(_datum) {
+     function exports() {
         d3.select(config.containerSelector)
-            .datum(_datum)
+            .datum(config.axisConfig.data)
             .each(function(_data, _index) {
 
-                config.axis.config({container: this})
-                config.axis(_datum);
-
-                radialScale = config.axis.radialScale();
-                angularScale = config.axis.angularScale();
-                axisConfig = config.axis.config();
-            
-                var geometryGroup = d3.select(this).select('svg g.geometry');
-
                 var markStyle = {fill: config.fill, stroke: config.stroke};
-
                 var barW = 12;
+
+                var geometryGroup = d3.select(this).select('svg g.geometry').classed('bar-chart', true);;
                 var geometry = geometryGroup.selectAll('rect.mark')
                     .data(_data);
                 geometry.enter().append('rect').attr({'class': 'mark'});
                 geometry.attr({
                         x: -barW/2,
-                        y: radialScale(0), 
+                        y: config.radialScale(0), 
                         width: barW, 
-                        height: function(d, i){ return radialScale(d[1]); }, 
-                        transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
+                        height: function(d, i){ 
+                            // console.log(d[1], ~~config.radialScale(d[1]), config.radialScale.domain(), config.radialScale.range());
+                            return config.radialScale(d[1]) - config.radialScale(0); }, 
+                        transform: function(d, i){ return 'rotate('+ (config.axisConfig.originTheta - 90 + (config.angularScale(d[0]))) +')'}
                     })
                 .style(markStyle);
 

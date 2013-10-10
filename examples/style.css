@@ -25,7 +25,7 @@ circle.mark:hover, rect.mark:hover, path.mark:hover{
     stroke: orangered !important;
     fill-opacity: 1;
 }
-.polar-area path.mark:hover{
+.line-plot path.mark:hover{
 	fill: none !important;
 }
 

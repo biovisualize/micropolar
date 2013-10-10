@@ -4,28 +4,28 @@ function linePlot(_config){
         _config.width = _config.height = _config.size;
     }
 
+    var polarPlot = micropolar.LinePlot();
+
     var config = {
+        geometry: [polarPlot],
         data: d3.range(0, 721, 1).map(function(deg, index){ return [deg, index/720*2]; }),
         height: 250, 
         width: 250, 
-        angularDomain: [0, 360, 45], 
+        angularDomain: [0, 360],
+        additionalAngularEndTick: false,
+        angularTicksStep: 30,
+        angularTicksSuffix: 'º',
+        minorTicks: 1,
         flip: false,
         originTheta: 0,
         radialAxisTheta: -30,
-        angularTicksSuffix: 'º',
         containerSelector: 'body'
     };
 
     micropolar._override(_config, config);
 
-    var radialAxis = micropolar.chart.RadialAxis().config(config);
-
-    var radialLinePlot = micropolar.chart.RadialLinePlot()
-        .config({
-            axis: radialAxis, 
-            containerSelector: config.containerSelector // TODO: grab it from the axis by default
-        });
-    radialLinePlot(config.data);
+    var polarAxis = micropolar.Axis().config(config);
+    polarAxis();
 }
 
 function dotPlot(_config){
@@ -34,32 +34,30 @@ function dotPlot(_config){
         _config.width = _config.height = _config.size;
     }
 
+    var polarPlot = micropolar.DotPlot();
+
     var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
+        geometry: [polarPlot],
         data: d3.range(0, 100).map(function(deg, index){ 
             return [~~(scaleRandom(micropolar._rndSnd()) * 1000), ~~(scaleRandom(micropolar._rndSnd()) * 100)]; 
         }),
         height: 250, 
         width: 250, 
-        angularDomain: [0, 1000, 50], 
+        angularDomain: [0, 1000],
+        additionalAngularEndTick: false,
+        angularTicksStep: 100,
+        minorTicks: 1,
         flip: false,
         originTheta: 0,
-        radialAxisTheta: 0,
-        minorTicks: 1,
+        radialAxisTheta: -15,
         containerSelector: 'body'
     };
 
     micropolar._override(_config, config);
 
-    var radialAxis = micropolar.chart.RadialAxis().config(config);
-
-    var radialDotPlot = micropolar.chart.RadialDotPlot()
-        .config({
-            axis: radialAxis, 
-            containerSelector: config.containerSelector, 
-            dotRadius: 3
-        });
-    radialDotPlot(config.data);
+    var polarAxis = micropolar.Axis().config(config);
+    polarAxis();
 }
 
 function barChart(_config){
@@ -68,30 +66,30 @@ function barChart(_config){
         _config.width = _config.height = _config.size;
     }
 
+    var polarPlot = micropolar.BarChart();
+
+    var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
+        geometry: [polarPlot],
         data: d3.range(0, 20).map(function(deg, index){
-          return [deg * 50 + 50, ~~(Math.random() * index * 5 - 15)];
+          return [deg * 50, Math.ceil(Math.random() * (index+1) * 5)];
         }),
         height: 250, 
         width: 250, 
-        radialDomain: [-40, 100], 
-        angularDomain: [0, 1000, 50], 
+        radialDomain: [-60, 100], 
+        angularDomain: [0, 1000],
+        angularTicksStep: 50,
+        minorTicks: 1,
         flip: true,
         originTheta: 0,
-        radialAxisTheta: 0,
+        radialAxisTheta: -10,
         containerSelector: 'body'
     };
 
     micropolar._override(_config, config);
 
-    var radialAxis = micropolar.chart.RadialAxis().config(config);
-
-    var circularBarChart = micropolar.chart.CircularBarChart()
-        .config({
-            axis: radialAxis, 
-            containerSelector: config.containerSelector
-        });
-    circularBarChart(config.data);
+    var polarAxis = micropolar.Axis().config(config);
+    polarAxis();
 }
 
 function areaChart(_config){
@@ -100,7 +98,11 @@ function areaChart(_config){
         _config.width = _config.height = _config.size;
     }
 
+    var polarPlot = micropolar.AreaChart();
+
+    var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
+        geometry: [polarPlot],
         data: d3.range(0, 12).map(function(deg, index){
           return [deg * 50 + 50, ~~(Math.random() * 10 + 5)];
         }),
@@ -108,24 +110,19 @@ function areaChart(_config){
         width: 250, 
         radialDomain: [0, 20], 
         angularDomain: ['North', 'East', 'South', 'West'], 
+        additionalAngularEndTick: false,
+        minorTicks: 2,
         flip: true,
         originTheta: -90,
         radialAxisTheta: -30,
-        minorTicks: 2,
         radialTicksSuffix: '%',
         containerSelector: 'body'
     };
 
     micropolar._override(_config, config);
 
-    var radialAxis = micropolar.chart.RadialAxis().config(config);
-
-    var polarAreaChart = micropolar.chart.PolarAreaChart()
-        .config({
-            axis: radialAxis, 
-            containerSelector: config.containerSelector
-        });
-    polarAreaChart(config.data);
+    var polarAxis = micropolar.Axis().config(config);
+    polarAxis();
 }
 
 function clock(_config){
@@ -134,34 +131,35 @@ function clock(_config){
         _config.width = _config.height = _config.size;
     }
 
+    var polarPlot = micropolar.Clock();
+
+    var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
-        data: [0, 4, 8],
+        geometry: [polarPlot],
+        data: [12, 4, 8],
         height: 250, 
         width: 250, 
-        labelOffset: -15,
-        angularDomain: [0, 12], 
+        angularDomain: [0, 12],
+        additionalAngularEndTick: false,
+        minorTicks: 9,
         flip: true,
         originTheta: -90,
-        radialAxisTheta: -30,
-        minorTicks: 9,
         showRadialAxis: false,
         showRadialCircle: false,
         rewriteTicks: function(d, i){ return (d === '0')? '12': d; },
-        tickOrientation: 'horizontal',
+        labelOffset: -15,
         tickLength: 5,
         containerSelector: 'body'
     };
 
     micropolar._override(_config, config);
 
-    var radialAxis = micropolar.chart.RadialAxis().config(config);
-
-    var clock = micropolar.chart.Clock().config({axis: radialAxis, containerSelector: config.containerSelector});
-    clock(config.data);
+    var polarAxis = micropolar.Axis().config(config);
+    polarAxis();
 }
 
 
-micropolar.factory = {
+micropolar.preset = {
     linePlot: linePlot,
     dotPlot: dotPlot,
     barChart: barChart,

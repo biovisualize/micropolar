@@ -6,13 +6,13 @@
     <title></title> 
     <script type='text/javascript' src="../lib/d3.js"></script>
     <!--<script type='text/javascript' src="../micropolar.js"></script>-->
-    <script type='text/javascript' src="../src/radial_axis.js"></script>
+    <script type='text/javascript' src="../src/axis.js"></script>
     <script type='text/javascript' src="../src/util.js"></script>
-    <script type='text/javascript' src="../src/circular_bar_chart.js"></script>
+    <script type='text/javascript' src="../src/bar_chart.js"></script>
     <script type='text/javascript' src="../src/clock.js"></script>
-    <script type='text/javascript' src="../src/polar_area_chart.js"></script>
-    <script type='text/javascript' src="../src/radial_dot_plot.js"></script>
-    <script type='text/javascript' src="../src/radial_line_plot.js"></script>
+    <script type='text/javascript' src="../src/area_chart.js"></script>
+    <script type='text/javascript' src="../src/dot_plot.js"></script>
+    <script type='text/javascript' src="../src/line_plot.js"></script>
     <script type='text/javascript' src="../src/factory.js"></script>
     <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
@@ -25,11 +25,11 @@
 <div id="container5"></div>
 
 <script>
- micropolar.factory.linePlot({containerSelector: '#container1'});
- micropolar.factory.dotPlot({containerSelector: '#container2'});
- micropolar.factory.barChart({containerSelector: '#container3'});
- micropolar.factory.areaChart({containerSelector: '#container4'});
- micropolar.factory.clock({containerSelector: '#container5'});
+ micropolar.preset.linePlot({containerSelector: '#container1'});
+ micropolar.preset.dotPlot({containerSelector: '#container2'});
+ micropolar.preset.barChart({containerSelector: '#container3'});
+ micropolar.preset.areaChart({containerSelector: '#container4'});
+ micropolar.preset.clock({containerSelector: '#container5'});
 </script>
 
 </body>

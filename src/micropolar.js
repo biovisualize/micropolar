@@ -1,13 +1,9 @@
-micropolar = {version: '0.1.0'};
-micropolar.chart = {};
-/*
-TODO:
--better evaluation of number of radial and angular ticks
--move hover guides to a plugin
-*/
+micropolar = {version: '0.1.1'};
 
-micropolar.chart.RadialAxis = function module() {
+micropolar.Axis = function module() {
     var config = {
+        geometry: [],
+        data: null,
         height: 500,
         width: 500,
         radialDomain: null,
@@ -15,7 +11,7 @@ micropolar.chart.RadialAxis = function module() {
         angularTicksStep: 1,
         flip: true,
         originTheta: 0,
-        labelOffset: 6,
+        labelOffset: 10,
         radialAxisTheta: -45,
         radialTicksSuffix: '',
         angularTicksSuffix: '',
@@ -26,19 +22,23 @@ micropolar.chart.RadialAxis = function module() {
         minorTicks: 0,
         tickLength: null,
         rewriteTicks: null,
-        angularTickOrientation: 'angular', // 'radial', 'angular', 'horizontal'
+        angularTickOrientation: 'horizontal', // 'radial', 'angular', 'horizontal'
         radialTickOrientation: 'horizontal', // 'angular', 'horizontal'
         containerSelector: 'body',
-        margin: 20,
-        additionalAngularEndTick: false
+        margin: 25,
+        additionalAngularEndTick: true
     };
     var dispatch = d3.dispatch('hover'),
     	radialScale, angularScale;
 
-    function exports(_datum){
+    function exports(){
         d3.select(config.containerSelector)
-            .datum(_datum)
+            .datum(config.data)
             .each(function(_data, _index) {
+
+
+                // Scales
+                ////////////////////////////////////////////////////////////////////
 
                 var radius = Math.min(config.width, config.height) / 2 - config.margin;
                 var extent = d3.extent(_data.map(function(d, i){ return d[1]; }));
@@ -62,6 +62,10 @@ micropolar.chart.RadialAxis = function module() {
                 angularScale = d3.scale.linear()
                     .domain(angularDomain.slice(0, 2))
                     .range(config.flip? [0, 360] : [360, 0]);
+
+
+                // CHart skeleton
+                ////////////////////////////////////////////////////////////////////
 
                 var skeleton = '<svg class="chart"> \
                         <g class="chart-group"> \
@@ -93,6 +97,10 @@ micropolar.chart.RadialAxis = function module() {
                 var chartGroup = svg.select('.chart-group')
                     .attr('transform', 'translate(' + config.width / 2 + ',' + config.height / 2 + ')');
 
+
+                // Radial axis
+                ////////////////////////////////////////////////////////////////////
+
                 var radialAxis = svg.select('.radial.axis');
                 if(config.showRadialCircle){
                     var gridCircles = radialAxis.selectAll('circle.grid-circle')
@@ -113,18 +121,33 @@ micropolar.chart.RadialAxis = function module() {
                     var axis = d3.svg.axis()
                         .scale(radialScale)
                         .ticks(5)
+                        .tickSize(5);
                     var radialAxis = svg.select('.radial.axis').call(axis)  
                         .attr({transform: 'rotate('+ (config.radialAxisTheta) +')'});
                     radialAxis.selectAll('.domain').style(lineStyle);
                     radialAxis.selectAll('g>text')
-                    	.text(function(d, i){ return this.textContent + config.radialTicksSuffix; })
+                        .text(function(d, i){ return this.textContent + config.radialTicksSuffix; })
                     	.style(fontStyle)
+                        .style({
+                            'text-anchor': 'start'
+                        })
                     	.attr({
+                            x: 0,
+                            y: 0,
+                            dx: 0,
+                            dy: 0,
                     		transform: function(d, i){ 
-                    			return 'rotate(' + (-config.radialAxisTheta) + ') translate(' + [fontStyle['font-size'], -fontStyle['font-size']] + ')';
+                                if(config.radialTickOrientation === 'horizontal') return 'rotate(' + (-config.radialAxisTheta) + ') translate(' + [0, fontStyle['font-size']] + ')';
+                                else return 'translate(' + [0, fontStyle['font-size']] + ')';
                     		}
-                    	})
+                    	});
+                    radialAxis.selectAll('g>line')
+                        .style({stroke: 'black'});
                 }
+
+
+                // Angular axis
+                ////////////////////////////////////////////////////////////////////
  
                 var angularAxis = svg.select('.angular.axis')
                   .selectAll('g.angular-tick')
@@ -173,6 +196,23 @@ micropolar.chart.RadialAxis = function module() {
                     .style(fontStyle);
 
                 if (config.rewriteTicks) ticks.text(function(d, i){ return config.rewriteTicks(this.textContent, i); })
+
+
+                // Geometry
+                ////////////////////////////////////////////////////////////////////
+
+                var that = this;
+                config.geometry.forEach(function(d, i){ 
+                    d.config({
+                        axisConfig: config, 
+                        radialScale: radialScale, 
+                        angularScale: angularScale,
+                        containerSelector: that
+                    })();
+                });
+
+                // Hover guides
+                ////////////////////////////////////////////////////////////////////
 
                 //TODO: get this out
                 function getMousePos(){ 
@@ -225,42 +265,38 @@ micropolar._override = function(_objA, _objB){ for(x in _objA) if(x in _objB) _o
 micropolar._rndSnd = function(){
     return (Math.random()*2-1)+(Math.random()*2-1)+(Math.random()*2-1);
 };
-micropolar.chart.CircularBarChart = function module() {
+micropolar.BarChart = function module() {
     var config = {
-        axis: null,
         containerSelector: 'body',
         dotRadius: 5,
         fill: 'orange',
-        stroke: 'red'
+        stroke: 'red',
+        radialScale: null,
+        angularScale: null,
+        axisConfig: null
     };
     var dispatch = d3.dispatch('hover');
 
-     function exports(_datum) {
+     function exports() {
         d3.select(config.containerSelector)
-            .datum(_datum)
+            .datum(config.axisConfig.data)
             .each(function(_data, _index) {
 
-                config.axis.config({container: this})
-                config.axis(_datum);
-
-                radialScale = config.axis.radialScale();
-                angularScale = config.axis.angularScale();
-                axisConfig = config.axis.config();
-            
-                var geometryGroup = d3.select(this).select('svg g.geometry');
-
                 var markStyle = {fill: config.fill, stroke: config.stroke};
-
                 var barW = 12;
+
+                var geometryGroup = d3.select(this).select('svg g.geometry').classed('bar-chart', true);;
                 var geometry = geometryGroup.selectAll('rect.mark')
                     .data(_data);
                 geometry.enter().append('rect').attr({'class': 'mark'});
                 geometry.attr({
                         x: -barW/2,
-                        y: radialScale(0), 
+                        y: config.radialScale(0), 
                         width: barW, 
-                        height: function(d, i){ return radialScale(d[1]); }, 
-                        transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
+                        height: function(d, i){ 
+                            // console.log(d[1], ~~config.radialScale(d[1]), config.radialScale.domain(), config.radialScale.range());
+                            return config.radialScale(d[1]) - config.radialScale(0); }, 
+                        transform: function(d, i){ return 'rotate('+ (config.axisConfig.originTheta - 90 + (config.angularScale(d[0]))) +')'}
                     })
                 .style(markStyle);
 
@@ -274,38 +310,32 @@ micropolar.chart.CircularBarChart = function module() {
     d3.rebind(exports, dispatch, 'on');
     return exports;
 };
-micropolar.chart.Clock = function module() {
+micropolar.Clock = function module() {
     var config = {
-        axis: null,
         containerSelector: 'body',
         fill: 'orange',
-        stroke: 'red'
+        stroke: 'red',
+        radialScale: null,
+        angularScale: null,
+        axisConfig: null
     };
     var dispatch = d3.dispatch('hover');
 
-    function exports(_datum) {
-
+    function exports() {
         d3.select(config.containerSelector)
-            .datum(_datum)
+            .datum(config.axisConfig.data)
             .each(function(_data, _index) {
 
-                config.axis.config({containerSelector: this})
-                config.axis(_datum);
-
-                radialScale = config.axis.radialScale();
-                angularScale = config.axis.angularScale();
-                axisConfig = config.axis.config();
-
                 var triangleAngle = (360 / _data.length) * Math.PI / 180 / 2;
-                var radius = radialScale.range()[1];
+                var radius = config.radialScale.range()[1];
                 var handsHeight = [radius / 1.3, radius / 1.5, radius / 1.5];
                 var handsWidth = [radius / 15, radius / 10, radius / 30];
-                
-                var svg = d3.select(this).select('svg').classed('clock', true);
-                var geometryGroup =svg.select('g.geometry');
+
+                _data = [0, 4, 8]; // hardocded
+                config.angularScale.domain([0, 12]); // hardocded 
 
                 var markStyle = {fill: config.fill, stroke: config.stroke};
-
+                var geometryGroup = d3.select(this).select('svg g.geometry').classed('clock', true);;
                 var geometry = geometryGroup.selectAll('rect.mark')
                     .data(_data);
                 geometry.enter().append('rect').attr({'class': 'mark'});
@@ -314,7 +344,7 @@ micropolar.chart.Clock = function module() {
                     y: function(d, i){ return i==2 ? -radius/5 : 0 }, 
                     width: function(d, i){ return handsWidth[i]; }, 
                     height: function(d, i){ return handsHeight[i]; }, 
-                    transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d))) +')'}
+                    transform: function(d, i){ return 'rotate('+ (config.axisConfig.originTheta - 90 + (config.angularScale(d))) +')'}
                 })
                 .style(markStyle);
 
@@ -334,44 +364,35 @@ micropolar.chart.Clock = function module() {
     d3.rebind(exports, dispatch, 'on');
     return exports;
 };
-micropolar.chart.PolarAreaChart = function module() {
+micropolar.AreaChart = function module() {
     var config = {
-        axis: null,
         containerSelector: 'body',
         dotRadius: 5,
         fill: 'orange',
-        stroke: 'red'
+        stroke: 'red',
+        radialScale: null,
+        angularScale: null,
+        axisConfig: null
     };
     var dispatch = d3.dispatch('hover');
 
-    function exports(_datum) {
-
+    function exports() {
         d3.select(config.containerSelector)
-            .datum(_datum)
+            .datum(config.axisConfig.data)
             .each(function(_data, _index) {
 
-                config.axis.config({containerSelector: this})
-                config.axis(_datum);
-
-                radialScale = config.axis.radialScale();
-                angularScale = config.axis.angularScale();
-                axisConfig = config.axis.config();
-
                 var triangleAngle = (360 / _data.length) * Math.PI / 180 / 2;
-                
-                var geometryGroup = d3.select(this).select('svg g.geometry');
-
                 var markStyle = {fill: config.fill, stroke: config.stroke};
-
+                var geometryGroup = d3.select(this).select('svg g.geometry').classed('area-chart', true);;
                 var geometry = geometryGroup.selectAll('path.mark')
                     .data(_data);
                 geometry.enter().append('path').attr({'class': 'mark'});
                 geometry.attr({
                     d: function(d, i){ 
-                        var h = radialScale(d[1]); 
+                        var h = config.radialScale(d[1]); 
                         var baseW = Math.tan(triangleAngle) * h;
                         return 'M'+[[0, 0], [h, baseW], [h, -baseW]].join('L')+'Z' },
-                    transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(i))) +')'}
+                    transform: function(d, i){ return 'rotate('+ (config.axisConfig.originTheta - 90 + (config.angularScale(i))) +')'}
                     // transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
                 })
                 .style(markStyle);
@@ -386,39 +407,32 @@ micropolar.chart.PolarAreaChart = function module() {
     d3.rebind(exports, dispatch, 'on');
     return exports;
 };
-micropolar.chart.RadialDotPlot = function module() {
+micropolar.DotPlot = function module() {
     var config = {
-        axis: null,
         containerSelector: 'body',
-        dotRadius: 5,
+        dotRadius: 3,
         fill: 'orange',
-        stroke: 'red'
+        stroke: 'red',
+        radialScale: null,
+        angularScale: null,
+        axisConfig: null
     };
     var dispatch = d3.dispatch('hover');
 
-    function exports(_datum) {
+    function exports() {
         d3.select(config.containerSelector)
-            .datum(_datum)
+            .datum(config.axisConfig.data)
             .each(function(_data, _index) {
 
-                config.axis.config({container: this})
-                config.axis(_datum);
-
-                radialScale = config.axis.radialScale();
-                angularScale = config.axis.angularScale();
-                axisConfig = config.axis.config();
-
-                var geometryGroup = d3.select(this).select('svg g.geometry');
-
                 var markStyle = {fill: config.fill, stroke: config.stroke};
-
+                var geometryGroup = d3.select(this).select('svg g.geometry').classed('dot-plot', true);;
                 var geometry = geometryGroup.selectAll('circle.mark')
                     .data(_data);
                 geometry.enter().append('circle').attr({'class': 'mark'});
                 geometry.attr({
-                    cy: function(d, i){ return radialScale(d[1]); }, 
+                    cy: function(d, i){ return config.radialScale(d[1]); }, 
                     r: config.dotRadius, 
-                    transform: function(d, i){ return 'rotate('+ (axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
+                    transform: function(d, i){ return 'rotate('+ (config.axisConfig.originTheta - 90 + (config.angularScale(d[0]))) +')'}
                 })
                 .style(markStyle);
 
@@ -432,35 +446,28 @@ micropolar.chart.RadialDotPlot = function module() {
     d3.rebind(exports, dispatch, 'on');
     return exports;
 };
-micropolar.chart.RadialLinePlot = function module() {
+micropolar.LinePlot = function module() {
     var config = {
-        axis: null,
         containerSelector: 'body',
         lineStrokeSize: 2,
-        stroke: 'orange'
+        stroke: 'orange',
+        radialScale: null,
+        angularScale: null,
+        axisConfig: null
     };
     var dispatch = d3.dispatch('hover');
 
-    function exports(_datum) {
+    function exports() {
         d3.select(config.containerSelector)
-            .datum(_datum)
+            .datum(config.axisConfig.data)
             .each(function(_data, _index) {
 
-                config.axis.config({containerSelector: this})
-                config.axis(_datum);
-
-                radialScale = config.axis.radialScale();
-                angularScale = config.axis.angularScale();
-                axisConfig = config.axis.config();
-
                 var line = d3.svg.line.radial()
-                    .radius(function(d) { return radialScale(d[1]); })
-                    .angle(function(d) { return d[0] * Math.PI / 180 * (axisConfig.flip?1:-1); });
-                
-                var geometryGroup = d3.select(this).select('svg g.geometry').classed('polar-area', true);
+                    .radius(function(d) { return config.radialScale(d[1]); })
+                    .angle(function(d) { return config.angularScale(d[0]) * Math.PI / 180 * (config.axisConfig.flip?1:-1); });
 
                 var markStyle = {fill: 'none', 'stroke-width': config.lineStrokeSize, stroke: config.stroke, 'pointer-events': 'stroke'};
-
+                var geometryGroup = d3.select(this).select('svg g.geometry').classed('line-plot', true);
                 var geometry = geometryGroup.selectAll('path.mark')
                     .data([0]);
                 geometry.enter().append('path').attr({'class': 'mark'});
@@ -469,7 +476,7 @@ micropolar.chart.RadialLinePlot = function module() {
                     .datum(_data)
                     .attr({
                         d: line, 
-                        transform: 'rotate('+(axisConfig.originTheta + 90)+')',
+                        transform: 'rotate('+(config.axisConfig.originTheta + 90)+')',
                         'stroke-width': config.lineStrokeSize + 'px'
                 })
                 .style(markStyle);
@@ -490,28 +497,28 @@ function linePlot(_config){
         _config.width = _config.height = _config.size;
     }
 
+    var polarPlot = micropolar.LinePlot();
+
     var config = {
+        geometry: [polarPlot],
         data: d3.range(0, 721, 1).map(function(deg, index){ return [deg, index/720*2]; }),
         height: 250, 
         width: 250, 
-        angularDomain: [0, 360, 45], 
+        angularDomain: [0, 360],
+        additionalAngularEndTick: false,
+        angularTicksStep: 30,
+        angularTicksSuffix: 'º',
+        minorTicks: 1,
         flip: false,
         originTheta: 0,
         radialAxisTheta: -30,
-        angularTicksSuffix: 'º',
         containerSelector: 'body'
     };
 
     micropolar._override(_config, config);
 
-    var radialAxis = micropolar.chart.RadialAxis().config(config);
-
-    var radialLinePlot = micropolar.chart.RadialLinePlot()
-        .config({
-            axis: radialAxis, 
-            containerSelector: config.containerSelector // TODO: grab it from the axis by default
-        });
-    radialLinePlot(config.data);
+    var polarAxis = micropolar.Axis().config(config);
+    polarAxis();
 }
 
 function dotPlot(_config){
@@ -520,32 +527,30 @@ function dotPlot(_config){
         _config.width = _config.height = _config.size;
     }
 
+    var polarPlot = micropolar.DotPlot();
+
     var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
+        geometry: [polarPlot],
         data: d3.range(0, 100).map(function(deg, index){ 
             return [~~(scaleRandom(micropolar._rndSnd()) * 1000), ~~(scaleRandom(micropolar._rndSnd()) * 100)]; 
         }),
         height: 250, 
         width: 250, 
-        angularDomain: [0, 1000, 50], 
+        angularDomain: [0, 1000],
+        additionalAngularEndTick: false,
+        angularTicksStep: 100,
+        minorTicks: 1,
         flip: false,
         originTheta: 0,
-        radialAxisTheta: 0,
-        minorTicks: 1,
+        radialAxisTheta: -15,
         containerSelector: 'body'
     };
 
     micropolar._override(_config, config);
 
-    var radialAxis = micropolar.chart.RadialAxis().config(config);
-
-    var radialDotPlot = micropolar.chart.RadialDotPlot()
-        .config({
-            axis: radialAxis, 
-            containerSelector: config.containerSelector, 
-            dotRadius: 3
-        });
-    radialDotPlot(config.data);
+    var polarAxis = micropolar.Axis().config(config);
+    polarAxis();
 }
 
 function barChart(_config){
@@ -554,30 +559,30 @@ function barChart(_config){
         _config.width = _config.height = _config.size;
     }
 
+    var polarPlot = micropolar.BarChart();
+
+    var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
+        geometry: [polarPlot],
         data: d3.range(0, 20).map(function(deg, index){
-          return [deg * 50 + 50, ~~(Math.random() * index * 5 - 15)];
+          return [deg * 50, Math.ceil(Math.random() * (index+1) * 5)];
         }),
         height: 250, 
         width: 250, 
-        radialDomain: [-40, 100], 
-        angularDomain: [0, 1000, 50], 
+        radialDomain: [-60, 100], 
+        angularDomain: [0, 1000],
+        angularTicksStep: 50,
+        minorTicks: 1,
         flip: true,
         originTheta: 0,
-        radialAxisTheta: 0,
+        radialAxisTheta: -10,
         containerSelector: 'body'
     };
 
     micropolar._override(_config, config);
 
-    var radialAxis = micropolar.chart.RadialAxis().config(config);
-
-    var circularBarChart = micropolar.chart.CircularBarChart()
-        .config({
-            axis: radialAxis, 
-            containerSelector: config.containerSelector
-        });
-    circularBarChart(config.data);
+    var polarAxis = micropolar.Axis().config(config);
+    polarAxis();
 }
 
 function areaChart(_config){
@@ -586,32 +591,31 @@ function areaChart(_config){
         _config.width = _config.height = _config.size;
     }
 
+    var polarPlot = micropolar.AreaChart();
+
+    var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
+        geometry: [polarPlot],
         data: d3.range(0, 12).map(function(deg, index){
           return [deg * 50 + 50, ~~(Math.random() * 10 + 5)];
         }),
-        height: 500, 
+        height: 250, 
         width: 250, 
         radialDomain: [0, 20], 
         angularDomain: ['North', 'East', 'South', 'West'], 
+        additionalAngularEndTick: false,
+        minorTicks: 2,
         flip: true,
         originTheta: -90,
         radialAxisTheta: -30,
-        minorTicks: 2,
         radialTicksSuffix: '%',
         containerSelector: 'body'
     };
 
     micropolar._override(_config, config);
 
-    var radialAxis = micropolar.chart.RadialAxis().config(config);
-
-    var polarAreaChart = micropolar.chart.PolarAreaChart()
-        .config({
-            axis: radialAxis, 
-            containerSelector: config.containerSelector
-        });
-    polarAreaChart(config.data);
+    var polarAxis = micropolar.Axis().config(config);
+    polarAxis();
 }
 
 function clock(_config){
@@ -620,34 +624,35 @@ function clock(_config){
         _config.width = _config.height = _config.size;
     }
 
+    var polarPlot = micropolar.Clock();
+
+    var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
-        data: [0, 4, 8],
+        geometry: [polarPlot],
+        data: [12, 4, 8],
         height: 250, 
         width: 250, 
-        labelOffset: -15,
-        angularDomain: [0, 12], 
+        angularDomain: [0, 12],
+        additionalAngularEndTick: false,
+        minorTicks: 9,
         flip: true,
         originTheta: -90,
-        radialAxisTheta: -30,
-        minorTicks: 9,
         showRadialAxis: false,
         showRadialCircle: false,
         rewriteTicks: function(d, i){ return (d === '0')? '12': d; },
-        tickOrientation: 'horizontal',
+        labelOffset: -15,
         tickLength: 5,
         containerSelector: 'body'
     };
 
     micropolar._override(_config, config);
 
-    var radialAxis = micropolar.chart.RadialAxis().config(config);
-
-    var clock = micropolar.chart.Clock().config({axis: radialAxis, containerSelector: config.containerSelector});
-    clock(config.data);
+    var polarAxis = micropolar.Axis().config(config);
+    polarAxis();
 }
 
 
-micropolar.factory = {
+micropolar.preset = {
     linePlot: linePlot,
     dotPlot: dotPlot,
     barChart: barChart,
