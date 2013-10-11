@@ -24,19 +24,49 @@
 
 <script>
 
-    var polarPlot = micropolar.LinePlot();
+    var linePlot1 = micropolar.LinePlot().config({stroke: 'peru'});
+    var linePlot2 = micropolar.LinePlot().config({stroke: 'darkviolet'});
+    var linePlot3 = micropolar.LinePlot().config({stroke: 'deepskyblue'});
+    var linePlot4 = micropolar.LinePlot().config({stroke: 'orangered'});
+    var linePlot5 = micropolar.LinePlot().config({stroke: 'green'});
+
+    var data1 = d3.range(0, 360, 1).map(function(deg, index){
+            var theta = deg * Math.PI / 180;
+            var radius = Math.abs(Math.cos(theta));
+            return [deg, radius];
+        });
+
+    var data2 = d3.range(0, 360, 1).map(function(deg, index){
+            var theta = deg * Math.PI / 180;
+            var radius = Math.abs(0.5 + 0.5 * Math.cos(theta));
+            return [deg, radius];
+        });
+
+    var data3 = d3.range(0, 360, 1).map(function(deg, index){
+            var theta = deg * Math.PI / 180;
+            var radius = Math.abs(0.25 + 0.75 * Math.cos(theta));
+            return [deg, radius];
+        });
+
+    var data4 = d3.range(0, 360, 1).map(function(deg, index){
+            var theta = deg * Math.PI / 180;
+            var radius = Math.abs(0.7 + 0.3 * Math.cos(theta));
+            return [deg, radius];
+        });
+
+    var data5 = d3.range(0, 360, 1).map(function(deg, index){
+            var theta = deg * Math.PI / 180;
+            var radius = Math.abs(0.37 + 0.63 * Math.cos(theta));
+            return [deg, radius];
+        });
 
     var config = {
-        geometry: [polarPlot],
-        data: d3.range(0, 365, 5).map(function(deg, index){
-            var a = 25;
-            var radius = a * (Math.cos(deg * Math.PI / 180));
-            return [deg, (radius - 25 ) / 2];
-        }),
+        geometry: [linePlot1, linePlot2, linePlot3, linePlot4, linePlot5],
+        data: [data1, data2, data3, data4, data5],
         height: 300, 
         width: 300, 
         additionalAngularEndTick: false,
-        angularTicksStep: 20,
+        angularTicksStep: 30,
         angularTicksSuffix: 'º',
         minorTicks: 1,
         flip: true,
@@ -48,9 +78,6 @@
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
-
-
-
 
     var data = [
             [ "Apr 1854", 1.4, "Disease"],
@@ -95,13 +122,12 @@
 
     var config = {
         data: data,
-        geometry: [polarPlot],
+        geometry: polarPlot,
         containerSelector: '#container2',
         width: 300,
         height: 300,
         flip: true,
         additionalAngularEndTick: false,
-        data: data,
         originTheta: -90,
         radialAxisTheta: -30,
         radialDomain: [0, 1174],

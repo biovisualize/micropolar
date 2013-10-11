@@ -1,5 +1,6 @@
 micropolar.AreaChart = function module() {
     var config = {
+        data: null,
         containerSelector: 'body',
         dotRadius: 5,
         fill: 'orange',
@@ -11,13 +12,14 @@ micropolar.AreaChart = function module() {
     var dispatch = d3.dispatch('hover');
 
     function exports() {
-        d3.select(config.containerSelector)
-            .datum(config.axisConfig.data)
+        var container = config.containerSelector;
+        if (typeof container == 'string') container = d3.select(container);
+        container.datum(config.data)
             .each(function(_data, _index) {
 
                 var triangleAngle = (360 / _data.length) * Math.PI / 180 / 2;
                 var markStyle = {fill: config.fill, stroke: config.stroke};
-                var geometryGroup = d3.select(this).select('svg g.geometry').classed('area-chart', true);;
+                var geometryGroup = d3.select(this).classed('area-chart', true);
                 var geometry = geometryGroup.selectAll('path.mark')
                     .data(_data);
                 geometry.enter().append('path').attr({'class': 'mark'});

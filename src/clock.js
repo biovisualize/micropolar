@@ -1,5 +1,6 @@
 micropolar.Clock = function module() {
     var config = {
+        data: null,
         containerSelector: 'body',
         fill: 'orange',
         stroke: 'red',
@@ -10,8 +11,9 @@ micropolar.Clock = function module() {
     var dispatch = d3.dispatch('hover');
 
     function exports() {
-        d3.select(config.containerSelector)
-            .datum(config.axisConfig.data)
+        var container = config.containerSelector;
+        if (typeof container == 'string') container = d3.select(container);
+        container.datum(config.data)
             .each(function(_data, _index) {
 
                 var radius = config.radialScale.range()[1];
@@ -22,7 +24,7 @@ micropolar.Clock = function module() {
                 config.angularScale.domain([0, 12]); // hardocded 
 
                 var markStyle = {fill: config.fill, stroke: config.stroke};
-                var geometryGroup = d3.select(this).select('svg g.geometry').classed('clock', true);;
+                var geometryGroup = d3.select(this).classed('clock', true);
                 var geometry = geometryGroup.selectAll('rect.mark')
                     .data(_data);
                 geometry.enter().append('rect').attr({'class': 'mark'});

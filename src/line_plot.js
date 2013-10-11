@@ -1,5 +1,6 @@
 micropolar.LinePlot = function module() {
     var config = {
+        data: null,
         containerSelector: 'body',
         lineStrokeSize: 2,
         stroke: 'orange',
@@ -10,8 +11,9 @@ micropolar.LinePlot = function module() {
     var dispatch = d3.dispatch('hover');
 
     function exports() {
-        d3.select(config.containerSelector)
-            .datum(config.axisConfig.data)
+        var container = config.containerSelector;
+        if (typeof container == 'string') container = d3.select(container);
+        container.datum(config.data)
             .each(function(_data, _index) {
 
                 var line = d3.svg.line.radial()
@@ -19,7 +21,7 @@ micropolar.LinePlot = function module() {
                     .angle(function(d) { return config.angularScale(d[0]) * Math.PI / 180 * (config.axisConfig.flip?1:-1); });
 
                 var markStyle = {fill: 'none', 'stroke-width': config.lineStrokeSize, stroke: config.stroke, 'pointer-events': 'stroke'};
-                var geometryGroup = d3.select(this).select('svg g.geometry').classed('line-plot', true);
+                var geometryGroup = d3.select(this).classed('line-plot', true);
                 var geometry = geometryGroup.selectAll('path.mark')
                     .data([0]);
                 geometry.enter().append('path').attr({'class': 'mark'});

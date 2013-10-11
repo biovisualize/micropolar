@@ -1,4 +1,6 @@
-function linePlot(_config){
+micropolar.preset = {};
+
+micropolar.preset.linePlot = function(_config){
 
     if(_config && _config.size){
         _config.width = _config.height = _config.size;
@@ -7,7 +9,7 @@ function linePlot(_config){
     var polarPlot = micropolar.LinePlot();
 
     var config = {
-        geometry: [polarPlot],
+        geometry: polarPlot,
         data: d3.range(0, 721, 1).map(function(deg, index){ return [deg, index/720*2]; }),
         height: 250, 
         width: 250, 
@@ -26,9 +28,9 @@ function linePlot(_config){
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
-}
+};
 
-function dotPlot(_config){
+micropolar.preset.dotPlot = function(_config){
 
     if(_config && _config.size){
         _config.width = _config.height = _config.size;
@@ -38,7 +40,7 @@ function dotPlot(_config){
 
     var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
-        geometry: [polarPlot],
+        geometry: polarPlot,
         data: d3.range(0, 100).map(function(deg, index){ 
             return [~~(scaleRandom(micropolar._rndSnd()) * 1000), ~~(scaleRandom(micropolar._rndSnd()) * 100)]; 
         }),
@@ -58,9 +60,9 @@ function dotPlot(_config){
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
-}
+};
 
-function barChart(_config){
+micropolar.preset.barChart = function(_config){
 
     if(_config && _config.size){
         _config.width = _config.height = _config.size;
@@ -69,7 +71,7 @@ function barChart(_config){
     var polarPlot = micropolar.BarChart();
 
     var config = {
-        geometry: [polarPlot],
+        geometry: polarPlot,
         data: d3.range(0, 20).map(function(deg, index){
           return [deg * 50, Math.ceil(Math.random() * (index+1) * 5)];
         }),
@@ -89,9 +91,9 @@ function barChart(_config){
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
-}
+};
 
-function areaChart(_config){
+micropolar.preset.areaChart = function(_config){
 
 	if(_config && _config.size){
         _config.width = _config.height = _config.size;
@@ -100,7 +102,7 @@ function areaChart(_config){
     var polarPlot = micropolar.AreaChart();
 
     var config = {
-        geometry: [polarPlot],
+        geometry: polarPlot,
         data: d3.range(0, 12).map(function(deg, index){
           return [deg * 50 + 50, ~~(Math.random() * 10 + 5)];
         }),
@@ -121,9 +123,9 @@ function areaChart(_config){
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
-}
+};
 
-function clock(_config){
+micropolar.preset.clock = function(_config){
 
 	if(_config && _config.size){
         _config.width = _config.height = _config.size;
@@ -132,7 +134,7 @@ function clock(_config){
     var polarPlot = micropolar.Clock();
 
     var config = {
-        geometry: [polarPlot],
+        geometry: polarPlot,
         data: [12, 4, 8],
         height: 250, 
         width: 250, 
@@ -153,13 +155,4 @@ function clock(_config){
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
-}
-
-
-micropolar.preset = {
-    linePlot: linePlot,
-    dotPlot: dotPlot,
-    barChart: barChart,
-    areaChart: areaChart,
-    clock: clock
- };
+};

@@ -1,5 +1,6 @@
 micropolar.BarChart = function module() {
     var config = {
+        data: null,
         containerSelector: 'body',
         dotRadius: 5,
         fill: 'orange',
@@ -11,14 +12,15 @@ micropolar.BarChart = function module() {
     var dispatch = d3.dispatch('hover');
 
      function exports() {
-        d3.select(config.containerSelector)
-            .datum(config.axisConfig.data)
+        var container = config.containerSelector;
+        if (typeof container == 'string') container = d3.select(container);
+        container.datum(config.data)
             .each(function(_data, _index) {
 
                 var markStyle = {fill: config.fill, stroke: config.stroke};
                 var barW = 12;
 
-                var geometryGroup = d3.select(this).select('svg g.geometry').classed('bar-chart', true);;
+                var geometryGroup = d3.select(this).classed('bar-chart', true);
                 var geometry = geometryGroup.selectAll('rect.mark')
                     .data(_data);
                 geometry.enter().append('rect').attr({'class': 'mark'});

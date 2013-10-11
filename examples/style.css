@@ -1,4 +1,4 @@
-.axis text{
+.axis-group text{
     font: 10px sans-serif;
     text-shadow:
     -1px 0px 0 #fff,
@@ -10,7 +10,7 @@ svg.clock text{
     font: 15px sans-serif !important;
     fill: grey;
 }
-.axis line.minor,
+.axis-group line.minor,
 circle.outside-circle{
 	stroke-dasharray: none;
 }
