@@ -35,7 +35,7 @@ micropolar.LinePlot = function module() {
                 })
                 .style(markStyle);
 
-        });
+            });
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;

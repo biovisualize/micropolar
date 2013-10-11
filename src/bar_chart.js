@@ -11,7 +11,7 @@ micropolar.BarChart = function module() {
     };
     var dispatch = d3.dispatch('hover');
 
-     function exports() {
+    function exports() {
         var container = config.containerSelector;
         if (typeof container == 'string') container = d3.select(container);
         container.datum(config.data)
