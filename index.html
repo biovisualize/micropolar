@@ -18,6 +18,14 @@
         ga('create', 'UA-38721366-2', 'micropolar.org');
         ga('send', 'pageview');
     </script>
+    <style>
+        #mic-pattern iframe, #nightingale iframe{
+            height:400px !important;
+        }
+        h2{
+            margin-top: 30px;
+        }
+    </style>
 </head>
 <body>
 
@@ -31,16 +39,37 @@
         <a href="https://github.com/biovisualize/micropolar/">GitHub</a>
     </div>
 
+    <hr />
+    <h1>Default charts</h1>
     <div class="example-container"></div>
+    <hr />
+    <h1>Usage examples</h1>
+    <div class="advanced-example-container">
+        <h2>Multi line plot: microphone patterns</h2>
+        <div id="mic-pattern">
+        <a class="jsbin-embed" href="http://jsbin.com/eHufOvE/10/embed?js,output">JS Bin</a>
+        </div>
+        <h2>Stacked area chart: nightingale chart</h2>
+        <div id="nightingale">
+        <a class="jsbin-embed" href="http://jsbin.com/UtiDoDO/2/embed?js,output"></a>
+        </div>
+    </div>
+    <br />
+    <hr />
+    by Christophe Viau, GitHub: Biovisualize, Twitter: @d3visualization
 </div>
 
 <script>
 var container = d3.select('.example-container');
-for(chart in micropolar.factory){
+
+for(chart in micropolar.preset){
     container.append('div').classed(chart, true);
-    micropolar.factory[chart]({containerSelector: '.' + chart});
+    micropolar.preset[chart]({containerSelector: '.' + chart});
 }
+
 </script>
+
+<script src="http://static.jsbin.com/js/embed.js"></script>
 
 </body>
 </html>
