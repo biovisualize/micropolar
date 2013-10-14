@@ -1,10 +1,4 @@
-micropolar = {version: '0.1.0'};
-
-/*
-TODO:
--better evaluation of number of radial and angular ticks
--move hover guides to a plugin
-*/
+micropolar = {version: '0.1.1'};
 
 micropolar.Axis = function module() {
     var config = {

@@ -30,35 +30,21 @@
     var linePlot4 = micropolar.LinePlot().config({stroke: 'orangered'});
     var linePlot5 = micropolar.LinePlot().config({stroke: 'green'});
 
-    var data1 = d3.range(0, 360, 1).map(function(deg, index){
+    function generateData(equation){
+        var step = 6;
+        var data = d3.range(0, 360 + step, step).map(function(deg, index){
             var theta = deg * Math.PI / 180;
-            var radius = Math.abs(Math.cos(theta));
+            var radius = equation(theta);
             return [deg, radius];
         });
+        return data;
+    }
 
-    var data2 = d3.range(0, 360, 1).map(function(deg, index){
-            var theta = deg * Math.PI / 180;
-            var radius = Math.abs(0.5 + 0.5 * Math.cos(theta));
-            return [deg, radius];
-        });
-
-    var data3 = d3.range(0, 360, 1).map(function(deg, index){
-            var theta = deg * Math.PI / 180;
-            var radius = Math.abs(0.25 + 0.75 * Math.cos(theta));
-            return [deg, radius];
-        });
-
-    var data4 = d3.range(0, 360, 1).map(function(deg, index){
-            var theta = deg * Math.PI / 180;
-            var radius = Math.abs(0.7 + 0.3 * Math.cos(theta));
-            return [deg, radius];
-        });
-
-    var data5 = d3.range(0, 360, 1).map(function(deg, index){
-            var theta = deg * Math.PI / 180;
-            var radius = Math.abs(0.37 + 0.63 * Math.cos(theta));
-            return [deg, radius];
-        });
+    var data1 = generateData(function(theta){ return Math.abs(Math.cos(theta)); });
+    var data2 = generateData(function(theta){ return Math.abs(0.5 + 0.5 * Math.cos(theta)); });
+    var data3 = generateData(function(theta){ return Math.abs(0.25 + 0.75 * Math.cos(theta)); });
+    var data4 = generateData(function(theta){ return Math.abs(0.7 + 0.3 * Math.cos(theta)); });
+    var data5 = generateData(function(theta){ return Math.abs(0.37 + 0.63 * Math.cos(theta)); });
 
     var config = {
         geometry: [linePlot1, linePlot2, linePlot3, linePlot4, linePlot5],
