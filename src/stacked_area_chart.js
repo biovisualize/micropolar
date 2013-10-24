@@ -44,7 +44,7 @@ micropolar.StackedAreaChart = function module() {
                             var startW = Math.tan(triangleAngle) * startH;
                             return 'M' + [[startH, startW], [h, baseW], [h, -baseW], [startH, -startW]].join('L') + 'Z'
                         },
-                        transform: function (d, i) { return 'rotate(' + (config.axisConfig.originTheta - 90 + (config.angularScale(i))) + ')' }
+                        transform: function (d, i) { return 'rotate(' + (config.axisConfig.originTheta - 90 + (config.angularScale(d[0]))) + ')' }
                     })
                     .style(markStyle);
 

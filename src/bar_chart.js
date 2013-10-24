@@ -17,6 +17,9 @@ micropolar.BarChart = function module() {
         container.datum(config.data)
             .each(function(_data, _index) {
 
+                var domain = config.angularScale.domain();
+                var angularScale = config.angularScale.copy().domain([domain[0], domain[1] + _data[1][0] - _data[0][0]]);
+
                 var markStyle = {fill: config.fill, stroke: config.stroke};
                 var barW = 12;
 
@@ -29,9 +32,8 @@ micropolar.BarChart = function module() {
                         y: config.radialScale(0), 
                         width: barW, 
                         height: function(d, i){ 
-                            // console.log(d[1], ~~config.radialScale(d[1]), config.radialScale.domain(), config.radialScale.range());
                             return config.radialScale(d[1]) - config.radialScale(0); }, 
-                        transform: function(d, i){ return 'rotate('+ (config.axisConfig.originTheta - 90 + (config.angularScale(d[0]))) +')'}
+                        transform: function(d, i){ return 'rotate('+ (config.axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
                     })
                 .style(markStyle);
 

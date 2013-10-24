@@ -51,7 +51,6 @@
         data: [data1, data2, data3, data4, data5],
         height: 300, 
         width: 300, 
-        additionalAngularEndTick: false,
         angularTicksStep: 30,
         angularTicksSuffix: 'º',
         minorTicks: 1,
@@ -107,18 +106,16 @@
     var polarPlot = micropolar.StackedAreaChart();
 
     var config = {
-        data: data,
+        data: data.map(function(d, i){ return [i%12, d[1], d[2]]; }),
         geometry: polarPlot,
         containerSelector: '#container2',
         width: 300,
         height: 300,
         flip: true,
-        additionalAngularEndTick: false,
         originTheta: -90,
         radialAxisTheta: -30,
         radialDomain: [0, 1174],
-        margin: 35,
-        angularDomain: ["Apr 1854", "May 1854", "Jun 1854", "Jul 1854", "Aug 1854", "Sep 1854", "Oct 1854", "Nov 1854", "Dec 1854", "Jan 1855", "Feb 1855", "Mar 1855"]
+        margin: 35
     };
 
 

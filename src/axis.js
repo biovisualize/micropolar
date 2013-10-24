@@ -3,19 +3,20 @@ micropolar = {version: '0.1.1'};
 micropolar.Axis = function module() {
     var config = {
         geometry: [],
-        data: [],
+        data: [[0, 0], [0, 0]],
         height: 500,
         width: 500,
         radialDomain: null,
         angularDomain: null,
-        angularTicksStep: 1,
+        angularTicksStep: null,
+        angularTicksCount: 4,
         flip: true,
         originTheta: 0,
         labelOffset: 10,
         radialAxisTheta: -45,
+        ticks: null,
         radialTicksSuffix: '',
         angularTicksSuffix: '',
-        hideFirstTick: true,
         angularTicks: null,
         showRadialAxis: true,
         showRadialCircle: true,
@@ -26,9 +27,9 @@ micropolar.Axis = function module() {
         radialTickOrientation: 'horizontal', // 'angular', 'horizontal'
         containerSelector: 'body',
         margin: 25,
-        additionalAngularEndTick: true
+        backgroundColor: 'none'
     };
-    var dispatch = d3.dispatch('hover'),
+    var svg, dispatch = d3.dispatch('hover'),
     	radialScale, angularScale;
 
     function exports(){
@@ -53,26 +54,23 @@ micropolar.Axis = function module() {
 
                 var angularExtent = d3.extent(_data[0].map(function(d, i){ return d[0]; }));
                	var angularDomain = config.angularDomain || angularExtent;
-               	var angularScaleIsOrdinal = typeof angularDomain[0] == 'string';
-                if(!angularScaleIsOrdinal){
-                    if(!angularDomain[2]) angularDomain[2] = config.angularTicksStep;
-                    angularDomain[2] /= (config.minorTicks + 1);
-                }
-                else angularDomain = [0, angularDomain.length * (config.minorTicks + 1)];
-                if(config.additionalAngularEndTick) angularDomain[1] += 1;
+                if(!config.angularTicksStep) config.angularTicksStep = (angularDomain[1] - angularDomain[0]) / config.angularTicksCount;
+                if(!angularDomain[2]) angularDomain[2] = config.angularTicksStep;
+                angularDomain[2] /= (config.minorTicks + 1);
+
                 var angularAxisRange = d3.range.apply(this, angularDomain);
                 // Workaround for rounding errors
-                if(!angularScaleIsOrdinal) angularAxisRange = angularAxisRange.map(function(d, i){ return parseFloat(d.toPrecision(12)) });
+                angularAxisRange = angularAxisRange.map(function(d, i){ return parseFloat(d.toPrecision(12)) });
 
                 angularScale = d3.scale.linear()
                     .domain(angularDomain.slice(0, 2))
                     .range(config.flip? [0, 360] : [360, 0]);
 
 
-                // CHart skeleton
+                // Chart skeleton
                 ////////////////////////////////////////////////////////////////////
 
-                var skeleton = '<svg class="chart-root"> \
+                var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root"> \
                         <g class="chart-group"> \
                             <circle class="background-circle"></circle> \
                             <g class="angular axis-group"></g> \
@@ -84,18 +82,16 @@ micropolar.Axis = function module() {
                         </g> \
                     </svg>';
 
+                if(typeof svg === 'undefined'){
+                    var doc = new DOMParser().parseFromString(skeleton, 'application/xml');
+                    this.appendChild(this.ownerDocument.importNode(doc.documentElement, true));
+                    svg = d3.select(this).select('svg');
+                }
+
+
                 var lineStyle = {fill: 'none', stroke: 'silver'};
                 var fontStyle = {'font-size': 11, 'font-family': 'Tahoma, sans-serif'};
 
-                var container = d3.select(this)
-                    .selectAll('div.chart-container')
-                    .data([0]);
-                container.enter()
-                    .append('div')
-                    .classed('chart-container', true)
-                    .html(skeleton);
-                
-                var svg = container.select('svg');
                 svg.attr({width: config.width, height: config.height})
                     .style({'pointer-events': 'none'});
 
@@ -118,9 +114,10 @@ micropolar.Axis = function module() {
                 }
 
                 radialAxis.select('circle.outside-circle').attr({r: radius}).style(lineStyle);
-                svg.select('circle.background-circle').attr({r: radius}).style(lineStyle);
+                svg.select('circle.background-circle').attr({r: radius})
+                    .style({fill: config.backgroundColor, stroke: lineStyle.stroke});
 
-                var currentAngle = function(d, i){ return (angularScale(angularScaleIsOrdinal? i : d) + config.originTheta) % 360; };
+                var currentAngle = function(d, i){ return (angularScale(d) + config.originTheta) % 360; };
 
                 if(config.showRadialAxis){
                     var axis = d3.svg.axis()
@@ -169,19 +166,17 @@ micropolar.Axis = function module() {
                     .classed('major', function(d, i){ return (i % (config.minorTicks+1) == 0) })
                     .classed('minor', function(d, i){ return !(i % (config.minorTicks+1) == 0) })
                     .style(lineStyle);
-                angularAxisEnter.selectAll('.minor').style({stroke: '#eee'})
-
-                angularAxisEnter.append('text')
-                    .attr({'class': 'axis-text'})
-                    .style(fontStyle);
-
-                svg.selectAll('line.grid-line')
+                angularAxisEnter.selectAll  ('.minor').style({stroke: '#eee'});
+                angularAxis.select('line.grid-line')
                     .attr({
                         x1: config.tickLength ? radius - config.tickLength : 0,
                         x2: radius
                     });
 
-                var ticks = svg.selectAll('text.axis-text')
+                angularAxisEnter.append('text')
+                    .attr({'class': 'axis-text'})
+                    .style(fontStyle);
+                var ticks = angularAxis.select('text.axis-text')
                     .attr({
                         x: radius + config.labelOffset,
                         dy: '.35em',
@@ -195,9 +190,10 @@ micropolar.Axis = function module() {
                         }
                     })
                     .style({'text-anchor': 'middle' })
-                    .text(function(d, i) { 
-                        if(angularScaleIsOrdinal) return (i % (config.minorTicks + 1) == 0)? config.angularDomain[i / (config.minorTicks+1)] + config.angularTicksSuffix : '';
-                        else return (i % (config.minorTicks + 1) == 0)? d + config.angularTicksSuffix : '';
+                    .text(function(d, i) {
+                        if(i % (config.minorTicks + 1) != 0) return '';
+                        if(config.ticks) return config.ticks[i / (config.minorTicks + 1)] + config.angularTicksSuffix;
+                        else return d + config.angularTicksSuffix;
                     })
                     .style(fontStyle);
 
@@ -257,7 +253,12 @@ micropolar.Axis = function module() {
                         guides.select('circle').style({opacity: 0}); 
                     });
 
+                svg.selectAll('.geometry-group .mark').on('mouseenter.tooltip', function(d, i){
+                    console.log(d);
+                });
+
             });
+        return exports;
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
