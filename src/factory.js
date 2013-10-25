@@ -11,7 +11,7 @@ micropolar.preset.linePlot = function(_config){
     var config = {
         geometry: polarPlot,
         data: d3.range(0, 721, 1).map(function(deg, index){ return [deg, index/720*2]; }),
-        height: 250, 
+        height: 250,
         width: 250, 
         angularDomain: [0, 360],
         angularTicksStep: 30,
@@ -23,7 +23,7 @@ micropolar.preset.linePlot = function(_config){
         containerSelector: 'body'
     };
 
-    micropolar._override(_config, config);
+    micropolar._extend(_config, config);
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
@@ -54,7 +54,7 @@ micropolar.preset.dotPlot = function(_config){
         containerSelector: 'body'
     };
 
-    micropolar._override(_config, config);
+    micropolar._extend(_config, config);
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
@@ -83,7 +83,7 @@ micropolar.preset.barChart = function(_config){
         containerSelector: 'body'
     };
 
-    micropolar._override(_config, config);
+    micropolar._extend(_config, config);
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
@@ -115,7 +115,7 @@ micropolar.preset.areaChart = function(_config){
         containerSelector: 'body'
     };
 
-    micropolar._override(_config, config);
+    micropolar._extend(_config, config);
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
@@ -146,7 +146,7 @@ micropolar.preset.clock = function(_config){
         containerSelector: 'body'
     };
 
-    micropolar._override(_config, config);
+    micropolar._extend(_config, config);
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
