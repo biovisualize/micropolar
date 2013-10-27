@@ -4,8 +4,8 @@ micropolar.Axis = function module() {
     var config = {
         geometry: [],
         data: [[0, 0], [0, 0]],
-        height: 500,
-        width: 500,
+        height: 300,
+        width: 300,
         radialDomain: null,
         angularDomain: null,
         angularTicksStep: null,
@@ -54,8 +54,8 @@ micropolar.Axis = function module() {
 
                 var angularExtent = d3.extent(_data[0].map(function(d, i){ return d[0]; }));
                	var angularDomain = config.angularDomain || angularExtent;
-                if(!config.angularTicksStep) config.angularTicksStep = (angularDomain[1] - angularDomain[0]) / config.angularTicksCount;
-                if(!angularDomain[2]) angularDomain[2] = config.angularTicksStep;
+                var angularTicksStep = config.angularTicksStep || (angularDomain[1] - angularDomain[0]) / config.angularTicksCount;
+                if(!angularDomain[2]) angularDomain[2] = angularTicksStep;
                 angularDomain[2] /= (config.minorTicks + 1);
 
                 var angularAxisRange = d3.range.apply(this, angularDomain);
@@ -156,9 +156,11 @@ micropolar.Axis = function module() {
                     .data(angularAxisRange);
                 var angularAxisEnter = angularAxis.enter().append('g')
                     .attr({
-                        'class': 'angular-tick',
-                        transform: function(d, i) { return 'rotate(' + currentAngle(d, i) + ')'; } 
+                        'class': 'angular-tick'
                     });
+                angularAxis.attr({
+                    transform: function(d, i) { return 'rotate(' + currentAngle(d, i) + ')'; }
+                });
                 angularAxis.exit().remove();
 
                 angularAxisEnter.append('line')

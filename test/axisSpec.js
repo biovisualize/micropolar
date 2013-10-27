@@ -19,7 +19,7 @@ describe("Axis", function() {
     });
 
     afterEach(function() {
-        if(fixture) fixture.html('');
+        fixture.html('');
     });
 
     it("works with minimal requirements", function() {
@@ -28,6 +28,15 @@ describe("Axis", function() {
         var svg = d3.select('svg');
         expect(svg.node()).not.toBe(null);
         svg.remove();
+    });
+
+    it("builds it in the provided container", function() {
+        var config = {
+            containerSelector: fixture
+        };
+        polarAxis = micropolar.Axis().config(config)();
+
+        expect(fixture.select('svg').node()).not.toBe(null);
     });
 
     it("has configurable dimensions", function() {
@@ -74,10 +83,6 @@ describe("Axis", function() {
             polarAxis();
         });
 
-        it("builds it in the provided container", function() {
-            expect(fixture.select('svg').node()).not.toBe(null);
-        });
-
         it("provides sensible scale domain and range", function() {
             var radialScale = polarAxis.radialScale();
             var angularScale = polarAxis.angularScale();
@@ -85,10 +90,6 @@ describe("Axis", function() {
             expect(angularScale.domain()).toEqual([1, 5]);
             expect(radialScale.range()).toEqual([0, 225]);
             expect(angularScale.range()).toEqual([0,360]);
-        });
-
-        it("works with minimum requirements", function() {
-            expect(fixture.select('svg').node()).not.toBe(null);
         });
 
     });
@@ -103,11 +104,34 @@ describe("Axis", function() {
         });
 
         it("shows 4 ticks by default", function() {
-            config.data = [[0, 10], [1, 20]];
+            config.data = [[0, 10], [12, 20]];
             polarAxis.config(config)();
 
             var tickTexts = fixture.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
-            expect(tickTexts).toEqual(['0', '0.25', '0.5', '0.75']);
+            expect(tickTexts).toEqual(['0', '3', '6', '9']);
+
+            config.angularTicksCount = 3;
+            polarAxis.config(config)();
+
+            var tickTexts = fixture.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
+            expect(tickTexts).toEqual(['0', '4', '8']);
+        });
+
+        it("starts the ticks at 3 o'clock by default", function() {
+            config.data = [[1, 10], [5, 20]];
+            config.height = 150;
+            polarAxis.config(config)();
+
+            var tickLabelsPosX = [];
+            fixture.selectAll('g.angular-tick text').each(function(d, i){ return tickLabelsPosX.push(this.getBoundingClientRect().left); });
+            expect(tickLabelsPosX[0]).toBe(d3.max(tickLabelsPosX));
+
+            config.originTheta = -90;
+            polarAxis.config(config)();
+
+            var tickLabelsPosY = [];
+            fixture.selectAll('g.angular-tick text').each(function(d, i){ return tickLabelsPosY.push(this.getBoundingClientRect().top); });
+            expect(tickLabelsPosY[0]).toBe(d3.min(tickLabelsPosY));
         });
 
     });
