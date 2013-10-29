@@ -5,6 +5,7 @@ micropolar.Axis = function module() {
         geometry: [],
         data: [[0, 0], [0, 0]],
         legend: null,
+        title: null,
         height: 300,
         width: 300,
         radialDomain: null,
@@ -225,7 +226,7 @@ micropolar.Axis = function module() {
                 });
 
 
-                // Legend
+                // Legend and title
                 ////////////////////////////////////////////////////////////////////
 
                 if(config.legend){
@@ -234,6 +235,22 @@ micropolar.Axis = function module() {
                     config.legend.config({containerSelector: legendContainer})();
                     var legendWidth = legendContainer.node().getBBox().width;
                     svg.attr({width: config.width + legendWidth});
+                }
+
+                if(config.title){
+                    var title = svg.append('text').classed('title', true)
+                        .attr({x: 100, y: 100})
+                        .style({'font-size': 18})
+                        .text(config.title);
+                    var titleBBox = title.node().getBBox();
+                    title.attr({x: config.width / 2 - titleBBox.width / 2, y: titleBBox.height});
+                    //offset svg y + height
+                    svg.attr({height: config.height + titleBBox.height});
+
+                    var chartGroup = svg.select('.chart-group');
+                    var oldTranslate = d3.transform(chartGroup.attr('transform')).translate;
+                    console.log(oldTranslate);
+                    chartGroup.attr('transform', 'translate(' + oldTranslate[0] + ',' + (oldTranslate[1] + titleBBox.height) + ')');
                 }
 
 
