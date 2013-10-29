@@ -15,6 +15,7 @@
     <script type='text/javascript' src="../src/dot_plot.js"></script>
     <script type='text/javascript' src="../src/line_plot.js"></script>
     <script type='text/javascript' src="../src/factory.js"></script>
+    <script type='text/javascript' src="../src/legend.js"></script>
     <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
 <body>
@@ -23,12 +24,18 @@
 <div id="container2"></div>
 
 <script>
+(function(){
 
-    var linePlot1 = micropolar.LinePlot().config({stroke: 'peru'});
-    var linePlot2 = micropolar.LinePlot().config({stroke: 'darkviolet'});
-    var linePlot3 = micropolar.LinePlot().config({stroke: 'deepskyblue'});
-    var linePlot4 = micropolar.LinePlot().config({stroke: 'orangered'});
-    var linePlot5 = micropolar.LinePlot().config({stroke: 'green'});
+    // Mic patterns example
+    ////////////////////////////////////////
+
+    var colors = ['peru', 'darkviolet', 'deepskyblue', 'orangered', 'green'];
+
+    var linePlot1 = micropolar.LinePlot().config({stroke: colors[0]});
+    var linePlot2 = micropolar.LinePlot().config({stroke: colors[1]});
+    var linePlot3 = micropolar.LinePlot().config({stroke: colors[2]});
+    var linePlot4 = micropolar.LinePlot().config({stroke: colors[3]});
+    var linePlot5 = micropolar.LinePlot().config({stroke: colors[4]});
 
     function generateData(equation){
         var step = 6;
@@ -46,9 +53,16 @@
     var data4 = generateData(function(theta){ return Math.abs(0.7 + 0.3 * Math.cos(theta)); });
     var data5 = generateData(function(theta){ return Math.abs(0.37 + 0.63 * Math.cos(theta)); });
 
+    var legend = micropolar.legend()
+        .config({
+            data: ['Figure 8', 'Cardioid', 'Hypercardioid', 'Subcardioid', 'Supercardioid'],
+            colors: colors
+        });
+
     var config = {
         geometry: [linePlot1, linePlot2, linePlot3, linePlot4, linePlot5],
         data: [data1, data2, data3, data4, data5],
+        legend: legend,
         height: 300, 
         width: 300, 
         angularTicksStep: 30,
@@ -63,6 +77,10 @@
 
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
+
+
+    // Nightingale example
+    ////////////////////////////////////////
 
     var data = [
             [ "Apr 1854", 1.4, "Disease"],
@@ -118,10 +136,10 @@
         margin: 35
     };
 
-
     var polarAxis = micropolar.Axis().config(config);
     polarAxis();
 
+})();
 
 </script>
 

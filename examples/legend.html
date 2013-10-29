@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title></title> 
+    <script type='text/javascript' src="../lib/d3.js"></script>
+    <script type='text/javascript' src="../src/util.js"></script>
+    <script type='text/javascript' src="../src/legend.js"></script>
+    <link rel="stylesheet" type="text/css" href="./style.css">
+    <style>
+        div{
+            position: absolute;
+            top: 30px;
+        }
+        #container1{
+            left: 0px;
+        }
+        #container2{
+            left: 100px;
+        }
+        #container3{
+            left: 200px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="container1"></div>
+<div id="container2"></div>
+<div id="container3"></div>
+
+<script>
+
+    var continuouslegend = micropolar.legend()
+        .config({
+            data: [1, 10],
+            colors: ['red', 'yellow', 'limegreen'],
+            containerSelector: '#container1'
+        });
+    continuouslegend();
+
+    var discreteLegend = micropolar.legend()
+        .config({
+            data: ['a', 'b', 'c'],
+            colors: ['red', 'yellow', 'limegreen'],
+            containerSelector: '#container2'
+        });
+    discreteLegend();
+
+    var symbolLegend = micropolar.legend()
+            .config({
+                data: ['a', 'b', 'c', 'd'],
+                colors: 'black',
+                symbols: ['square', 'line', 'cross', 'diamond'],
+                containerSelector: '#container3'
+            });
+    symbolLegend();
+
+
+</script>
+
+</body>
+</html>

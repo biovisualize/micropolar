@@ -4,6 +4,7 @@ micropolar.Axis = function module() {
     var config = {
         geometry: [],
         data: [[0, 0], [0, 0]],
+        legend: null,
         height: 300,
         width: 300,
         radialDomain: null,
@@ -80,6 +81,7 @@ micropolar.Axis = function module() {
                             </g> \
                             <g class="guides-group"><line></line><circle></circle></g> \
                         </g> \
+                        <g class="legend-group"> </g> \
                     </svg>';
 
                 if(typeof svg === 'undefined'){
@@ -221,6 +223,18 @@ micropolar.Axis = function module() {
                         containerSelector: geometryContainer
                     })();
                 });
+
+
+                // Legend
+                ////////////////////////////////////////////////////////////////////
+
+                if(config.legend){
+                    var legendContainer = d3.select(this).select('.legend-group')
+                        .attr({transform: 'translate(' + config.width + ', 0)'});
+                    config.legend.config({containerSelector: legendContainer})();
+                    var legendWidth = legendContainer.node().getBBox().width;
+                    svg.attr({width: config.width + legendWidth});
+                }
 
 
                 // Hover guides
