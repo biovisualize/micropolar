@@ -1,25 +1,13 @@
 describe("Axis", function() {
 
-    var polarAxis, config, fixture;
-
-    function nodeToString(_node){ return new XMLSerializer().serializeToString(_node); }
-
-    function keepFixtureVisible(){
-        d3.select('body').append('div').classed('fixture-clone', true).node()
-            .appendChild(fixture.node().cloneNode(true));
-    }
-
-    function resetFixture(){
-        if(!fixture) fixture = d3.select('body').append('div').classed('fixture', true);
-        else fixture.html('');
-    }
+    var polarAxis, config, fixture = Fixture(), container;
 
     beforeEach(function() {
-        resetFixture()
+        container = fixture.addFixture().get();
     });
 
     afterEach(function() {
-        fixture.html('');
+        fixture.removeFixture();
     });
 
     it("works with minimal requirements", function() {
@@ -32,11 +20,11 @@ describe("Axis", function() {
 
     it("builds it in the provided container", function() {
         var config = {
-            containerSelector: fixture
+            containerSelector: container
         };
         polarAxis = micropolar.Axis().config(config)();
 
-        expect(fixture.select('svg').node()).not.toBe(null);
+        expect(container.select('svg').node()).not.toBe(null);
     });
 
     it("has configurable dimensions", function() {
@@ -45,13 +33,13 @@ describe("Axis", function() {
             width: 500,
             labelOffset: 10,
             tickLength: null,
-            containerSelector: fixture,
+            containerSelector: container,
             margin: 25
         };
         polarAxis = micropolar.Axis().config(config)();
 
-        var svg = fixture.select('svg');
-        var bg = fixture.select('.background-circle');
+        var svg = container.select('svg');
+        var bg = container.select('.background-circle');
         expect(+svg.attr('width')).toBe(config.width);
         expect(+svg.attr('height')).toBe(config.height);
         expect(bg.node().getBBox().width).toBe(config.width - config.margin * 2);
@@ -60,12 +48,12 @@ describe("Axis", function() {
     it("has configurable styles", function() {
         var config = {
             backgroundColor: 'red',
-            containerSelector: fixture
+            containerSelector: container
         };
         polarAxis = micropolar.Axis().config(config)();
 
-        var svg = fixture.select('svg');
-        var bg = fixture.select('.background-circle');
+        var svg = container.select('svg');
+        var bg = container.select('.background-circle');
         expect(d3.rgb(bg.style('fill')).toString()).toBe('#ff0000');
     });
 
@@ -77,7 +65,7 @@ describe("Axis", function() {
                 height: 500,
                 margin: 25,
                 data: [[1, 10], [2, 20], [3, 30], [4, 40], [5, 50]],
-                containerSelector: fixture
+                containerSelector: container
             };
             polarAxis = micropolar.Axis().config(config);
             polarAxis();
@@ -98,7 +86,7 @@ describe("Axis", function() {
 
         beforeEach(function() {
             config = {
-                containerSelector: fixture
+                containerSelector: container
             };
             polarAxis = micropolar.Axis();
         });
@@ -107,13 +95,13 @@ describe("Axis", function() {
             config.data = [[0, 10], [12, 20]];
             polarAxis.config(config)();
 
-            var tickTexts = fixture.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
+            var tickTexts = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
             expect(tickTexts).toEqual(['0', '3', '6', '9']);
 
             config.angularTicksCount = 3;
             polarAxis.config(config)();
 
-            var tickTexts = fixture.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
+            var tickTexts = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
             expect(tickTexts).toEqual(['0', '4', '8']);
         });
 
@@ -123,14 +111,14 @@ describe("Axis", function() {
             polarAxis.config(config)();
 
             var tickLabelsPosX = [];
-            fixture.selectAll('g.angular-tick text').each(function(d, i){ return tickLabelsPosX.push(this.getBoundingClientRect().left); });
+            container.selectAll('g.angular-tick text').each(function(d, i){ return tickLabelsPosX.push(this.getBoundingClientRect().left); });
             expect(tickLabelsPosX[0]).toBe(d3.max(tickLabelsPosX));
 
             config.originTheta = -90;
             polarAxis.config(config)();
 
             var tickLabelsPosY = [];
-            fixture.selectAll('g.angular-tick text').each(function(d, i){ return tickLabelsPosY.push(this.getBoundingClientRect().top); });
+            container.selectAll('g.angular-tick text').each(function(d, i){ return tickLabelsPosY.push(this.getBoundingClientRect().top); });
             expect(tickLabelsPosY[0]).toBe(d3.min(tickLabelsPosY));
         });
 
@@ -140,7 +128,7 @@ describe("Axis", function() {
 
         beforeEach(function() {
             config = {
-                containerSelector: fixture
+                containerSelector: container
             };
             polarAxis = micropolar.Axis();
         });
@@ -149,15 +137,15 @@ describe("Axis", function() {
             config.data = [[0, 10], [1, 20]];
             polarAxis.config(config)();
 
-            var tickTexts1 = fixture.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
-            expect(fixture.selectAll('svg')[0].length).toBe(1);
+            var tickTexts1 = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
+            expect(container.selectAll('svg')[0].length).toBe(1);
             expect(tickTexts1).toEqual(['0', '0.25', '0.5', '0.75']);
 
             config.data = [[1, 20], [2, 30]];
             polarAxis.config(config)();
 
-            var tickTexts2 = fixture.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
-            expect(fixture.selectAll('svg')[0].length).toBe(1);
+            var tickTexts2 = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
+            expect(container.selectAll('svg')[0].length).toBe(1);
             expect(tickTexts2).toEqual(['1', '1.25', '1.5', '1.75']);
         });
 
@@ -166,7 +154,7 @@ describe("Axis", function() {
                 data: [[1, 10], [2, 20]],
                 height: 300,
                 width: 300,
-                containerSelector: fixture
+                containerSelector: container
             };
             polarAxis = micropolar.Axis().config(config1)();
 
@@ -177,6 +165,7 @@ describe("Axis", function() {
                 height: 200
             };
             polarAxis.config(config2)();
+//            fixture.cloneAndKeepFixture();
 
             expect(polarAxis.config().height).toBe(config2.height);
             expect(polarAxis.config().width).toBe(config1.width);
