@@ -1,4 +1,4 @@
-micropolar.StackedAreaChart = function module() {
+µ.StackedAreaChart = function module() {
     var config = {
         data: null,
         containerSelector: 'body',
@@ -52,7 +52,7 @@ micropolar.StackedAreaChart = function module() {
     }
     exports.config = function (_x) {
         if (!arguments.length) return config;
-        micropolar._override(_x, config);
+        µ.util._override(_x, config);
         return this;
     };
     d3.rebind(exports, dispatch, 'on');

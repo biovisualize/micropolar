@@ -1,4 +1,4 @@
-micropolar.LinePlot = function module() {
+µ.LinePlot = function module() {
     var config = {
         data: null,
         containerSelector: 'body',
@@ -39,7 +39,7 @@ micropolar.LinePlot = function module() {
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        micropolar._override(_x, config);
+        µ.util._override(_x, config);
         return this;
     };
     d3.rebind(exports, dispatch, 'on');

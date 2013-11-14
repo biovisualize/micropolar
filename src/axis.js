@@ -1,6 +1,7 @@
-micropolar = {version: '0.1.1'};
+var micropolar = {version: '0.1.1'};
+var µ = micropolar;
 
-micropolar.Axis = function module() {
+µ.Axis = function module() {
     var config = {
         geometry: [],
         data: [[0, 0], [0, 0]],
@@ -295,7 +296,7 @@ micropolar.Axis = function module() {
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        micropolar._override(_x, config);
+        µ.util._override(_x, config);
         return this;
     };
     exports.radialScale = function(_x){  

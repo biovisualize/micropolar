@@ -1,6 +1,4 @@
-var micropolar = micropolar || {version: '0.1.1'};
-
-micropolar.legend = function module() {
+µ.legend = function module() {
     var config = {
         height: 150,
         lineHeight: 20,
@@ -87,7 +85,7 @@ micropolar.legend = function module() {
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        micropolar._override(_x, config);
+        µ.util._override(_x, config);
         return this;
     };
     d3.rebind(exports, dispatch, 'on');

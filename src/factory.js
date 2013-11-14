@@ -1,12 +1,12 @@
-micropolar.preset = {};
+µ.preset = {};
 
-micropolar.preset.linePlot = function(_config){
+µ.preset.linePlot = function(_config){
 
     if(_config && _config.size){
         _config.width = _config.height = _config.size;
     }
 
-    var polarPlot = micropolar.LinePlot();
+    var polarPlot = µ.LinePlot();
 
     var config = {
         geometry: polarPlot,
@@ -23,25 +23,25 @@ micropolar.preset.linePlot = function(_config){
         containerSelector: 'body'
     };
 
-    micropolar._extend(_config, config);
+    µ.util._extend(_config, config);
 
-    var polarAxis = micropolar.Axis().config(config);
+    var polarAxis = µ.Axis().config(config);
     polarAxis();
 };
 
-micropolar.preset.dotPlot = function(_config){
+µ.preset.dotPlot = function(_config){
 
     if(_config && _config.size){
         _config.width = _config.height = _config.size;
     }
 
-    var polarPlot = micropolar.DotPlot();
+    var polarPlot = µ.DotPlot();
 
     var scaleRandom = d3.scale.linear().domain([-3, 3]).range([0, 1]);
     var config = {
         geometry: polarPlot,
         data: d3.range(0, 100).map(function(deg, index){ 
-            return [~~(scaleRandom(micropolar._rndSnd()) * 1000), ~~(scaleRandom(micropolar._rndSnd()) * 100)]; 
+            return [~~(scaleRandom(µ.util._rndSnd()) * 1000), ~~(scaleRandom(µ.util._rndSnd()) * 100)];
         }),
         height: 250, 
         width: 250, 
@@ -54,19 +54,19 @@ micropolar.preset.dotPlot = function(_config){
         containerSelector: 'body'
     };
 
-    micropolar._extend(_config, config);
+    µ.util._extend(_config, config);
 
-    var polarAxis = micropolar.Axis().config(config);
+    var polarAxis = µ.Axis().config(config);
     polarAxis();
 };
 
-micropolar.preset.barChart = function(_config){
+µ.preset.barChart = function(_config){
 
     if(_config && _config.size){
         _config.width = _config.height = _config.size;
     }
 
-    var polarPlot = micropolar.BarChart();
+    var polarPlot = µ.BarChart();
 
     var config = {
         geometry: polarPlot,
@@ -83,19 +83,19 @@ micropolar.preset.barChart = function(_config){
         containerSelector: 'body'
     };
 
-    micropolar._extend(_config, config);
+    µ.util._extend(_config, config);
 
-    var polarAxis = micropolar.Axis().config(config);
+    var polarAxis = µ.Axis().config(config);
     polarAxis();
 };
 
-micropolar.preset.areaChart = function(_config){
+µ.preset.areaChart = function(_config){
 
 	if(_config && _config.size){
         _config.width = _config.height = _config.size;
     }
 
-    var polarPlot = micropolar.AreaChart();
+    var polarPlot = µ.AreaChart();
 
     var config = {
         geometry: polarPlot,
@@ -115,19 +115,19 @@ micropolar.preset.areaChart = function(_config){
         containerSelector: 'body'
     };
 
-    micropolar._extend(_config, config);
+    µ.util._extend(_config, config);
 
-    var polarAxis = micropolar.Axis().config(config);
+    var polarAxis = µ.Axis().config(config);
     polarAxis();
 };
 
-micropolar.preset.clock = function(_config){
+µ.preset.clock = function(_config){
 
 	if(_config && _config.size){
         _config.width = _config.height = _config.size;
     }
 
-    var polarPlot = micropolar.Clock();
+    var polarPlot = µ.Clock();
 
     var config = {
         geometry: polarPlot,
@@ -146,8 +146,8 @@ micropolar.preset.clock = function(_config){
         containerSelector: 'body'
     };
 
-    micropolar._extend(_config, config);
+    µ.util._extend(_config, config);
 
-    var polarAxis = micropolar.Axis().config(config);
+    var polarAxis = µ.Axis().config(config);
     polarAxis();
 };
