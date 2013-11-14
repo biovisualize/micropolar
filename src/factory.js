@@ -29,6 +29,44 @@
     polarAxis();
 };
 
+µ.preset.multiLinePlot = function(_config){
+    var config = {
+        title: '',
+        height: 300,
+        width: 300,
+//        angularTicksStep: 30,
+        angularTicksSuffix: 'º',
+        minorTicks: 1,
+        flip: true,
+        originTheta: -90,
+        radialAxisTheta: -90,
+        radialTicksSuffix: '',
+        containerSelector: 'body'
+    };
+    µ.util._extend(_config, config);
+
+    if (typeof [].concat(_config.data)[0] === 'function'){
+        config.data = config.data.map(function(d, i){ return µ.util.dataFromEquation(d, 6); });
+    }
+
+    if(typeof config.data[0][0] != 'object') config.data = [config.data];
+
+    config = µ.util.fillArrays(config, ['color', 'geometryName', 'geometry'], config.data.length);
+    if(!config.geometryName) config.geometryName = config.data.map(function(d, i){ return 'Line'+i; });
+    config.geometry = config.geometry.map(function(d, i){
+        return µ[d]().config({stroke: config.color[i]});
+    });
+    config.legend = µ.legend()
+        .config({
+            data: config.geometryName,
+            color: config.color
+        });
+
+
+    var polarAxis = µ.Axis().config(config);
+    polarAxis();
+};
+
 µ.preset.dotPlot = function(_config){
 
     if(_config && _config.size){

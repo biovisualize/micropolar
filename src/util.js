@@ -7,3 +7,31 @@
 µ.util._rndSnd = function(){
     return (Math.random()*2-1)+(Math.random()*2-1)+(Math.random()*2-1);
 };
+
+µ.util.dataFromEquation = function(_equation, _step){
+    var step = _step || 6;
+    var data = d3.range(0, 360 + step, step).map(function(deg, index){
+        var theta = deg * Math.PI / 180;
+        var radius = _equation(theta);
+        return [deg, radius];
+    });
+    return data;
+};
+
+µ.util.ensureArray = function(_val, _count){
+    if(typeof _val === 'undefined') return null;
+    var arr = [].concat(_val);
+    return d3.range(_count).map(function(d, i){
+        return arr[i] || arr[0];
+    });
+};
+
+µ.util.fillArrays = function(_obj, _valueNames, _count){
+    var newObj = JSON.parse(JSON.stringify(_obj));
+    _valueNames.forEach(function(d, i){
+        newObj[d] = µ.util.ensureArray(newObj[d], _count);
+    });
+    return newObj;
+};
+
+

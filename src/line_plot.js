@@ -25,12 +25,12 @@
                 var geometry = geometryGroup.selectAll('path.mark')
                     .data([0]);
                 geometry.enter().append('path').attr({'class': 'mark'});
-
                 geometryGroup.select('path.mark')
                     .datum(_data)
                     .attr({
-                        d: line, 
-                        transform: 'rotate('+(config.axisConfig.originTheta + 90)+')',
+                        d: line,
+//                        d: 'M1 1L100 100Z',
+//                        transform: 'rotate('+(config.axisConfig.originTheta + 90)+')',
                         'stroke-width': config.lineStrokeSize + 'px'
                 })
                 .style(markStyle);

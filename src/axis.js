@@ -210,7 +210,7 @@ var µ = micropolar;
                 ////////////////////////////////////////////////////////////////////
 
                 var that = this;
-                config.geometry.forEach(function(d, i){ 
+                config.geometry.forEach(function(d, i){
                     var groupClass = 'geometry' + i;
                     var geometryContainer = d3.select(that).select('svg g.geometry-group')
                         .selectAll('g.' + groupClass)
@@ -250,7 +250,6 @@ var µ = micropolar;
 
                     var chartGroup = svg.select('.chart-group');
                     var oldTranslate = d3.transform(chartGroup.attr('transform')).translate;
-                    console.log(oldTranslate);
                     chartGroup.attr('transform', 'translate(' + oldTranslate[0] + ',' + (oldTranslate[1] + titleBBox.height) + ')');
                 }
 
@@ -288,7 +287,7 @@ var µ = micropolar;
                     });
 
                 svg.selectAll('.geometry-group .mark').on('mouseenter.tooltip', function(d, i){
-                    console.log(d);
+//                    console.log(d);
                 });
 
             });
