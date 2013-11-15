@@ -62,11 +62,11 @@
 <script>
 var container = d3.select('.example-container');
 
-for(chart in micropolar.preset){
-    container.append('div').classed(chart, true);
-    micropolar.preset[chart]({containerSelector: '.' + chart});
-}
-
+var presets = ['linePlot', 'dotPlot', 'areaChart', 'barChart', 'clock'];
+presets.forEach(function(d, i){
+    container.append('div').classed(d, true);
+    micropolar.preset[d]({containerSelector: '.' + d});
+});
 </script>
 
 <script src="http://static.jsbin.com/js/embed.js"></script>
