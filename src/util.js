@@ -1,6 +1,5 @@
 µ.util = {};
 
-//TODO: make it immutable
 µ.util._override = function(_objA, _objB){ for(var x in _objA) if(x in _objB) _objB[x] = _objA[x]; };
 µ.util._extend = function(_objA, _objB){ for(var x in _objA) _objB[x] = _objA[x]; };
 
@@ -27,11 +26,10 @@
 };
 
 µ.util.fillArrays = function(_obj, _valueNames, _count){
-    var newObj = JSON.parse(JSON.stringify(_obj));
     _valueNames.forEach(function(d, i){
-        newObj[d] = µ.util.ensureArray(newObj[d], _count);
+        _obj[d] = µ.util.ensureArray(_obj[d], _count);
     });
-    return newObj;
+    return _obj;
 };
 
 

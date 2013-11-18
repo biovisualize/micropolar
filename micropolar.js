@@ -43,7 +43,7 @@ var µ = micropolar;
             if (typeof config.geometry != "object") config.geometry = [ config.geometry ];
             if (typeof _data[0][0] != "object") _data = [ _data ];
             var radius = Math.min(config.width, config.height) / 2 - config.margin;
-            var extent = d3.extent(_data[0].map(function(d, i) {
+            var extent = d3.extent(d3.merge(_data).map(function(d, i) {
                 return d[1];
             }));
             radialScale = d3.scale.linear().domain(config.radialDomain || extent).range([ 0, radius ]);
@@ -310,11 +310,10 @@ var µ = micropolar;
 };
 
 µ.util.fillArrays = function(_obj, _valueNames, _count) {
-    var newObj = JSON.parse(JSON.stringify(_obj));
     _valueNames.forEach(function(d, i) {
-        newObj[d] = µ.util.ensureArray(newObj[d], _count);
+        _obj[d] = µ.util.ensureArray(_obj[d], _count);
     });
-    return newObj;
+    return _obj;
 };
 
 µ.BarChart = function module() {
@@ -655,6 +654,7 @@ var µ = micropolar;
     function exports() {
         var container = config.containerSelector;
         if (typeof container == "string") container = d3.select(container);
+        var color = [].concat(config.color);
         var isContinuous = typeof config.data[0] === "number";
         var height = isContinuous ? config.height : config.lineHeight * config.data.length;
         var geometryGroup = container.classed("legend", true);
@@ -668,7 +668,7 @@ var µ = micropolar;
         var svgGroup = svg.append("g").attr({
             transform: "translate(" + [ 0, config.lineHeight ] + ")"
         });
-        var colorScale = d3.scale[isContinuous ? "linear" : "ordinal"]().domain(config.data).range(config.color);
+        var colorScale = d3.scale[isContinuous ? "linear" : "ordinal"]().domain(config.data).range(color);
         var dataScale = colorScale.copy()[isContinuous ? "range" : "rangePoints"]([ 0, height ]);
         var shapeGenerator = function(_type, _size) {
             if (_type === "line") {
@@ -682,11 +682,11 @@ var µ = micropolar;
                 y1: "0%",
                 x2: "0%",
                 y2: "100%"
-            }).selectAll("stop").data(config.color);
+            }).selectAll("stop").data(color);
             gradient.enter().append("stop");
             gradient.attr({
                 offset: function(d, i) {
-                    return i / (config.color.length - 1) * 100 + "%";
+                    return i / (color.length - 1) * 100 + "%";
                 }
             }).style({
                 "stop-color": function(d, i) {
@@ -773,10 +773,15 @@ var µ = micropolar;
 
 µ.preset.multiLinePlot = function(_config) {
     var config = {
+        data: d3.range(0, 721, 1).map(function(deg, index) {
+            return [ deg, index / 720 * 2 ];
+        }),
         title: "",
-        height: 300,
-        width: 300,
-        angularTicksSuffix: "º",
+        geometry: "LinePlot",
+        color: "#ffa500",
+        height: 250,
+        width: 250,
+        isLegendVisible: false,
         minorTicks: 1,
         flip: true,
         originTheta: -90,
@@ -791,7 +796,7 @@ var µ = micropolar;
         });
     }
     if (typeof config.data[0][0] != "object") config.data = [ config.data ];
-    config = µ.util.fillArrays(config, [ "color", "geometryName", "geometry" ], config.data.length);
+    µ.util.fillArrays(config, [ "color", "geometryName", "geometry" ], config.data.length);
     if (!config.geometryName) config.geometryName = config.data.map(function(d, i) {
         return "Line" + i;
     });
@@ -800,10 +805,12 @@ var µ = micropolar;
             stroke: config.color[i]
         });
     });
-    config.legend = µ.legend().config({
-        data: config.geometryName,
-        color: config.color
-    });
+    if (config.isLegendVisible) {
+        config.legend = µ.legend().config({
+            data: config.geometryName,
+            color: config.color
+        });
+    }
     var polarAxis = µ.Axis().config(config);
     polarAxis();
 };

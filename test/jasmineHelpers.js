@@ -2,7 +2,7 @@ var Helper = {};
 
 Helper.nodeToString = function(_node){ return new XMLSerializer().serializeToString(_node); };
 
-var Fixture = function(d, i){
+var Fixture = function(){
 
     var fixture = d3.selection;
     exports = {};

@@ -50,7 +50,7 @@ var µ = micropolar;
                 if(typeof _data[0][0] != 'object') _data = [_data];
 
                 var radius = Math.min(config.width, config.height) / 2 - config.margin;
-                var extent = d3.extent(_data[0].map(function(d, i){ return d[1]; }));
+                var extent = d3.extent(d3.merge(_data).map(function(d, i){ return d[1]; }));
                 radialScale = d3.scale.linear()
                     .domain(config.radialDomain || extent)
                     .range([0, radius]);

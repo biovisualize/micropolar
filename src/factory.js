@@ -31,11 +31,13 @@
 
 µ.preset.multiLinePlot = function(_config){
     var config = {
+        data: d3.range(0, 721, 1).map(function(deg, index){ return [deg, index/720*2]; }),
         title: '',
-        height: 300,
-        width: 300,
-//        angularTicksStep: 30,
-        angularTicksSuffix: 'º',
+        geometry: 'LinePlot',
+        color: '#ffa500',
+        height: 250,
+        width: 250,
+        isLegendVisible: false,
         minorTicks: 1,
         flip: true,
         originTheta: -90,
@@ -51,17 +53,18 @@
 
     if(typeof config.data[0][0] != 'object') config.data = [config.data];
 
-    config = µ.util.fillArrays(config, ['color', 'geometryName', 'geometry'], config.data.length);
+    µ.util.fillArrays(config, ['color', 'geometryName', 'geometry'], config.data.length);
     if(!config.geometryName) config.geometryName = config.data.map(function(d, i){ return 'Line'+i; });
     config.geometry = config.geometry.map(function(d, i){
         return µ[d]().config({stroke: config.color[i]});
     });
-    config.legend = µ.legend()
-        .config({
-            data: config.geometryName,
-            color: config.color
-        });
-
+    if(config.isLegendVisible){
+        config.legend = µ.legend()
+            .config({
+                data: config.geometryName,
+                color: config.color
+            });
+    }
 
     var polarAxis = µ.Axis().config(config);
     polarAxis();

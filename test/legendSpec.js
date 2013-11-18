@@ -46,8 +46,8 @@ describe("Legend", function() {
         micropolar.legend()
             .config({
                 data: ['a', 'b', 'c', 'd'],
-                colors: 'red',
-                symbols: ['square', 'line', 'cross', 'diamond'],
+                color: 'red',
+                symbol: ['square', 'line', 'cross', 'diamond'],
                 containerSelector: container
             })();
 

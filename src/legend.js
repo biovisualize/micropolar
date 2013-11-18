@@ -16,6 +16,7 @@
     function exports() {
         var container = config.containerSelector;
         if (typeof container == 'string') container = d3.select(container);
+        var color = [].concat(config.color);
 
         var isContinuous = typeof config.data[0] === 'number';
         var height = isContinuous ? config.height : (config.lineHeight) * config.data.length;
@@ -32,7 +33,7 @@
         var svgGroup = svg.append('g')
             .attr({transform: 'translate('+ [0, config.lineHeight] +')'});
 
-        var colorScale = d3.scale[(isContinuous) ? 'linear' : 'ordinal']().domain(config.data).range(config.color);
+        var colorScale = d3.scale[(isContinuous) ? 'linear' : 'ordinal']().domain(config.data).range(color);
         var dataScale = colorScale.copy()[(isContinuous) ? 'range' : 'rangePoints']([0, height]);
 
         var shapeGenerator = function(_type, _size){
@@ -49,9 +50,9 @@
             var gradient = svgGroup.append('defs').append('linearGradient')
                 .attr({id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%'})
                 .selectAll('stop')
-                .data(config.color);
+                .data(color);
             gradient.enter().append('stop');
-            gradient.attr({ offset: function(d, i){ return i / (config.color.length - 1) * 100 + '%'; } })
+            gradient.attr({ offset: function(d, i){ return i / (color.length - 1) * 100 + '%'; } })
                 .style({'stop-color': function(d, i){ return d; }});
             svgGroup.append('rect').classed('legend-mark', true)
                 .attr({height: config.height, width: config.colorBandWidth, fill: 'url(#grad1)'});
