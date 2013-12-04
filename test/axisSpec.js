@@ -34,7 +34,7 @@ describe("Axis", function() {
             labelOffset: 10,
             tickLength: null,
             containerSelector: container,
-            margin: 25
+            margin: {top: 25, right: 25, bottom: 25, left: 25}
         };
         polarAxis = micropolar.Axis().config(config)();
 
@@ -42,7 +42,7 @@ describe("Axis", function() {
         var bg = container.select('.background-circle');
         expect(+svg.attr('width')).toBe(config.width);
         expect(+svg.attr('height')).toBe(config.height);
-        expect(bg.node().getBBox().width).toBe(config.width - config.margin * 2);
+        expect(bg.node().getBBox().width).toBe(config.width - config.margin.right  - config.margin.left);
     });
 
     it("has configurable styles", function() {
@@ -63,7 +63,7 @@ describe("Axis", function() {
             config = {
                 width: 500,
                 height: 500,
-                margin: 25,
+                margin: {top: 25, right: 25, bottom: 25, left: 25},
                 data: [[1, 10], [2, 20], [3, 30], [4, 40], [5, 50]],
                 containerSelector: container
             };

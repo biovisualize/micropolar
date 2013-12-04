@@ -10,7 +10,7 @@ describe("Adapter", function() {
             name: 'Line 1',
             x: [0, 10, 20, 30, 40],
             y: [22, 11, 33, 55, 22],
-            opacity: 0.7,
+            opacity: 1,
             line:
             {
                 color: 'red',
@@ -22,7 +22,7 @@ describe("Adapter", function() {
             name: 'Line 2',
             x: [0, 10, 20, 30, 40],
             y: [33, 44, 55, 66, 77],
-            opacity: 0.7,
+            opacity: 0.5,
             line: {
                 color: 'green',
                 width: 3,
@@ -169,26 +169,35 @@ describe("Adapter", function() {
             hovermode: "x",
             showlegend: true
         };
+        plotlyConfig.container = fixture.get();
     });
 
     afterEach(function() {
         fixture.removeFixture();
     });
 
-    it("converts from Plotly to Mircopolar data format", function() {
+    it("converts from Plotly to Micropolar data format", function() {
         var expectedMicropolarConfig = {
             data: [[[0,22],[10,11],[20,33],[30,55],[40,22]],[[0,33],[10,44],[20,55],[30,66],[40,77]]],
             color: ["red", "green"],
             geometryName: ["Line 1", "Line 2"],
             geometry: ["LinePlot", "LinePlot"],
             title: "Plot Title",
-            containerSelector: "body"
+            containerSelector: fixture.get(),
+            height: 400,
+            width: 550,
+            isLegendVisible: true,
+            margin: {top: 60, right: 0, bottom: 60, left: 70},
+            dash: ['solid', 'dash'],
+            opacity: [1, 0.5]
         };
         var micropolarConfig = adapter.convert(plotlyConfig);
         micropolar.preset.multiLinePlot(micropolarConfig);
-        fixture.cloneAndKeepFixture();
+//        micropolar.preset.multiLinePlot(expectedMicropolarConfig);
 
-        expect(micropolarConfig).toEqual(expectedMicropolarConfig);
+        for(var config in expectedMicropolarConfig){
+            expect(micropolarConfig[config]).toEqual(expectedMicropolarConfig[config]);
+        }
     });
 
 });

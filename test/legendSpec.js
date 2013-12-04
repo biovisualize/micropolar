@@ -45,7 +45,9 @@ describe("Legend", function() {
     it("renders a discrete legend with various shapes", function() {
         micropolar.legend()
             .config({
-                data: ['a', 'b', 'c', 'd'],
+//                data: ['a', 'b', 'c', 'd'],
+                data: [1, 2, 3, 4],
+                isContinuous: false,
                 color: 'red',
                 symbol: ['square', 'line', 'cross', 'diamond'],
                 containerSelector: container

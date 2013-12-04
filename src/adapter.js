@@ -2,21 +2,28 @@
 µ.adapter.plotly = function module() {
     var exports = {};
     exports.convert = function(_inputConfig) {
-        var data = _inputConfig.data.map(function(d, i){
-            return d3.zip(d.x, d.y);
-        });
-        var color = _inputConfig.data.map(function(d, i){ return d.line.color; })
-        var geometryName = _inputConfig.data.map(function(d, i){ return d.name; })
-        var geometry = _inputConfig.data.map(function(d, i){ return d.type.substr('Polar'.length); })
+        var outputConfig = {};
 
-        var outputConfig = {
-            data: data,
-            color: color,
-            geometryName: geometryName,
-            geometry: geometry,
-            title: _inputConfig.layout.title,
-            containerSelector: 'body'
-        };
+        if(_inputConfig.data){
+            outputConfig.data = _inputConfig.data.map(function(d, i){
+                return d3.zip(d.x, d.y);
+            });
+            outputConfig.color = _inputConfig.data.map(function(d, i){ return d.line.color || 'black'; });
+            outputConfig.dash = _inputConfig.data.map(function(d, i){ return d.line.dash || 'solid'; });
+            outputConfig.opacity = _inputConfig.data.map(function(d, i){ return d.opacity || 1; });
+            outputConfig.geometryName = _inputConfig.data.map(function(d, i){ return d.name || 'Line ' + i; });
+            outputConfig.geometry = _inputConfig.data.map(function(d, i){ return d.type.substr('Polar'.length) || 'Line'; });
+        }
+
+        var margin = _inputConfig.layout.margin;
+        outputConfig.margin = {top: margin.t, right: margin.r, bottom: margin.b, left: margin.l};
+
+        outputConfig.title = _inputConfig.layout.title;
+        outputConfig.containerSelector = _inputConfig.container;
+        outputConfig.height = _inputConfig.layout.height;
+        outputConfig.width = _inputConfig.layout.width;
+        outputConfig.isLegendVisible = _inputConfig.layout.showlegend;
+
         return outputConfig;
     };
     return exports;

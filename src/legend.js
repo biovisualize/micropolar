@@ -1,13 +1,13 @@
 µ.legend = function module() {
     var config = {
-        height: 150,
-        lineHeight: 20,
-        colorBandWidth: 30,
+        height: 150, // only make sense for linear
+        colorBandWidth: 30, // only make sense for linear
         fontSize: 12,
         containerSelector: 'body',
 //        data: [1, 10],
         data: ['a', 'b', 'c'],
-        symbol: 'square', //'square', 'line', 'cross', 'diamond'
+        isContinuous: null,
+        symbol: 'line', //'square', 'line', 'cross', 'diamond'
         color: ['red', 'yellow', 'limegreen'],
         textColor: 'grey'
     };
@@ -17,33 +17,34 @@
         var container = config.containerSelector;
         if (typeof container == 'string') container = d3.select(container);
         var color = [].concat(config.color);
+        var lineHeight = config.fontSize;
 
-        var isContinuous = typeof config.data[0] === 'number';
-        var height = isContinuous ? config.height : (config.lineHeight) * config.data.length;
+        var isContinuous = (config.isContinuous == null) ? typeof config.data[0] === 'number' : config.isContinuous;
+        var height = isContinuous ? config.height : (lineHeight) * config.data.length;
 
         var geometryGroup = container.classed('legend', true);
         var svg = geometryGroup.append('svg')
             .attr({
                 width: 300,
-                height: height + config.lineHeight * 2,
+                height: height + lineHeight,
                 xmlns: 'http://www.w3.org/2000/svg',
                 'xmlns:xmlns:xlink': 'http://www.w3.org/1999/xlink',
                 version: '1.1'
             });
         var svgGroup = svg.append('g')
-            .attr({transform: 'translate('+ [0, config.lineHeight] +')'});
+            .attr({transform: 'translate('+ [0, lineHeight / 2] +')'});
 
         var colorScale = d3.scale[(isContinuous) ? 'linear' : 'ordinal']().domain(config.data).range(color);
         var dataScale = colorScale.copy()[(isContinuous) ? 'range' : 'rangePoints']([0, height]);
 
         var shapeGenerator = function(_type, _size){
+            var squareSize = _size * 3;
             if(_type === 'line'){
                 return 'M' + [ [-_size / 2, -_size / 12], [_size / 2, -_size / 12],
                     [_size / 2, _size / 12], [-_size / 2, _size / 12]] + 'Z';
             }
-//            else if(d3.svg.symbolTypes.indexOf(_type) != -1) return d3.svg.symbol().type(_type).size(Math.pow(_size / 2, 2))();
-            else if(d3.svg.symbolTypes.indexOf(_type) != -1) return d3.svg.symbol().type(_type).size(_size * _size / 2)();
-            else return d3.svg.symbol().type('square').size(_size * _size / 2)();
+            else if(d3.svg.symbolTypes.indexOf(_type) != -1) return d3.svg.symbol().type(_type).size(squareSize)();
+            else return d3.svg.symbol().type('square').size(squareSize)();
         };
 
         if(isContinuous){
@@ -62,10 +63,10 @@
                 .data(config.data);
             legendElement.enter().append('path').classed('legend-mark', true);
             legendElement.attr({
-                transform: function(d, i){ return 'translate(' + [config.lineHeight / 2, dataScale(d, i)] + ')'; },
+                transform: function(d, i){ return 'translate(' + [lineHeight / 2, dataScale(d, i)] + ')'; },
                 d: function(d, i){
                     var symbolType = (typeof config.symbol === 'string') ? config.symbol : config.symbol[i];
-                    return shapeGenerator(symbolType, config.lineHeight);
+                    return shapeGenerator(symbolType, lineHeight);
                 },
                 fill: function(d, i){ return colorScale(d, i); }
             });
@@ -73,7 +74,7 @@
 
         var legendAxis = d3.svg.axis().scale(dataScale).orient('right');
         var axis = svgGroup.append('g').classed('legend-axis', true)
-            .attr({transform: 'translate(' + [isContinuous ? config.colorBandWidth : config.lineHeight, 0] + ')'})
+            .attr({transform: 'translate(' + [isContinuous ? config.colorBandWidth : lineHeight, 0] + ')'})
             .call(legendAxis);
         axis.selectAll('.domain').style({fill: 'none', stroke: 'none'});
         axis.selectAll('line').style({fill: 'none', stroke: (isContinuous) ? config.textColor : 'none'});

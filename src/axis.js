@@ -2,43 +2,14 @@ var micropolar = {version: '0.1.1'};
 var µ = micropolar;
 
 µ.Axis = function module() {
-    var config = {
-        geometry: [],
-        data: [[0, 0], [0, 0]],
-        legend: null,
-        title: null,
-        height: 300,
-        width: 300,
-        radialDomain: null,
-        angularDomain: null,
-        angularTicksStep: null,
-        angularTicksCount: 4,
-        flip: true,
-        originTheta: 0,
-        labelOffset: 10,
-        radialAxisTheta: -45,
-        ticks: null,
-        radialTicksSuffix: '',
-        angularTicksSuffix: '',
-        angularTicks: null,
-        showRadialAxis: true,
-        showRadialCircle: true,
-        minorTicks: 0,
-        tickLength: null,
-        rewriteTicks: null,
-        angularTickOrientation: 'horizontal', // 'radial', 'angular', 'horizontal'
-        radialTickOrientation: 'horizontal', // 'angular', 'horizontal'
-        containerSelector: 'body',
-        margin: 25,
-        backgroundColor: 'none'
-    };
+    var config = µ.Axis.defaultConfig();
     var svg, dispatch = d3.dispatch('hover'),
     	radialScale, angularScale;
 
     function exports(){
 
         var container = config.containerSelector;
-        if (typeof container == 'string') container = d3.select(container);
+        if (typeof container == 'string' || container.nodeName) container = d3.select(container);
         container.datum(config.data)
             .each(function(_data, _index) {
 
@@ -49,7 +20,8 @@ var µ = micropolar;
                 if(typeof config.geometry != 'object') config.geometry = [config.geometry];
                 if(typeof _data[0][0] != 'object') _data = [_data];
 
-                var radius = Math.min(config.width, config.height) / 2 - config.margin;
+                var radius = Math.min(config.width - config.margin.left - config.margin.right,
+                    config.height - config.margin.top - config.margin.bottom) / 2;
                 var extent = d3.extent(d3.merge(_data).map(function(d, i){ return d[1]; }));
                 radialScale = d3.scale.linear()
                     .domain(config.radialDomain || extent)
@@ -100,7 +72,7 @@ var µ = micropolar;
                     .style({'pointer-events': 'none'});
 
                 var chartGroup = svg.select('.chart-group')
-                    .attr('transform', 'translate(' + config.width / 2 + ',' + config.height / 2 + ')');
+                    .attr('transform', 'translate(' + [config.margin.left + radius, config.margin.top + radius] + ')');
 
 
                 // Radial axis
@@ -203,7 +175,7 @@ var µ = micropolar;
                     })
                     .style(fontStyle);
 
-                if (config.rewriteTicks) ticks.text(function(d, i){ return config.rewriteTicks(this.textContent, i); })
+                if (config.rewriteTicks) ticks.text(function(d, i){ return config.rewriteTicks(this.textContent, i); });
 
 
                 // Geometry
@@ -231,11 +203,13 @@ var µ = micropolar;
                 ////////////////////////////////////////////////////////////////////
 
                 if(config.legend){
+                    // Offset for labels
+                    var rightmostTickEndX = d3.max(chartGroup.selectAll('.angular-tick text')[0].map(function(d, i){
+                        return d.getCTM().e + d.getBBox().width;
+                    }));
                     var legendContainer = d3.select(this).select('.legend-group')
-                        .attr({transform: 'translate(' + config.width + ', 0)'});
+                        .attr({transform: 'translate(' + [radius + rightmostTickEndX, config.margin.top] + ')'});
                     config.legend.config({containerSelector: legendContainer})();
-                    var legendWidth = legendContainer.node().getBBox().width;
-                    svg.attr({width: config.width + legendWidth});
                 }
 
                 if(config.title){
@@ -244,13 +218,7 @@ var µ = micropolar;
                         .style({'font-size': 18})
                         .text(config.title);
                     var titleBBox = title.node().getBBox();
-                    title.attr({x: config.width / 2 - titleBBox.width / 2, y: titleBBox.height});
-                    //offset svg y + height
-                    svg.attr({height: config.height + titleBBox.height});
-
-                    var chartGroup = svg.select('.chart-group');
-                    var oldTranslate = d3.transform(chartGroup.attr('transform')).translate;
-                    chartGroup.attr('transform', 'translate(' + oldTranslate[0] + ',' + (oldTranslate[1] + titleBBox.height) + ')');
+                    title.attr({x: config.margin.left + radius - titleBBox.width / 2, y: titleBBox.height});
                 }
 
 
@@ -304,6 +272,41 @@ var µ = micropolar;
     exports.angularScale = function(_x){  
         return angularScale;
     };
+    exports.svg = function(){ return svg; };
     d3.rebind(exports, dispatch, 'on');
     return exports;
+};
+
+µ.Axis.defaultConfig = function(d, i){
+    var config = {
+        geometry: [],
+        data: [[0, 0], [0, 0]],
+        legend: null,
+        title: null,
+        height: 300,
+        width: 300,
+        margin: {top: 0, right: 0, bottom: 0, left: 0},
+        radialDomain: null,
+        angularDomain: null,
+        angularTicksStep: null,
+        angularTicksCount: 4,
+        flip: true,
+        originTheta: 0,
+        labelOffset: 10,
+        radialAxisTheta: -45,
+        ticks: null,
+        radialTicksSuffix: '',
+        angularTicksSuffix: '',
+        angularTicks: null,
+        showRadialAxis: true,
+        showRadialCircle: true,
+        minorTicks: 0,
+        tickLength: null,
+        rewriteTicks: null,
+        angularTickOrientation: 'horizontal', // 'radial', 'angular', 'horizontal'
+        radialTickOrientation: 'horizontal', // 'angular', 'horizontal'
+        containerSelector: 'body',
+        backgroundColor: 'none'
+    };
+    return config;
 };

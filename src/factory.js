@@ -27,24 +27,12 @@
 
     var polarAxis = µ.Axis().config(config);
     polarAxis();
+    return polarAxis;
 };
 
 µ.preset.multiLinePlot = function(_config){
-    var config = {
-        data: d3.range(0, 721, 1).map(function(deg, index){ return [deg, index/720*2]; }),
-        title: '',
-        geometry: 'LinePlot',
-        color: '#ffa500',
-        height: 250,
-        width: 250,
-        isLegendVisible: false,
-        minorTicks: 1,
-        flip: true,
-        originTheta: -90,
-        radialAxisTheta: -90,
-        radialTicksSuffix: '',
-        containerSelector: 'body'
-    };
+
+    var config = µ.LinePlot.defaultConfig();
     µ.util._extend(_config, config);
 
     if (typeof [].concat(_config.data)[0] === 'function'){
@@ -52,11 +40,17 @@
     }
 
     if(typeof config.data[0][0] != 'object') config.data = [config.data];
-
-    µ.util.fillArrays(config, ['color', 'geometryName', 'geometry'], config.data.length);
+    µ.util.fillArrays(config, ['color', 'dash', 'geometryName', 'geometry'], config.data.length);
+    var dashArray = {solid: 'none', dot: [1, 5], dash: [5, 1]};
     if(!config.geometryName) config.geometryName = config.data.map(function(d, i){ return 'Line'+i; });
+
     config.geometry = config.geometry.map(function(d, i){
-        return µ[d]().config({stroke: config.color[i]});
+        return µ[d]().config({
+            color: config.color[i],
+            dash: dashArray[config.dash[i]],
+            lineStrokeSize: config.lineStrokeSize,
+            opacity: config.opacity[i]
+        });
     });
     if(config.isLegendVisible){
         config.legend = µ.legend()
@@ -68,6 +62,7 @@
 
     var polarAxis = µ.Axis().config(config);
     polarAxis();
+    return polarAxis;
 };
 
 µ.preset.dotPlot = function(_config){
@@ -99,6 +94,7 @@
 
     var polarAxis = µ.Axis().config(config);
     polarAxis();
+    return polarAxis;
 };
 
 µ.preset.barChart = function(_config){
@@ -128,6 +124,7 @@
 
     var polarAxis = µ.Axis().config(config);
     polarAxis();
+    return polarAxis;
 };
 
 µ.preset.areaChart = function(_config){
@@ -160,6 +157,7 @@
 
     var polarAxis = µ.Axis().config(config);
     polarAxis();
+    return polarAxis;
 };
 
 µ.preset.clock = function(_config){
@@ -191,4 +189,5 @@
 
     var polarAxis = µ.Axis().config(config);
     polarAxis();
+    return polarAxis;
 };
