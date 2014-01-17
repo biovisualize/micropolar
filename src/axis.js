@@ -1,51 +1,67 @@
-var micropolar = {version: '0.1.1'};
+var micropolar = {version: '0.2'};
 var µ = micropolar;
 
 µ.Axis = function module() {
     var config = µ.Axis.defaultConfig();
     var svg, dispatch = d3.dispatch('hover'),
-    	radialScale, angularScale;
+    	radialScale, angularScale, colorScale;
 
     function exports(){
+        var data = config.data;
+        var axisConfig = config.axisConfig;
+        var geometryConfig = config.geometryConfig;
+        var legendConfig = config.legendConfig;
 
-        var container = config.containerSelector;
+        var container = axisConfig.container;
         if (typeof container == 'string' || container.nodeName) container = d3.select(container);
-        container.datum(config.data)
+        container.datum(data)
             .each(function(_data, _index) {
-
 
                 // Scales
                 ////////////////////////////////////////////////////////////////////
 
-                if(typeof config.geometry != 'object') config.geometry = [config.geometry];
-                if(typeof _data[0][0] != 'object') _data = [_data];
+                var data = _data.map(function(d, i){
+                    var validated = {};
+                    validated.name = d.name;
+                    if(!Array.isArray(d.x[0])) validated.x = [d.x];
+                    if(!Array.isArray(d.y[0])) validated.y = [d.y];
+                    return validated;
+                });
 
-                var radius = Math.min(config.width - config.margin.left - config.margin.right,
-                    config.height - config.margin.top - config.margin.bottom) / 2;
-                var extent = d3.extent(d3.merge(_data).map(function(d, i){ return d[1]; }));
+                var radius = Math.min(axisConfig.width - axisConfig.margin.left - axisConfig.margin.right,
+                    axisConfig.height - axisConfig.margin.top - axisConfig.margin.bottom) / 2;
+                var extent = d3.extent(d3.merge(d3.merge(data.map(function(d, i){ return d.y; }))));
                 radialScale = d3.scale.linear()
-                    .domain(config.radialDomain || extent)
+                    .domain(axisConfig.radialDomain || extent)
                     .range([0, radius]);
 
-                var angularExtent = d3.extent(_data[0].map(function(d, i){ return d[0]; }));
-               	var angularDomain = config.angularDomain || angularExtent;
-                var angularTicksStep = config.angularTicksStep || (angularDomain[1] - angularDomain[0]) / config.angularTicksCount;
+                var needsEndSpacing = axisConfig.needsEndSpacing;
+                var angularDataMerged = d3.merge(d3.merge(data.map(function(d, i){ return d.x; })));
+                var angularExtent = d3.extent(angularDataMerged);
+               	var angularDomain = axisConfig.angularDomain || angularExtent;
+
+                if(needsEndSpacing) angularDomain[1] += angularDataMerged[1] - angularDataMerged[0];
+
+                var step = ((angularDomain[1] - angularDomain[0]) / (data[0].x[0][1] - data[0].x[0][0]));
+                var angularTicksStep = axisConfig.angularTicksStep
+                    || ((angularDomain[1] - angularDomain[0]) / (step * (axisConfig.minorTicks+1)));
                 if(!angularDomain[2]) angularDomain[2] = angularTicksStep;
-                angularDomain[2] /= (config.minorTicks + 1);
 
                 var angularAxisRange = d3.range.apply(this, angularDomain);
                 // Workaround for rounding errors
                 angularAxisRange = angularAxisRange.map(function(d, i){ return parseFloat(d.toPrecision(12)) });
-
                 angularScale = d3.scale.linear()
                     .domain(angularDomain.slice(0, 2))
-                    .range(config.flip? [0, 360] : [360, 0]);
+                    .range(axisConfig.flip? [0, 360] : [360, 0]);
 
 
                 // Chart skeleton
                 ////////////////////////////////////////////////////////////////////
 
-                var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root"> \
+                svg = d3.select(this).select('svg.chart-root');
+
+                if(typeof svg === 'undefined' || svg.empty()){
+                    var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root"> \
                         <g class="chart-group"> \
                             <circle class="background-circle"></circle> \
                             <g class="angular axis-group"></g> \
@@ -53,33 +69,32 @@ var µ = micropolar;
                            <g class="radial axis-group"> \
                                 <circle class="outside-circle"></circle> \
                             </g> \
-                            <g class="guides-group"><line></line><circle></circle></g> \
+                            <g class="guides-group"><line></line><circle r="0"></circle></g> \
                         </g> \
-                        <g class="legend-group"> </g> \
+                        <g class="legend-group"></g> \
+                        <g class="title-group"><text></text></g> \
                     </svg>';
-
-                if(typeof svg === 'undefined'){
                     var doc = new DOMParser().parseFromString(skeleton, 'application/xml');
-                    this.appendChild(this.ownerDocument.importNode(doc.documentElement, true));
-                    svg = d3.select(this).select('svg');
+                    var newSvg = this.appendChild(this.ownerDocument.importNode(doc.documentElement, true));
+                    svg = d3.select(newSvg);
                 }
 
 
                 var lineStyle = {fill: 'none', stroke: 'silver'};
-                var fontStyle = {'font-size': 11, 'font-family': 'Tahoma, sans-serif'};
+                var fontStyle = {'font-size': axisConfig.fontSize, 'font-family': axisConfig.fontFamily, fill: axisConfig.fontColor};
 
-                svg.attr({width: config.width, height: config.height})
-                    .style({'pointer-events': 'none'});
+                svg.attr({width: axisConfig.width, height: axisConfig.height})
+//                    .style({'pointer-events': 'none'});
 
                 var chartGroup = svg.select('.chart-group')
-                    .attr('transform', 'translate(' + [config.margin.left + radius, config.margin.top + radius] + ')');
+                    .attr('transform', 'translate(' + [axisConfig.margin.left + radius, axisConfig.margin.top + radius] + ')');
 
 
                 // Radial axis
                 ////////////////////////////////////////////////////////////////////
 
                 var radialAxis = svg.select('.radial.axis-group');
-                if(config.showRadialCircle){
+                if(axisConfig.showRadialCircle){
                     var gridCircles = radialAxis.selectAll('circle.grid-circle')
                         .data(radialScale.ticks(5));
                     gridCircles.enter().append('circle')
@@ -91,20 +106,20 @@ var µ = micropolar;
 
                 radialAxis.select('circle.outside-circle').attr({r: radius}).style(lineStyle);
                 svg.select('circle.background-circle').attr({r: radius})
-                    .style({fill: config.backgroundColor, stroke: lineStyle.stroke});
+                    .style({fill: axisConfig.backgroundColor, stroke: axisConfig.stroke});
 
-                var currentAngle = function(d, i){ return (angularScale(d) + config.originTheta) % 360; };
+                var currentAngle = function(d, i){ return (angularScale(d) + axisConfig.originTheta) % 360; };
 
-                if(config.showRadialAxis){
+                if(axisConfig.showRadialAxis){
                     var axis = d3.svg.axis()
                         .scale(radialScale)
                         .ticks(5)
                         .tickSize(5);
                     var radialAxis = svg.select('.radial.axis-group').call(axis)  
-                        .attr({transform: 'rotate('+ (config.radialAxisTheta) +')'});
+                        .attr({transform: 'rotate('+ (axisConfig.radialAxisTheta) +')'});
                     radialAxis.selectAll('.domain').style(lineStyle);
                     radialAxis.selectAll('g>text')
-                        .text(function(d, i){ return this.textContent + config.radialTicksSuffix; })
+                        .text(function(d, i){ return this.textContent + axisConfig.radialTicksSuffix; })
                     	.style(fontStyle)
                         .style({
                             'text-anchor': 'start'
@@ -115,7 +130,7 @@ var µ = micropolar;
                             dx: 0,
                             dy: 0,
                     		transform: function(d, i){ 
-                                if(config.radialTickOrientation === 'horizontal') return 'rotate(' + (-config.radialAxisTheta) + ') translate(' + [0, fontStyle['font-size']] + ')';
+                                if(axisConfig.radialTickOrientation === 'horizontal') return 'rotate(' + (-axisConfig.radialAxisTheta) + ') translate(' + [0, fontStyle['font-size']] + ')';
                                 else return 'translate(' + [0, fontStyle['font-size']] + ')';
                     		}
                     	});
@@ -126,7 +141,6 @@ var µ = micropolar;
 
                 // Angular axis
                 ////////////////////////////////////////////////////////////////////
- 
                 var angularAxis = svg.select('.angular.axis-group')
                   .selectAll('g.angular-tick')
                     .data(angularAxisRange);
@@ -141,13 +155,13 @@ var µ = micropolar;
 
                 angularAxisEnter.append('line')
                     .attr({'class': 'grid-line'})
-                    .classed('major', function(d, i){ return (i % (config.minorTicks+1) == 0) })
-                    .classed('minor', function(d, i){ return !(i % (config.minorTicks+1) == 0) })
+                    .classed('major', function(d, i){ return (i % (axisConfig.minorTicks+1) == 0) })
+                    .classed('minor', function(d, i){ return !(i % (axisConfig.minorTicks+1) == 0) })
                     .style(lineStyle);
                 angularAxisEnter.selectAll  ('.minor').style({stroke: '#eee'});
                 angularAxis.select('line.grid-line')
                     .attr({
-                        x1: config.tickLength ? radius - config.tickLength : 0,
+                        x1: axisConfig.tickLength ? radius - axisConfig.tickLength : 0,
                         x2: radius
                     });
 
@@ -156,12 +170,12 @@ var µ = micropolar;
                     .style(fontStyle);
                 var ticks = angularAxis.select('text.axis-text')
                     .attr({
-                        x: radius + config.labelOffset,
+                        x: radius + axisConfig.labelOffset,
                         dy: '.35em',
                         transform: function(d, i) { 
                             var angle = currentAngle(d, i);
-                            var rad = radius + config.labelOffset;
-                            var orient = config.angularTickOrientation;
+                            var rad = radius + axisConfig.labelOffset;
+                            var orient = axisConfig.angularTickOrientation;
                             if(orient == 'horizontal') return 'rotate(' + (-angle) + ' ' + rad + ' 0)';
                             else if(orient == 'radial') return (angle < 270 && angle > 90) ? 'rotate(180 ' + rad + ' 0)' : null;
                             else return 'rotate('+ ((angle <= 180 && angle > 0) ? -90 : 90) +' ' + rad + ' 0)';
@@ -169,56 +183,88 @@ var µ = micropolar;
                     })
                     .style({'text-anchor': 'middle' })
                     .text(function(d, i) {
-                        if(i % (config.minorTicks + 1) != 0) return '';
-                        if(config.ticks) return config.ticks[i / (config.minorTicks + 1)] + config.angularTicksSuffix;
-                        else return d + config.angularTicksSuffix;
+                        if(i % (axisConfig.minorTicks + 1) != 0) return '';
+                        if(axisConfig.ticks) return axisConfig.ticks[i / (axisConfig.minorTicks + 1)] + axisConfig.angularTicksSuffix;
+                        else return d + axisConfig.angularTicksSuffix;
                     })
                     .style(fontStyle);
 
-                if (config.rewriteTicks) ticks.text(function(d, i){ return config.rewriteTicks(this.textContent, i); });
+                if (axisConfig.rewriteTicks) ticks.text(function(d, i){ return axisConfig.rewriteTicks(this.textContent, i); });
 
 
                 // Geometry
                 ////////////////////////////////////////////////////////////////////
 
-                var that = this;
-                config.geometry.forEach(function(d, i){
-                    var groupClass = 'geometry' + i;
-                    var geometryContainer = d3.select(that).select('svg g.geometry-group')
-                        .selectAll('g.' + groupClass)
-                        .data([0])
-                        .enter().append('g')
-                        .classed(groupClass, true);
-                    d.config({
-                        data: _data[i],
-                        axisConfig: config, 
-                        radialScale: radialScale, 
-                        angularScale: angularScale,
-                        containerSelector: geometryContainer
-                    })();
-                });
+                var hasGeometry = svg.select('g.geometry-group').selectAll('g').size() > 0;
+                if(geometryConfig[0] || hasGeometry){
+                    var colorIndex = 0;
+                    geometryConfig.forEach(function(d, i){
+                        var groupClass = 'geometry' + i;
+                        var geometryContainer = svg.select('g.geometry-group')
+                            .selectAll('g.' + groupClass)
+                            .data([0]);
+                        geometryContainer.enter().append('g')
+                            .classed(groupClass, true);
+
+                        if(!d.color){
+                            d.color = axisConfig.defaultColorRange[colorIndex];
+                            colorIndex = (colorIndex+1) % axisConfig.defaultColorRange.length;
+                            console.log(1, d.color);
+                        }
+                        var geometry = µ[geometryConfig[i].geometry]();
+                        var individualGeometryConfig = µ.util.deepExtend({}, d);
+                        console.log(2, individualGeometryConfig.color, individualGeometryConfig.geometry);
+                        individualGeometryConfig.radialScale = radialScale;
+                        individualGeometryConfig.angularScale = angularScale;
+                        individualGeometryConfig.container = geometryContainer;
+                        if(!individualGeometryConfig.originTheta) individualGeometryConfig.originTheta = axisConfig.originTheta;
+                        individualGeometryConfig.index = i;
+
+                        var individualGeometryConfigMixin = µ.util.deepExtend(µ[d.geometry].defaultConfig().geometryConfig, individualGeometryConfig);
+                        console.log(individualGeometryConfigMixin.color, individualGeometryConfig.geometry);
+                        geometry.config({
+                            data: data[i],
+                            geometryConfig: individualGeometryConfigMixin
+                        })();
+                    });
+                }
 
 
                 // Legend and title
                 ////////////////////////////////////////////////////////////////////
 
-                if(config.legend){
+                if(legendConfig.showLegend){
                     // Offset for labels
                     var rightmostTickEndX = d3.max(chartGroup.selectAll('.angular-tick text')[0].map(function(d, i){
                         return d.getCTM().e + d.getBBox().width;
                     }));
-                    var legendContainer = d3.select(this).select('.legend-group')
-                        .attr({transform: 'translate(' + [radius + rightmostTickEndX, config.margin.top] + ')'});
-                    config.legend.config({containerSelector: legendContainer})();
+                    var legendContainer = svg.select('.legend-group')
+                        .attr({transform: 'translate(' + [radius + rightmostTickEndX, axisConfig.margin.top] + ')'})
+                        .style({display: 'block'});
+
+                    var elements = geometryConfig.map(function(d, i){
+                        d.symbol = 'line'; //hardcoded
+                        d.visibleInLegend = (typeof d.visibleInLegend === 'undefined') || d.visibleInLegend;
+                        return d;
+                    });
+                    var legendConfigMixin1 = µ.util.deepExtend(µ.Legend.defaultConfig(), legendConfig);
+                    var legendConfigMixin2 = µ.util.deepExtend(legendConfigMixin1, {container: legendContainer, elements: elements});
+                    µ.Legend().config({
+                        data: data.map(function(d, i){ return d.name || 'Element' + i; }),
+                        legendConfig: legendConfigMixin2
+                    })();
+                }
+                else{
+                    svg.select('.legend-group').style({display: 'none'});
                 }
 
-                if(config.title){
-                    var title = svg.append('text').classed('title', true)
+                if(axisConfig.title){
+                    var title = svg.select('g.title-group text')
                         .attr({x: 100, y: 100})
-                        .style({'font-size': 18})
-                        .text(config.title);
+                        .style({'font-size': 18, 'font-family': axisConfig.fontFamily, 'fill': axisConfig.fontColor})
+                        .text(axisConfig.title);
                     var titleBBox = title.node().getBBox();
-                    title.attr({x: config.margin.left + radius - titleBBox.width / 2, y: titleBBox.height});
+                    title.attr({x: axisConfig.margin.left + radius - titleBBox.width / 2, y: titleBBox.height});
                 }
 
 
@@ -228,8 +274,8 @@ var µ = micropolar;
                 //TODO: get this out
                 function getMousePos(){ 
             		var mousePos = d3.mouse(svg.node());
-                    var mouseX = mousePos[0] - config.width / 2;
-                    var mouseY = mousePos[1] - config.height / 2;
+                    var mouseX = mousePos[0] - axisConfig.width / 2;
+                    var mouseY = mousePos[1] - axisConfig.height / 2;
                     var mouseAngle = (Math.atan2(mouseY, mouseX) + Math.PI) / Math.PI * 180;
                     var r = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
                 	return {angle: mouseAngle, radius: r}; 
@@ -240,7 +286,7 @@ var µ = micropolar;
                         var mouseAngle = getMousePos().angle;
                         guides.select('line')
                             .attr({x1: 0, y1: 0, x2: -radius, y2: 0, transform: 'rotate('+mouseAngle+')'})
-                            .style({stroke: 'grey', opacity: 1});
+//                            .style({stroke: 'grey', opacity: 1});
                      })
                     .on('mouseout.angular-guide', function(d, i){ guides.select('line').style({opacity: 0}); });
 
@@ -248,7 +294,8 @@ var µ = micropolar;
                         var r = getMousePos().radius;
                         guides.select('circle')
                             .attr({r: r})
-                            .style({stroke: 'grey', fill: 'none', opacity: 1});
+//                            .style({stroke: 'grey', fill: 'none', opacity: 1});
+                            .style({stroke: 'grey', fill: 'none', opacity: 0});
                      })
                     .on('mouseout.radial-guide', function(d, i){ 
                         guides.select('circle').style({opacity: 0}); 
@@ -263,7 +310,7 @@ var µ = micropolar;
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        µ.util._override(_x, config);
+        µ.util.deepExtend(config, _x);
         return this;
     };
     exports.radialScale = function(_x){  
@@ -279,34 +326,54 @@ var µ = micropolar;
 
 µ.Axis.defaultConfig = function(d, i){
     var config = {
-        geometry: [],
-        data: [[0, 0], [0, 0]],
-        legend: null,
-        title: null,
-        height: 300,
-        width: 300,
-        margin: {top: 0, right: 0, bottom: 0, left: 0},
-        radialDomain: null,
-        angularDomain: null,
-        angularTicksStep: null,
-        angularTicksCount: 4,
-        flip: true,
-        originTheta: 0,
-        labelOffset: 10,
-        radialAxisTheta: -45,
-        ticks: null,
-        radialTicksSuffix: '',
-        angularTicksSuffix: '',
-        angularTicks: null,
-        showRadialAxis: true,
-        showRadialCircle: true,
-        minorTicks: 0,
-        tickLength: null,
-        rewriteTicks: null,
-        angularTickOrientation: 'horizontal', // 'radial', 'angular', 'horizontal'
-        radialTickOrientation: 'horizontal', // 'angular', 'horizontal'
-        containerSelector: 'body',
-        backgroundColor: 'none'
+        data: [
+            {x: [1, 2, 3, 4], y: [10, 11, 12, 13], name: 'Line1'},
+            {x: [21, 22, 23, 24], y: [30, 31, 32, 33], name: 'Line2'}
+        ],
+        geometryConfig: [
+//            {geometry: 'LinePlot', color: 'orange'},
+//            {geometry: 'LinePlot', color: 'skyblue'}
+        ],
+        legendConfig:{
+            showLegend: true
+        },
+        axisConfig: {
+            defaultColorRange: d3.scale.category10().range(),
+            radialDomain: null,
+            angularDomain: null,
+            angularTicksStep: null,
+            angularTicksCount: 4,
+            title: null,
+            height: 450,
+            width: 500,
+            margin: {
+                top: 50,
+                right: 150,
+                bottom: 50,
+                left: 50
+            },
+            fontSize: 11,
+            fontColor: 'black',
+            fontFamily: 'Tahoma, sans-serif',
+            flip: true,
+            originTheta: 0,
+            labelOffset: 10,
+            radialAxisTheta: -45,
+            ticks: null,
+            radialTicksSuffix: '',
+            angularTicksSuffix: '',
+            angularTicks: null,
+            showRadialAxis: true,
+            showRadialCircle: true,
+            minorTicks: 1,
+            tickLength: null,
+            rewriteTicks: null,
+            angularTickOrientation: 'horizontal', // 'radial', 'angular', 'horizontal'
+            radialTickOrientation: 'horizontal', // 'angular', 'horizontal'
+            container: 'body',
+            backgroundColor: 'none',
+            needsEndSpacing: false
+        }
     };
     return config;
 };

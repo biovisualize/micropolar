@@ -1,49 +1,66 @@
 µ.BarChart = function module() {
-    var config = {
-        data: null,
-        containerSelector: 'body',
-        dotRadius: 5,
-        fill: 'orange',
-        stroke: 'red',
-        radialScale: null,
-        angularScale: null,
-        axisConfig: null
-    };
+    var config = µ.BarChart.defaultConfig();
     var dispatch = d3.dispatch('hover');
 
     function exports() {
-        var container = config.containerSelector;
+        var geometryConfig = config.geometryConfig;
+        var container = geometryConfig.container;
         if (typeof container == 'string') container = d3.select(container);
         container.datum(config.data)
             .each(function(_data, _index) {
 
-                var domain = config.angularScale.domain();
-                var angularScale = config.angularScale.copy().domain([domain[0], domain[1] + _data[1][0] - _data[0][0]]);
+                var data = d3.zip(_data.x[0], _data.y[0]);
 
-                var markStyle = {fill: config.fill, stroke: config.stroke};
+                var angularScale = geometryConfig.angularScale;
+
+                var markStyle = {fill: geometryConfig.color, stroke: d3.rgb(geometryConfig.color).darker().toString()};
                 var barW = 12;
+                var barY = geometryConfig.radialScale(geometryConfig.radialScale.domain()[0]);
 
                 var geometryGroup = d3.select(this).classed('bar-chart', true);
                 var geometry = geometryGroup.selectAll('rect.mark')
-                    .data(_data);
+                    .data(data);
                 geometry.enter().append('rect').attr({'class': 'mark'});
                 geometry.attr({
-                        x: -barW/2,
-                        y: config.radialScale(0), 
-                        width: barW, 
-                        height: function(d, i){ 
-                            return config.radialScale(d[1]) - config.radialScale(0); }, 
-                        transform: function(d, i){ return 'rotate('+ (config.axisConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
-                    })
+                    x: -barW/2,
+                    y: barY,
+                    width: barW,
+                    height: function(d, i){ return geometryConfig.radialScale(d[1]) - barY; },
+                    transform: function(d, i){ return 'rotate('+ (geometryConfig.originTheta - 90 + (angularScale(d[0]))) +')'}
+                })
                 .style(markStyle);
 
         });
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        µ.util._override(_x, config);
+        µ.util.deepExtend(config, _x);
         return this;
     };
     d3.rebind(exports, dispatch, 'on');
     return exports;
+};
+
+
+µ.BarChart.defaultConfig = function(){
+    var config = {
+        data: {name: 'Data', x: [0, 1, 2, 3], y: [10, 20, 30, 40]},
+        geometryConfig: {
+            geometry: 'BarChart',
+            container: 'body',
+            radialScale: null,
+            angularScale: null,
+            axisConfig: null,
+            color: '#ffa500',
+            dash: 'solid',
+            lineStrokeSize: 2,
+            flip: true,
+            originTheta: 0,
+            opacity: 1,
+            index: 0,
+            visible: true,
+            visibleInLegend: true
+        }
+    };
+    return config;
 };

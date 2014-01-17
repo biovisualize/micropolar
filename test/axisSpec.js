@@ -11,7 +11,7 @@ describe("Axis", function() {
     });
 
     it("works with minimal requirements", function() {
-        polarAxis = micropolar.Axis()();
+        polarAxis = µ.Axis()();
 
         var svg = d3.select('svg');
         expect(svg.node()).not.toBe(null);
@@ -19,38 +19,36 @@ describe("Axis", function() {
     });
 
     it("builds it in the provided container", function() {
-        var config = {
-            containerSelector: container
-        };
-        polarAxis = micropolar.Axis().config(config)();
+        config = {axisConfig: {container: container}};
+        polarAxis = µ.Axis().config(config)();
 
         expect(container.select('svg').node()).not.toBe(null);
     });
 
     it("has configurable dimensions", function() {
-        var config = {
+        var axisConfig = {
             height: 500,
             width: 500,
-            labelOffset: 10,
-            tickLength: null,
-            containerSelector: container,
-            margin: {top: 25, right: 25, bottom: 25, left: 25}
+            margin: {top: 60, right: 120, bottom: 20, left: 20},
+            container: container
         };
-        polarAxis = micropolar.Axis().config(config)();
+        config = {axisConfig: axisConfig};
+        polarAxis = µ.Axis().config(config)();
 
         var svg = container.select('svg');
         var bg = container.select('.background-circle');
-        expect(+svg.attr('width')).toBe(config.width);
-        expect(+svg.attr('height')).toBe(config.height);
-        expect(bg.node().getBBox().width).toBe(config.width - config.margin.right  - config.margin.left);
+        expect(+svg.attr('width')).toBe(axisConfig.width);
+        expect(+svg.attr('height')).toBe(axisConfig.height);
+        expect(bg.node().getBBox().width).toBe(axisConfig.width - axisConfig.margin.right  - axisConfig.margin.left);
     });
 
     it("has configurable styles", function() {
-        var config = {
+        var axisConfig = {
             backgroundColor: 'red',
-            containerSelector: container
+            container: container
         };
-        polarAxis = micropolar.Axis().config(config)();
+        config = {axisConfig: axisConfig};
+        polarAxis = µ.Axis().config(config)();
 
         var svg = container.select('svg');
         var bg = container.select('.background-circle');
@@ -60,21 +58,24 @@ describe("Axis", function() {
     describe("Default axes config", function() {
 
         beforeEach(function() {
-            config = {
+            var data = [
+                {x:[1, 2, 3, 4, 5], y:[10, 20, 30, 40, 50], name:"Line1"},
+                {x:[1, 2, 3, 4, 5], y:[30, 40, 50, 60, 70], name:"Line2"}
+            ];
+            var axisConfig = {
                 width: 500,
                 height: 500,
                 margin: {top: 25, right: 25, bottom: 25, left: 25},
-                data: [[1, 10], [2, 20], [3, 30], [4, 40], [5, 50]],
-                containerSelector: container
+                container: container
             };
-            polarAxis = micropolar.Axis().config(config);
-            polarAxis();
+            config = {data: data, axisConfig: axisConfig};
+            polarAxis = µ.Axis().config(config)();
         });
 
         it("provides sensible scale domain and range", function() {
             var radialScale = polarAxis.radialScale();
             var angularScale = polarAxis.angularScale();
-            expect(radialScale.domain()).toEqual([10, 50]);
+            expect(radialScale.domain()).toEqual([10, 70]);
             expect(angularScale.domain()).toEqual([1, 5]);
             expect(radialScale.range()).toEqual([0, 225]);
             expect(angularScale.range()).toEqual([0,360]);
@@ -83,38 +84,44 @@ describe("Axis", function() {
     });
 
     describe("Ticks", function() {
-
+        var axisConfig;
         beforeEach(function() {
-            config = {
-                containerSelector: container
+            axisConfig = {
+                width: 500,
+                height: 500,
+                margin: {top: 25, right: 25, bottom: 25, left: 25},
+                container: container
             };
-            polarAxis = micropolar.Axis();
+            config = {axisConfig: axisConfig};
+            polarAxis = µ.Axis();
         });
 
-        it("shows 4 ticks by default", function() {
-            config.data = [[0, 10], [12, 20]];
+        it("connect the last element over or add a space at the end ", function() {
+            config.data = [{x:[0, 1, 2, 3], y:[10, 20, 30, 40], name:"Line1"}];
             polarAxis.config(config)();
 
-            var tickTexts = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
-            expect(tickTexts).toEqual(['0', '3', '6', '9']);
+            var tickTexts = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; })
+                .filter(function(d, i){ return d; });
+            expect(tickTexts).toEqual(['0', '1', '2']);
 
-            config.angularTicksCount = 3;
+            config.axisConfig.needsEndSpacing = true;
             polarAxis.config(config)();
 
-            var tickTexts = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
-            expect(tickTexts).toEqual(['0', '4', '8']);
+            var tickTexts = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; })
+                .filter(function(d, i){ return d; });
+            expect(tickTexts).toEqual(['0', '1', '2', '3']);
         });
 
         it("starts the ticks at 3 o'clock by default", function() {
-            config.data = [[1, 10], [5, 20]];
-            config.height = 150;
+            config.data = [{x:[1, 5], y:[10, 20], name:"Line1"}];
+            config.axisConfig.height = 150;
             polarAxis.config(config)();
 
             var tickLabelsPosX = [];
             container.selectAll('g.angular-tick text').each(function(d, i){ return tickLabelsPosX.push(this.getBoundingClientRect().left); });
             expect(tickLabelsPosX[0]).toBe(d3.max(tickLabelsPosX));
 
-            config.originTheta = -90;
+            config.axisConfig.originTheta = -90;
             polarAxis.config(config)();
 
             var tickLabelsPosY = [];
@@ -127,45 +134,50 @@ describe("Axis", function() {
     describe("Config change", function() {
 
         beforeEach(function() {
-            config = {
-                containerSelector: container
+            var axisConfig = {
+                container: container
             };
-            polarAxis = micropolar.Axis();
+            config = {axisConfig: axisConfig};
+            polarAxis = µ.Axis();
         });
 
         it("should update the chart data", function() {
-            config.data = [[0, 10], [1, 20]];
+            config.data = [{x:[0, 1, 2, 3], y:[10, 20, 30, 40], name:"Line1"}];
             polarAxis.config(config)();
 
-            var tickTexts1 = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
-            expect(container.selectAll('svg')[0].length).toBe(1);
-            expect(tickTexts1).toEqual(['0', '0.25', '0.5', '0.75']);
+            var tickTexts1 = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; })
+                .filter(function(d, i){ return d; });
+            expect(container.selectAll('svg')[0].length).toBe(2);
+            expect(tickTexts1).toEqual(['0', '1', '2']);
 
-            config.data = [[1, 20], [2, 30]];
+            config.data = [{x:[1, 2, 3], y:[20, 30, 40], name:"Line1"}];
             polarAxis.config(config)();
 
-            var tickTexts2 = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; });
-            expect(container.selectAll('svg')[0].length).toBe(1);
-            expect(tickTexts2).toEqual(['1', '1.25', '1.5', '1.75']);
+            var tickTexts2 = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; })
+                .filter(function(d, i){ return d; });
+            expect(container.selectAll('svg')[0].length).toBe(2);
+            expect(tickTexts2).toEqual(['1', '2']);
         });
 
         it("only overrides with new config", function() {
             var config1 = {
-                data: [[1, 10], [2, 20]],
-                height: 300,
-                width: 300,
-                containerSelector: container
+                data: [{x:[1, 2], y:[10, 20], name:"Line1"}],
+                axisConfig: {
+                    width: 300,
+                    height: 300,
+                    margin: {top: 25, right: 25, bottom: 25, left: 25},
+                    container: container
+                }
             };
-            polarAxis = micropolar.Axis().config(config1)();
+            polarAxis = µ.Axis().config(config1)();
 
             expect(polarAxis.config().height).toBe(config1.height);
             expect(polarAxis.config().width).toBe(config1.width);
 
             var config2 = {
-                height: 200
+                axisConfig: {width: 200}
             };
             polarAxis.config(config2)();
-//            fixture.cloneAndKeepFixture();
 
             expect(polarAxis.config().height).toBe(config2.height);
             expect(polarAxis.config().width).toBe(config1.width);

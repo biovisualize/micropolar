@@ -7,7 +7,7 @@
     return (Math.random()*2-1)+(Math.random()*2-1)+(Math.random()*2-1);
 };
 
-µ.util.dataFromEquation = function(_equation, _step){
+µ.util.dataFromEquation2 = function(_equation, _step){
     var step = _step || 6;
     var data = d3.range(0, 360 + step, step).map(function(deg, index){
         var theta = deg * Math.PI / 180;
@@ -15,6 +15,20 @@
         return [deg, radius];
     });
     return data;
+};
+
+µ.util.dataFromEquation = function(_equation, _step, _name){
+    var step = _step || 6;
+    var x = [], y = [], name = [];
+    d3.range(0, 360 + step, step).forEach(function(deg, index){
+        var theta = deg * Math.PI / 180;
+        var radius = _equation(theta);
+        x.push(deg);
+        y.push(radius);
+    });
+    var result = {x: x, y: y};
+    if(_name) result.name = _name;
+    return result;
 };
 
 µ.util.ensureArray = function(_val, _count){
@@ -30,6 +44,27 @@
         _obj[d] = µ.util.ensureArray(_obj[d], _count);
     });
     return _obj;
+};
+
+
+// Taken from http://andrewdupont.net/2009/08/28/deep-extending-objects-in-javascript/
+µ.util.deepExtend = function(destination, source) {
+    for (var property in source) {
+        if (source[property] && source[property].constructor &&
+            source[property].constructor === Object) {
+            destination[property] = destination[property] || {};
+            arguments.callee(destination[property], source[property]);
+        } else {
+            destination[property] = source[property];
+        }
+    }
+    return destination;
+};
+
+µ.util.validateKeys = function(obj, keys) {
+    if(typeof keys === 'string') keys = keys.split('.');
+    var next = keys.shift();
+    return obj[next] && (! keys.length || objHasKeys(obj[next], keys));
 };
 
 
