@@ -43,6 +43,8 @@ var µ = micropolar;
                 if(needsEndSpacing) angularDomain[1] += angularDataMerged[1] - angularDataMerged[0];
 
                 var step = ((angularDomain[1] - angularDomain[0]) / (data[0].x[0][1] - data[0].x[0][0]));
+                // reduce the number of ticks
+                if(step > 8) step = step / (step / 8) + step%8;
                 var angularTicksStep = axisConfig.angularTicksStep
                     || ((angularDomain[1] - angularDomain[0]) / (step * (axisConfig.minorTicks+1)));
                 if(!angularDomain[2]) angularDomain[2] = angularTicksStep;
@@ -209,11 +211,9 @@ var µ = micropolar;
                         if(!d.color){
                             d.color = axisConfig.defaultColorRange[colorIndex];
                             colorIndex = (colorIndex+1) % axisConfig.defaultColorRange.length;
-                            console.log(1, d.color);
                         }
                         var geometry = µ[geometryConfig[i].geometry]();
                         var individualGeometryConfig = µ.util.deepExtend({}, d);
-                        console.log(2, individualGeometryConfig.color, individualGeometryConfig.geometry);
                         individualGeometryConfig.radialScale = radialScale;
                         individualGeometryConfig.angularScale = angularScale;
                         individualGeometryConfig.container = geometryContainer;
@@ -221,7 +221,6 @@ var µ = micropolar;
                         individualGeometryConfig.index = i;
 
                         var individualGeometryConfigMixin = µ.util.deepExtend(µ[d.geometry].defaultConfig().geometryConfig, individualGeometryConfig);
-                        console.log(individualGeometryConfigMixin.color, individualGeometryConfig.geometry);
                         geometry.config({
                             data: data[i],
                             geometryConfig: individualGeometryConfigMixin
@@ -367,7 +366,7 @@ var µ = micropolar;
             showRadialCircle: true,
             minorTicks: 1,
             tickLength: null,
-            rewriteTicks: null,
+            rewriteTicks: function(d, i){ if(d) return Math.round(d*100)/100; },
             angularTickOrientation: 'horizontal', // 'radial', 'angular', 'horizontal'
             radialTickOrientation: 'horizontal', // 'angular', 'horizontal'
             container: 'body',

@@ -35,6 +35,7 @@ var µ = micropolar;
             var angularDomain = axisConfig.angularDomain || angularExtent;
             if (needsEndSpacing) angularDomain[1] += angularDataMerged[1] - angularDataMerged[0];
             var step = (angularDomain[1] - angularDomain[0]) / (data[0].x[0][1] - data[0].x[0][0]);
+            if (step > 8) step = step / (step / 8) + step % 8;
             var angularTicksStep = axisConfig.angularTicksStep || (angularDomain[1] - angularDomain[0]) / (step * (axisConfig.minorTicks + 1));
             if (!angularDomain[2]) angularDomain[2] = angularTicksStep;
             var angularAxisRange = d3.range.apply(this, angularDomain);
@@ -42,7 +43,6 @@ var µ = micropolar;
                 return parseFloat(d.toPrecision(12));
             });
             angularScale = d3.scale.linear().domain(angularDomain.slice(0, 2)).range(axisConfig.flip ? [ 0, 360 ] : [ 360, 0 ]);
-            console.log(step, angularDomain, angularDomain[1] - angularDomain[0], data[0].x[0][1], data[0].x[0][0]);
             svg = d3.select(this).select("svg.chart-root");
             if (typeof svg === "undefined" || svg.empty()) {
                 var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root">                         <g class="chart-group">                             <circle class="background-circle"></circle>                             <g class="angular axis-group"></g>                            <g class="geometry-group"></g>                            <g class="radial axis-group">                                 <circle class="outside-circle"></circle>                             </g>                             <g class="guides-group"><line></line><circle r="0"></circle></g>                         </g>                         <g class="legend-group"></g>                         <g class="title-group"><text></text></g>                     </svg>';
@@ -163,18 +163,15 @@ var µ = micropolar;
                     if (!d.color) {
                         d.color = axisConfig.defaultColorRange[colorIndex];
                         colorIndex = (colorIndex + 1) % axisConfig.defaultColorRange.length;
-                        console.log(1, d.color);
                     }
                     var geometry = µ[geometryConfig[i].geometry]();
                     var individualGeometryConfig = µ.util.deepExtend({}, d);
-                    console.log(2, individualGeometryConfig.color, individualGeometryConfig.geometry);
                     individualGeometryConfig.radialScale = radialScale;
                     individualGeometryConfig.angularScale = angularScale;
                     individualGeometryConfig.container = geometryContainer;
                     if (!individualGeometryConfig.originTheta) individualGeometryConfig.originTheta = axisConfig.originTheta;
                     individualGeometryConfig.index = i;
                     var individualGeometryConfigMixin = µ.util.deepExtend(µ[d.geometry].defaultConfig().geometryConfig, individualGeometryConfig);
-                    console.log(individualGeometryConfigMixin.color, individualGeometryConfig.geometry);
                     geometry.config({
                         data: data[i],
                         geometryConfig: individualGeometryConfigMixin
@@ -336,12 +333,14 @@ var µ = micropolar;
             showRadialCircle: true,
             minorTicks: 1,
             tickLength: null,
-            rewriteTicks: null,
+            rewriteTicks: function(d, i) {
+                if (d) return Math.round(d * 100) / 100;
+            },
             angularTickOrientation: "horizontal",
             radialTickOrientation: "horizontal",
             container: "body",
             backgroundColor: "none",
-            needsEndSpacing: true
+            needsEndSpacing: false
         }
     };
     return config;
@@ -430,7 +429,6 @@ var µ = micropolar;
         if (typeof container == "string") container = d3.select(container);
         container.datum(config.data).each(function(_data, _index) {
             var data = d3.zip(_data.x[0], _data.y[0]);
-            var domain = geometryConfig.angularScale.domain();
             var angularScale = geometryConfig.angularScale;
             var markStyle = {
                 fill: geometryConfig.color,
@@ -613,9 +611,7 @@ var µ = micropolar;
         var container = geometryConfig.container;
         if (typeof container == "string") container = d3.select(container);
         container.datum(config.data).each(function(_data, _index) {
-            console.log("stacked", geometryConfig.color);
             var data = d3.zip(_data.x[0], _data.y[0]);
-            var domain = geometryConfig.angularScale.domain();
             var angularScale = geometryConfig.angularScale;
             var dataStacked = d3.nest().key(function(d) {
                 return d[2];
@@ -713,7 +709,6 @@ var µ = micropolar;
         var container = geometryConfig.container;
         if (typeof container == "string") container = d3.select(container);
         container.datum(config.data).each(function(_data, _index) {
-            console.log("dot", geometryConfig.color);
             var data = d3.zip(_data.x[0], _data.y[0]);
             var getPolarCoordinates = function(d, i) {
                 var r = geometryConfig.radialScale(d[1]);
@@ -861,7 +856,7 @@ var µ = micropolar;
     function exports() {
         var legendConfig = config.legendConfig;
         var data = config.data.filter(function(d, i) {
-            return legendConfig.elements[i].visibleInLegend;
+            return legendConfig.elements[i] && (legendConfig.elements[i].visibleInLegend || typeof legendConfig.elements[i].visibleInLegend === "undefined");
         });
         if (legendConfig.reverseOrder) data = data.reverse();
         var container = legendConfig.container;
@@ -874,13 +869,15 @@ var µ = micropolar;
         var height = isContinuous ? legendConfig.height : lineHeight * data.length;
         var geometryGroup = container.classed("legend-group", true);
         var svg = geometryGroup.selectAll("svg").data([ 0 ]);
-        svg.enter().append("svg").attr({
+        var svgEnter = svg.enter().append("svg").attr({
             width: 300,
             height: height + lineHeight,
             xmlns: "http://www.w3.org/2000/svg",
             "xmlns:xmlns:xlink": "http://www.w3.org/1999/xlink",
             version: "1.1"
-        }).append("g").classed("legend-axis", true);
+        });
+        svgEnter.append("g").classed("legend-axis", true);
+        svgEnter.append("g").classed("legend-marks", true);
         var svgGroup = svg.html("");
         var colorScale = d3.scale[isContinuous ? "linear" : "ordinal"]().domain(config.data).range(colors);
         var dataScale = d3.scale[isContinuous ? "linear" : "ordinal"]().domain(data)[isContinuous ? "range" : "rangePoints"]([ 0, height ]);
@@ -891,7 +888,7 @@ var µ = micropolar;
             } else if (d3.svg.symbolTypes.indexOf(_type) != -1) return d3.svg.symbol().type(_type).size(squareSize)(); else return d3.svg.symbol().type("square").size(squareSize)();
         };
         if (isContinuous) {
-            var gradient = svgGroup.append("defs").append("linearGradient").attr({
+            var gradient = svgGroup.select(".legend-marks").append("defs").append("linearGradient").attr({
                 id: "grad1",
                 x1: "0%",
                 y1: "0%",
@@ -914,7 +911,7 @@ var µ = micropolar;
                 fill: "url(#grad1)"
             });
         } else {
-            var legendElement = svgGroup.selectAll("path.legend-mark").data(data);
+            var legendElement = svgGroup.select(".legend-marks").selectAll("path.legend-mark").data(data);
             legendElement.enter().append("path").classed("legend-mark", true);
             legendElement.attr({
                 transform: function(d, i) {
