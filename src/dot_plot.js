@@ -13,7 +13,7 @@
 
                 var getPolarCoordinates = function(d, i){
                     var r = geometryConfig.radialScale(d[1]);
-                    var θ = (geometryConfig.angularScale(d[0])) * Math.PI / 180 * (geometryConfig.flip?1:-1);
+                    var θ = (geometryConfig.angularScale(d[0])) * Math.PI / 180;
                     return {r: r, θ: θ};
                 };
 

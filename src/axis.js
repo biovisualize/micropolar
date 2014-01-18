@@ -11,7 +11,6 @@ var µ = micropolar;
         var axisConfig = config.axisConfig;
         var geometryConfig = config.geometryConfig;
         var legendConfig = config.legendConfig;
-
         var container = axisConfig.container;
         if (typeof container == 'string' || container.nodeName) container = d3.select(container);
         container.datum(data)
@@ -42,11 +41,14 @@ var µ = micropolar;
 
                 if(needsEndSpacing) angularDomain[1] += angularDataMerged[1] - angularDataMerged[0];
 
-                var step = ((angularDomain[1] - angularDomain[0]) / (data[0].x[0][1] - data[0].x[0][0]));
+                var tickCount = axisConfig.angularTicksCount || ((angularDomain[1] - angularDomain[0]) / (data[0].x[0][1] - data[0].x[0][0]));
                 // reduce the number of ticks
-                if(step > 8) step = step / (step / 8) + step%8;
+                if(tickCount > 8) tickCount = tickCount / (tickCount / 8) + tickCount%8;
+                if(axisConfig.angularTicksStep){
+                    tickCount = (angularDomain[1] - angularDomain[0]) / axisConfig.angularTicksCount;
+                }
                 var angularTicksStep = axisConfig.angularTicksStep
-                    || ((angularDomain[1] - angularDomain[0]) / (step * (axisConfig.minorTicks+1)));
+                    || ((angularDomain[1] - angularDomain[0]) / (tickCount * (axisConfig.minorTicks+1)));
                 if(!angularDomain[2]) angularDomain[2] = angularTicksStep;
 
                 var angularAxisRange = d3.range.apply(this, angularDomain);
@@ -219,6 +221,7 @@ var µ = micropolar;
                         individualGeometryConfig.container = geometryContainer;
                         if(!individualGeometryConfig.originTheta) individualGeometryConfig.originTheta = axisConfig.originTheta;
                         individualGeometryConfig.index = i;
+                        individualGeometryConfig.flip = axisConfig.flip;
 
                         var individualGeometryConfigMixin = µ.util.deepExtend(µ[d.geometry].defaultConfig().geometryConfig, individualGeometryConfig);
                         geometry.config({
@@ -246,12 +249,13 @@ var µ = micropolar;
                         d.visibleInLegend = (typeof d.visibleInLegend === 'undefined') || d.visibleInLegend;
                         return d;
                     });
-                    var legendConfigMixin1 = µ.util.deepExtend(µ.Legend.defaultConfig(), legendConfig);
+                    var legendConfigMixin1 = µ.util.deepExtend(µ.Legend.defaultConfig().legendConfig, legendConfig);
                     var legendConfigMixin2 = µ.util.deepExtend(legendConfigMixin1, {container: legendContainer, elements: elements});
-                    µ.Legend().config({
-                        data: data.map(function(d, i){ return d.name || 'Element' + i; }),
+                    var legendConfigMixin3 = {
+                        data:data.map(function(d, i){ return d.name || 'Element' + i; }),
                         legendConfig: legendConfigMixin2
-                    })();
+                    }
+                    µ.Legend().config(legendConfigMixin3)();
                 }
                 else{
                     svg.select('.legend-group').style({display: 'none'});
@@ -354,7 +358,7 @@ var µ = micropolar;
             fontSize: 11,
             fontColor: 'black',
             fontFamily: 'Tahoma, sans-serif',
-            flip: true,
+            flip: false,
             originTheta: 0,
             labelOffset: 10,
             radialAxisTheta: -45,

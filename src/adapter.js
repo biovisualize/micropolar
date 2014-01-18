@@ -34,8 +34,10 @@
                 if (d.key === 'xaxis'){
                     if(typeof d.value.range != 'undefined') r.angularDomain = d.value.range;
                     if(typeof d.value.tickCount != 'undefined') r.angularTicksCount = d.value.tickCount;
+                    if(typeof d.value.tickStep != 'undefined') r.angularTicksStep = d.value.tickStep;
                     if(typeof d.value.minorTickCount != 'undefined') r.minorTicks = d.value.minorTickCount;
                     if(d.value.suffix) r.angularTicksSuffix = d.value.suffix;
+                    if(typeof d.value.flip != 'undefined') r.flip = d.value.flip;
                 }
                 if (d.key === 'yaxis'){
                     if(typeof d.value.range != 'undefined') r.radialDomain = d.value.range;

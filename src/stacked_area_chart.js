@@ -12,6 +12,8 @@
                 var data = d3.zip(_data.x[0], _data.y[0]);
 
                 var angularScale = geometryConfig.angularScale;
+                var angularScaleReversed = geometryConfig.angularScale.copy().range(geometryConfig.angularScale.range().slice().reverse());
+                var angularScale2 = (geometryConfig.flip) ? angularScale : angularScaleReversed;
 
                 var dataStacked = d3.nest().key(function (d) { return d[2] }).entries(data);
                 dataStacked.forEach(function (d) {
@@ -43,8 +45,7 @@
                     .innerRadius(function(d) { return baseY; })
                     .outerRadius(function(d) { return geometryConfig.radialScale(d.y); });
 
-//                var triangleAngle = (360 / d3.keys(d3.nest().key(function (d) { return d[0] }).map(data)).length) * Math.PI / 180 / 2;
-                var triangleAngle = (angularScale(data[1][0] - data[0][0]) * Math.PI / 180 / 2);
+                var triangleAngle = (angularScale2(data[1][0] - data[0][0]) * Math.PI / 180 / 2);
 //                var markStyle = { fill: function(d){return geometryConfig.colorScale(d[2])}, stroke: "gray" };
                 var markStyle = { fill: geometryConfig.color, stroke: "gray" };
                 var geometryGroup = d3.select(this).classed('stacked-area-chart', true);

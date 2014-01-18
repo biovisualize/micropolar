@@ -16,8 +16,8 @@
         var isContinuous = (legendConfig.isContinuous == null) ? typeof data[0] === 'number' : legendConfig.isContinuous;
         var height = isContinuous ? legendConfig.height : (lineHeight) * data.length;
 
-        var geometryGroup = container.classed('legend-group', true);
-        var svg = geometryGroup.selectAll('svg')
+        var legendContainerGroup = container.classed('legend-group', true);
+        var svg = legendContainerGroup.selectAll('svg')
             .data([0]);
         var svgEnter = svg.enter().append('svg')
             .attr({
@@ -29,8 +29,6 @@
             });
         svgEnter.append('g').classed('legend-axis', true);
         svgEnter.append('g').classed('legend-marks', true);
-
-        var svgGroup = svg.html('');
 
         var colorScale = d3.scale[(isContinuous) ? 'linear' : 'ordinal']().domain(config.data).range(colors);
         var dataScale = d3.scale[(isContinuous) ? 'linear' : 'ordinal']()
@@ -47,7 +45,7 @@
         };
 
         if(isContinuous){
-            var gradient = svgGroup.select('.legend-marks')
+            var gradient = svg.select('.legend-marks')
                 .append('defs').append('linearGradient')
                 .attr({id: 'grad1', x1: '0%', y1: '0%', x2: '0%', y2: '100%'})
                 .selectAll('stop')
@@ -55,11 +53,11 @@
             gradient.enter().append('stop');
             gradient.attr({ offset: function(d, i){ return i / (colors.length - 1) * 100 + '%'; } })
                 .style({'stop-color': function(d, i){ return d; }});
-            svgGroup.append('rect').classed('legend-mark', true)
+            svg.append('rect').classed('legend-mark', true)
                 .attr({height: legendConfig.height, width: legendConfig.colorBandWidth, fill: 'url(#grad1)'});
         }
         else{
-            var legendElement = svgGroup.select('.legend-marks')
+            var legendElement = svg.select('.legend-marks')
                 .selectAll('path.legend-mark')
                 .data(data);
             legendElement.enter().append('path').classed('legend-mark', true);
@@ -75,7 +73,7 @@
         }
 
         var legendAxis = d3.svg.axis().scale(dataScale).orient('right');
-        var axis = svgGroup.select('g.legend-axis')
+        var axis = svg.select('g.legend-axis')
             .attr({transform: 'translate(' + [isContinuous ? legendConfig.colorBandWidth : lineHeight, lineHeight / 2] + ')'})
             .call(legendAxis);
         axis.selectAll('.domain').style({fill: 'none', stroke: 'none'});
