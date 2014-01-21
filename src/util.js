@@ -67,4 +67,20 @@
     return obj[next] && (! keys.length || objHasKeys(obj[next], keys));
 };
 
+µ.util.sumArrays = function(a, b){ return d3.zip(a, b).map(function(d, i){ return d3.sum(d); }); }
+µ.util.arrayLast = function(a){ return a[a.length-1]; }
+µ.util.arrayEqual = function(a, b) {
+    var i = Math.max(a.length, b.length, 1);
+    while(i-- >= 0 && a[i] === b[i]);
+    return (i === -2);
+}
+µ.util.flattenArray = function(arr) {
+    var r = [];
+    while (!µ.util.arrayEqual(r, arr)) {
+        r = arr;
+        arr = [].concat.apply([], arr);
+    }
+    return arr;
+}
+
 

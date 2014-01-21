@@ -10,8 +10,9 @@
             .each(function (_data, _index) {
 
                 // Zip the data
+                var isStack = _data.yStack;
                 var data = _data.y.map(function(d, i){
-                    if(_data.yStack) return d3.zip(_data.x[0], d, _data.yStack[i]);
+                    if(isStack) return d3.zip(_data.x[0], d, _data.yStack[i]);
                     else return d3.zip(_data.x[0], d);
                 });
 
@@ -36,11 +37,12 @@
                     .startAngle(function(d) { return -triangleAngle + Math.PI/2; })
                     .endAngle(function(d) { return triangleAngle + Math.PI/2; })
                     .innerRadius(function(d) { return geometryConfig.radialScale(domainMin +  (d[2]||0)); })
-                    .outerRadius(function(d) { return geometryConfig.radialScale(domainMin +  (d[2]||0)) + geometryConfig.radialScale(domainMin + d[1]) });
+                    .outerRadius(function(d) { return geometryConfig.radialScale(domainMin +  (d[2]||0)) + geometryConfig.radialScale(d[1]) });
 
                 var triangleAngle = (angularScale2(data[0][1][0]) * Math.PI / 180 / 2);
-//                var markStyle = { fill: function(d){return geometryConfig.colorScale(d[2])}, stroke: "gray" };
-                var markStyle = { fill: geometryConfig.color, stroke: "gray" };
+                var markStyle = {
+                    fill: function(d, i, pI){ return (isStack) ? geometryConfig.colorScale(pI) : geometryConfig.color },
+                    stroke: "gray" };
                 var geometryGroup = d3.select(this).classed('stacked-area-chart', true);
                 var geometry = geometryGroup.selectAll('g.layer')
                     .data(data)

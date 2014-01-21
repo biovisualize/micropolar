@@ -76,7 +76,7 @@ describe("Axis", function() {
             var radialScale = polarAxis.radialScale();
             var angularScale = polarAxis.angularScale();
             expect(radialScale.domain()).toEqual([10, 70]);
-            expect(angularScale.domain()).toEqual([1, 5]);
+            expect(angularScale.domain()).toEqual([1, 6]); // default is needsEndSpacing
             expect(radialScale.range()).toEqual([0, 225]);
             expect(angularScale.range()).toEqual([360, 0]); // default is counterclockwise
         });
@@ -98,6 +98,7 @@ describe("Axis", function() {
 
         it("connect the last element over or add a space at the end ", function() {
             config.data = [{x:[0, 1, 2, 3], y:[10, 20, 30, 40], name:"Line1"}];
+            config.axisConfig.needsEndSpacing = false;
             polarAxis.config(config)();
 
             var tickTexts = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; })
@@ -148,7 +149,7 @@ describe("Axis", function() {
             var tickTexts1 = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; })
                 .filter(function(d, i){ return d; });
             expect(container.selectAll('svg')[0].length).toBe(2);
-            expect(tickTexts1).toEqual(['0', '1', '2']);
+            expect(tickTexts1).toEqual(['0', '1', '2', '3']);
 
             config.data = [{x:[1, 2, 3], y:[20, 30, 40], name:"Line1"}];
             polarAxis.config(config)();
@@ -156,7 +157,7 @@ describe("Axis", function() {
             var tickTexts2 = container.selectAll('.angular-tick')[0].map(function(d, i){ return d.textContent; })
                 .filter(function(d, i){ return d; });
             expect(container.selectAll('svg')[0].length).toBe(2);
-            expect(tickTexts2).toEqual(['1', '2']);
+            expect(tickTexts2).toEqual(['1', '2', '3']);
         });
 
         it("only overrides with new config", function() {

@@ -28,22 +28,6 @@ var µ = micropolar;
                     return validated;
                 });
 
-                function sumArrays(a, b){ return d3.zip(a, b).map(function(d, i){ return d3.sum(d); }); }
-                function arrayLast(a){ return a[a.length-1]; }
-                function arrayEqual(a, b) {
-                    var i = Math.max(a.length, b.length, 1);
-                    while(i-- >= 0 && a[i] === b[i]);
-                    return (i === -2);
-                }
-                function flattenArray(arr) {
-                    var r = [];
-                    while (!arrayEqual(r, arr)) {
-                        r = arr;
-                        arr = [].concat.apply([], arr);
-                    }
-                    return arr;
-                }
-
                 // Stack Y
                 var firstDataY = data[0].y;
                 var isStacked = Array.isArray(_data[0].y[0]);
@@ -51,7 +35,7 @@ var µ = micropolar;
                 var prevArray = firstDataY[0].map(function(d, i){ return 0; });
                 firstDataY.forEach(function(d, i, a){
                     dataYStack.push(prevArray);
-                    prevArray = sumArrays(d, prevArray);
+                    prevArray = µ.util.sumArrays(d, prevArray);
                 });
                 data[0].yStack = dataYStack;
 
@@ -61,17 +45,17 @@ var µ = micropolar;
 
                 var extent;
                 if(isStacked){
-                    var highestStackedValue = d3.max(sumArrays(arrayLast(firstDataY), arrayLast(dataYStack)));
+                    var highestStackedValue = d3.max(µ.util.sumArrays(µ.util.arrayLast(firstDataY), µ.util.arrayLast(dataYStack)));
                     extent = [0, highestStackedValue];
                 }
-                else extent = d3.extent(flattenArray(data.map(function(d, i){ return d.y; })));
+                else extent = d3.extent(µ.util.flattenArray(data.map(function(d, i){ return d.y; })));
 
                 radialScale = d3.scale.linear()
                     .domain(axisConfig.radialDomain || extent)
                     .range([0, radius]);
 
                 // Angular scale
-                var angularDataMerged = flattenArray(data.map(function(d, i){ return d.x; }));
+                var angularDataMerged = µ.util.flattenArray(data.map(function(d, i){ return d.x; }));
 
                 // Ordinal Angular scale
                 var isOrdinal = typeof angularDataMerged[0] === 'string';
@@ -416,7 +400,7 @@ var µ = micropolar;
             radialTickOrientation: 'horizontal', // 'angular', 'horizontal'
             container: 'body',
             backgroundColor: 'none',
-            needsEndSpacing: false
+            needsEndSpacing: true
         }
     };
     return config;

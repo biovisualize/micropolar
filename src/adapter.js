@@ -37,6 +37,7 @@
                 if(d.key === 'title') r.title = d.value;
                 if(d.key === 'showlegend') outputConfig.legendConfig.showLegend = d.value;
                 if(d.key === 'direction') r.flip = (d.value === 'clockwise');
+                if(d.key === 'needsEndSpacing') r.needsEndSpacing = d.needsEndSpacing;
                 if(d.key === 'legend'){
                     if(d.value.traceorder) outputConfig.legendConfig.reverseOrder = (d.value.traceorder === 'reversed');
                 }
