@@ -4,7 +4,7 @@ var µ = micropolar;
 µ.Axis = function module() {
     var config = µ.Axis.defaultConfig();
     var svg, dispatch = d3.dispatch('hover'),
-    	radialScale, angularScale, colorScale;
+    	radialScale, angularScale;
 
     function exports(){
         var data = config.data;
@@ -19,33 +19,79 @@ var µ = micropolar;
                 // Scales
                 ////////////////////////////////////////////////////////////////////
 
+                // Make sure x,y are arrays of array
                 var data = _data.map(function(d, i){
                     var validated = {};
                     validated.name = d.name;
-                    if(!Array.isArray(d.x[0])) validated.x = [d.x];
-                    if(!Array.isArray(d.y[0])) validated.y = [d.y];
+                    validated.x = (Array.isArray(d.x[0])) ? d.x : [d.x];
+                    validated.y = (Array.isArray(d.y[0])) ? d.y : [d.y];
                     return validated;
                 });
 
+                function sumArrays(a, b){ return d3.zip(a, b).map(function(d, i){ return d3.sum(d); }); }
+                function arrayLast(a){ return a[a.length-1]; }
+                function arrayEqual(a, b) {
+                    var i = Math.max(a.length, b.length, 1);
+                    while(i-- >= 0 && a[i] === b[i]);
+                    return (i === -2);
+                }
+                function flattenArray(arr) {
+                    var r = [];
+                    while (!arrayEqual(r, arr)) {
+                        r = arr;
+                        arr = [].concat.apply([], arr);
+                    }
+                    return arr;
+                }
+
+                // Stack Y
+                var firstDataY = data[0].y;
+                var isStacked = Array.isArray(_data[0].y[0]);
+                var dataYStack = [];
+                var prevArray = firstDataY[0].map(function(d, i){ return 0; });
+                firstDataY.forEach(function(d, i, a){
+                    dataYStack.push(prevArray);
+                    prevArray = sumArrays(d, prevArray);
+                });
+                data[0].yStack = dataYStack;
+
+                // Radial scale
                 var radius = Math.min(axisConfig.width - axisConfig.margin.left - axisConfig.margin.right,
                     axisConfig.height - axisConfig.margin.top - axisConfig.margin.bottom) / 2;
-                var extent = d3.extent(d3.merge(d3.merge(data.map(function(d, i){ return d.y; }))));
+
+                var extent;
+                if(isStacked){
+                    var highestStackedValue = d3.max(sumArrays(arrayLast(firstDataY), arrayLast(dataYStack)));
+                    extent = [0, highestStackedValue];
+                }
+                else extent = d3.extent(flattenArray(data.map(function(d, i){ return d.y; })));
+
                 radialScale = d3.scale.linear()
                     .domain(axisConfig.radialDomain || extent)
                     .range([0, radius]);
 
-                var needsEndSpacing = axisConfig.needsEndSpacing;
-                var angularDataMerged = d3.merge(d3.merge(data.map(function(d, i){ return d.x; })));
+                // Angular scale
+                var angularDataMerged = flattenArray(data.map(function(d, i){ return d.x; }));
+
+                // Ordinal Angular scale
+                var isOrdinal = typeof angularDataMerged[0] === 'string';
+                var ticks;
+                if(isOrdinal){
+                    ticks = angularDataMerged.slice();
+                    angularDataMerged = d3.range(angularDataMerged.length);
+                    if(isStacked) data[0] = {name: data[0].name, x: [angularDataMerged], y: data[0].y, yStack: data[0].yStack};
+                    else data[0] = {name: data[0].name, x: [angularDataMerged], y: data[0].y};
+                }
+
                 var angularExtent = d3.extent(angularDataMerged);
                	var angularDomain = axisConfig.angularDomain || angularExtent;
+                if(axisConfig.needsEndSpacing) angularDomain[1] += angularDataMerged[1] - angularDataMerged[0];
 
-                if(needsEndSpacing) angularDomain[1] += angularDataMerged[1] - angularDataMerged[0];
-
+                // Reduce the number of ticks
                 var tickCount = axisConfig.angularTicksCount || ((angularDomain[1] - angularDomain[0]) / (data[0].x[0][1] - data[0].x[0][0]));
-                // reduce the number of ticks
                 if(tickCount > 8) tickCount = tickCount / (tickCount / 8) + tickCount%8;
                 if(axisConfig.angularTicksStep){
-                    tickCount = (angularDomain[1] - angularDomain[0]) / axisConfig.angularTicksCount;
+                    tickCount = (angularDomain[1] - angularDomain[0]) / tickCount;
                 }
                 var angularTicksStep = axisConfig.angularTicksStep
                     || ((angularDomain[1] - angularDomain[0]) / (tickCount * (axisConfig.minorTicks+1)));
@@ -54,6 +100,7 @@ var µ = micropolar;
                 var angularAxisRange = d3.range.apply(this, angularDomain);
                 // Workaround for rounding errors
                 angularAxisRange = angularAxisRange.map(function(d, i){ return parseFloat(d.toPrecision(12)) });
+
                 angularScale = d3.scale.linear()
                     .domain(angularDomain.slice(0, 2))
                     .range(axisConfig.flip? [0, 360] : [360, 0]);
@@ -112,28 +159,23 @@ var µ = micropolar;
                 svg.select('circle.background-circle').attr({r: radius})
                     .style({fill: axisConfig.backgroundColor, stroke: axisConfig.stroke});
 
-                var currentAngle = function(d, i){ return (angularScale(d) + axisConfig.originTheta) % 360; };
+                function currentAngle(d, i){ return (angularScale(d) + axisConfig.originTheta) % 360; }
 
                 if(axisConfig.showRadialAxis){
                     var axis = d3.svg.axis()
                         .scale(radialScale)
                         .ticks(5)
                         .tickSize(5);
-                    var radialAxis = svg.select('.radial.axis-group').call(axis)  
+                    radialAxis.call(axis)
                         .attr({transform: 'rotate('+ (axisConfig.radialAxisTheta) +')'});
                     radialAxis.selectAll('.domain').style(lineStyle);
                     radialAxis.selectAll('g>text')
                         .text(function(d, i){ return this.textContent + axisConfig.radialTicksSuffix; })
                     	.style(fontStyle)
-                        .style({
-                            'text-anchor': 'start'
-                        })
+                        .style({'text-anchor': 'start'})
                     	.attr({
-                            x: 0,
-                            y: 0,
-                            dx: 0,
-                            dy: 0,
-                    		transform: function(d, i){ 
+                            x: 0, y: 0, dx: 0, dy: 0,
+                    		transform: function(d, i){
                                 if(axisConfig.radialTickOrientation === 'horizontal') return 'rotate(' + (-axisConfig.radialAxisTheta) + ') translate(' + [0, fontStyle['font-size']] + ')';
                                 else return 'translate(' + [0, fontStyle['font-size']] + ')';
                     		}
@@ -149,16 +191,14 @@ var µ = micropolar;
                   .selectAll('g.angular-tick')
                     .data(angularAxisRange);
                 var angularAxisEnter = angularAxis.enter().append('g')
-                    .attr({
-                        'class': 'angular-tick'
-                    });
+                    .classed('angular-tick', true);
                 angularAxis.attr({
                     transform: function(d, i) { return 'rotate(' + currentAngle(d, i) + ')'; }
                 });
                 angularAxis.exit().remove();
 
                 angularAxisEnter.append('line')
-                    .attr({'class': 'grid-line'})
+                    .classed('grid-line', true)
                     .classed('major', function(d, i){ return (i % (axisConfig.minorTicks+1) == 0) })
                     .classed('minor', function(d, i){ return !(i % (axisConfig.minorTicks+1) == 0) })
                     .style(lineStyle);
@@ -170,9 +210,9 @@ var µ = micropolar;
                     });
 
                 angularAxisEnter.append('text')
-                    .attr({'class': 'axis-text'})
+                    .classed('axis-text', true)
                     .style(fontStyle);
-                var ticks = angularAxis.select('text.axis-text')
+                var ticksText = angularAxis.select('text.axis-text')
                     .attr({
                         x: radius + axisConfig.labelOffset,
                         dy: '.35em',
@@ -188,12 +228,13 @@ var µ = micropolar;
                     .style({'text-anchor': 'middle' })
                     .text(function(d, i) {
                         if(i % (axisConfig.minorTicks + 1) != 0) return '';
-                        if(axisConfig.ticks) return axisConfig.ticks[i / (axisConfig.minorTicks + 1)] + axisConfig.angularTicksSuffix;
+                        if(ticks) return ticks[i / (axisConfig.minorTicks + 1)] + axisConfig.angularTicksSuffix;
+//                        if(axisConfig.ticks) return axisConfig.ticks[i / (axisConfig.minorTicks + 1)] + axisConfig.angularTicksSuffix;
                         else return d + axisConfig.angularTicksSuffix;
                     })
                     .style(fontStyle);
 
-                if (axisConfig.rewriteTicks) ticks.text(function(d, i){ return axisConfig.rewriteTicks(this.textContent, i); });
+                if (axisConfig.rewriteTicks) ticksText.text(function(d, i){ return axisConfig.rewriteTicks(this.textContent, i); });
 
 
                 // Geometry
@@ -254,7 +295,7 @@ var µ = micropolar;
                     var legendConfigMixin3 = {
                         data:data.map(function(d, i){ return d.name || 'Element' + i; }),
                         legendConfig: legendConfigMixin2
-                    }
+                    };
                     µ.Legend().config(legendConfigMixin3)();
                 }
                 else{
@@ -345,7 +386,7 @@ var µ = micropolar;
             radialDomain: null,
             angularDomain: null,
             angularTicksStep: null,
-            angularTicksCount: 4,
+            angularTicksCount: null,
             title: null,
             height: 450,
             width: 500,
@@ -362,7 +403,6 @@ var µ = micropolar;
             originTheta: 0,
             labelOffset: 10,
             radialAxisTheta: -45,
-            ticks: null,
             radialTicksSuffix: '',
             angularTicksSuffix: '',
             angularTicks: null,
@@ -370,7 +410,8 @@ var µ = micropolar;
             showRadialCircle: true,
             minorTicks: 1,
             tickLength: null,
-            rewriteTicks: function(d, i){ if(d) return Math.round(d*100)/100; },
+//            rewriteTicks: function(d, i){ if(d) return Math.round(d*100)/100; },
+            rewriteTicks: null,
             angularTickOrientation: 'horizontal', // 'radial', 'angular', 'horizontal'
             radialTickOrientation: 'horizontal', // 'angular', 'horizontal'
             container: 'body',

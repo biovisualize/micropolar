@@ -8,13 +8,12 @@
     <!--<script type='text/javascript' src="../micropolar.js"></script>-->
     <script type='text/javascript' src="../src/axis.js"></script>
     <script type='text/javascript' src="../src/util.js"></script>
+    <script type='text/javascript' src="../src/poly_chart.js"></script>
     <script type='text/javascript' src="../src/bar_chart.js"></script>
-    <script type='text/javascript' src="../src/clock.js"></script>
     <script type='text/javascript' src="../src/area_chart.js"></script>
-    <script type='text/javascript' src="../src/stacked_area_chart.js"></script>
     <script type='text/javascript' src="../src/dot_plot.js"></script>
     <script type='text/javascript' src="../src/line_plot.js"></script>
-    <script type='text/javascript' src="../src/factory.js"></script>
+    <script type='text/javascript' src="../src/adapter.js"></script>
     <script type='text/javascript' src="../src/legend.js"></script>
     <link rel="stylesheet" type="text/css" href="./style.css">
 </head>
@@ -57,55 +56,201 @@
 //    var config = {data: data, axisConfig: axisConfig, geometryConfig: geometryConfig, legendConfig: legendConfig};
 //    var polarAxis = µ.Axis().config(config)();
 
+//    var y = [[10, 20, 30, 40]];
+    var y = [[10, 20, 30, 40], [15, 25, 35, 45], [2, 7, 8, 12]];
+//    var y = [[10], [20], [30]];
+//    var yStack = [[0], [10], [30]]
+//    var yStack = [[0, 0, 0, 0, 0], [10, 20, 30, 40, 50], [25, 45, 65, 85, 105]];
+
+//    var yStack = d3.transpose(d3.transpose(y).map(function(d, i){
+//        var runningSum = 0;
+//        var stackedValues = [];
+//        d.forEach(function(dB, iB){
+//            stackedValues.push(runningSum);
+//            runningSum += dB;
+//        });
+//        return stackedValues;
+//    }));
+
+//    console.log(JSON.stringify(y));
+//    console.log(JSON.stringify(yStack));
+//    console.log(JSON.stringify(yStack2));
+
+//    var yStack = y.map(function(d, i){
+//        var runningSum = 0;
+//        var stackedValues = [];
+//        d.forEach(function(dB, iB){
+//            stackedValues.push(runningSum);
+//            runningSum += dB;
+//        });
+//        return stackedValues;
+//    })
+//    var zipped = d3.zip.apply(this, y);
+//    var yStack = zipped.map(function(d, i){
+//        var runningSum = 0;
+//        var stackedValues = [];
+//        d.forEach(function(dB, iB){
+//            stackedValues.push(runningSum);
+//            runningSum += dB;
+//        });
+//        return stackedValues;
+//    });
+//    console.log(JSON.stringify(zipped));
+
+//    var data = [{'name': 'Bar',
+//        'x': [0, 1, 2, 3],
+////        'x': ['North', 'East', 'South', 'West'],
+////        'x': ['A', 'B', 'C', 'D', 'E'],
+////        'y': [[10, 20, 30, 40], [15, 25, 35, 45], [2, 7, 8, 12]],
+//        'y': y,
+////        'yStack': yStack,
+////        'y': [10, 20, 30, 40, 50],
+////        'x': theta,
+////        'y': radii,
+////        'line': {color: 'red', interpolation: 'basis'},
+////        'type': 'PolarStackedAreaChart'}];
+////        'type': 'PolarBarChart'}];
+////        'type': 'PolarAreaChart'}];
+//        'type': 'PolarAreaChart'},
+////        'type': 'PolarTriangleChart'}];
+////        'type': 'PolarDotPlot'}];
+////        'type': 'PolarLinePlot'}];
+//    {'name': 'Bar2',
+//            'x': [0, 1, 2, 3],
+//            'y': [10, 20, 30, 40],
+////        'type': 'PolarBarChart'}];
+////        'type': 'PolarDotPlot'}];
+//        'type': 'PolarLinePlot'}];
 
     var data = [
-//        {name: 'Data1', x: [[0, 1, 2, 3], [4, 5, 6, 7]], y: [[10, 20, 30, 40], [50, 60, 70, 80]]},
-//        {name: 'Data1', x: [0, 1, 2, 3, 4], y: [10, 20, 30, 40, 50]},
-//        {name: 'Data8', x: [0, 1, 2, 3, 4], y: [10, 20, 30, 40, 50]},
-//        {name: 'Data3', x: [0, 1, 2, 3], y: [10, 20, 30, 40]},
-        {name: 'Data5', x: [0, 1, 2, 3], y: [10, 20, 30, 40]},
-//        {name: 'Data5', x: [1, 2, 3, 4], y: [10, 20, 30, 40]},
-//        {name: 'Data5', x: [0, 1, 2, 3, 4, 5, 6], y: [10, 20, 30, 40, 50, 60, 70]},
-//        {name: 'Data5', x: [0, 1, 2, 3, 4, 5, 6], y: [10, 20, 30, 40, 50, 60, 70]},
-//        {name: 'Data4', x: [0, 1, 2, 3], y: [10, 20, 30, 40]}
-        {name: 'Line4', x: [3, 4, 5, 6], y: [50, 60, 70, 80]},
-        {name: 'Line2', x: [4, 5, 6, 7], y: [50, 60, 70, 80]},
-//        {name: 'Line2', x: [5, 6, 7, 8], y: [50, 60, 70, 80]},
-//        {name: 'Line3', x: [9, 10, 11, 12], y: [50, 60, 70, 80]}
+//        {x:[1, 2, 3, 4, 5], y:[10, 20, 30, 40, 50], name:"Line1", type: 'PolarLinePlot'},
+        {x:[1, 2, 3, 4, 5], y:[[10, 20, 30, 40], [15, 25, 35, 45], [2, 7, 8, 12]], name:"Line1", type: 'PolarDotPlot'},
+        {x:[1, 2, 3, 4, 5], y:[30, 40, 50, 60, 70], name:"Line2", type: 'PolarLinePlot'}
     ];
 
-    var geometryConfig = [
-//        {geometry: 'LinePlot', color: 'violet', opacity: 0.8, visibleInLegend: true, dash: 'dash'},
-//        {geometry: 'LinePlot', visibleInLegend: true},
-//        {geometry: 'LinePlot'}
+
+    var layout = {
+//        'yaxis': {'range': [0, 119]},
+        'title': 'Polar area chart',
+        'width': 600,
+        'height': 600,
+        'margin': { 'l': 20, 'r': 160, 't': 60, 'b': 20, 'pad': 0 },
+        'plot_bgcolor': 'ghostwhite',
+        'font': {
+            'family': 'Arial, sans-serif',
+            'size': 12,
+            'color': 'grey'
+        },
+        'showlegend': false
+    };
+
+    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+    micropolarConfig.axisConfig.needsEndSpacing = true;
+    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+
+
+
+//    var N = 20;
+//    var theta = d3.range(0, 360, 360/N);
+////    var radii = d3.range(N).map(function(d, i){ return 10 * Math.random(); });
+//    var radii = d3.range(N).map(function(d, i){ return i/2; });
+//    var width = Math.PI / 4 * Math.random(N);
+//
+//    var data = [{'name': 'Bar',
+////        'x': [0, 1, 2, 3, 4],
+////        'x': [1, 2, 3, 4, 5],
+//        'x': ['A', 'B', 'C', 'D', 'E'],
+//        'y': [10, 20, 30, 40, 50],
+////        'x': theta,
+////        'y': radii,
+////        'line': {color: 'red', interpolation: 'basis'},
+////        'type': 'PolarStackedAreaChart'}];
+////        'type': 'PolarBarChart'}];
+////        'type': 'PolarAreaChart'}];
+////        'type': 'PolarTriangleChart'}];
+////        'type': 'PolarDotPlot'}];
+//        'type': 'PolarLinePlot'}];
+//
+//    var layout = {
+//        'title': 'Polar area chart',
+//        'width': 400,
+//        'height': 400,
+//        'margin': { 'l': 20, 'r': 160, 't': 60, 'b': 20, 'pad': 0 },
+////        'yaxis': {'range': [0, 10], 'orientation': -30},
+////        'xaxis': {'range': [0, 360], 'minorTickCount': 0, 'tickStep': 45, flip: true},
+////        'xaxis': {'range': [0, 360], 'minorTickCount': 0, 'tickCount': 8},
+//        'plot_bgcolor': 'ghostwhite',
+//        'font': {
+//            'family': 'Arial, sans-serif',
+//            'size': 12,
+//            'color': 'grey'
+//        },
+//        'showlegend': false
+//    };
+//
+//    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+//    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+////    micropolarConfig.axisConfig.needsEndSpacing = true;
+//    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+
+
+
+
+
+//    var testConfig = JSON.parse('{"data":[{"x":[0,90,180,270],"y":[1,2,3,4],"name":"Bar"}],"geometryConfig":[{"geometry":"StackedAreaChart","color":"skyblue"}],"legendConfig":{"showLegend":true},"axisConfig":{"title":"Wind","width":500,"height":500,"margin":{"left":20,"right":160,"top":60,"bottom":20,"pad":0},"backgroundColor":"ghostwhite","radialDomain":[0,5],"fontSize":12,"fontColor":"grey","fontFamily":"Arial, sans-serif","container":"#container1","needsEndSpacing":true}}');
+////    console.log(testConfig);
+//    var dataSize = 20;
+//    var data = [
+////        {name: 'Data1', x: [[0, 1, 2, 3], [4, 5, 6, 7]], y: [[10, 20, 30, 40], [50, 60, 70, 80]]},
+////        {name: 'Data1', x: [0, 1, 2, 3, 4], y: [10, 20, 30, 40, 50]},
+////        {name: 'Data8', x: [0, 1, 2, 3, 4], y: [10, 20, 30, 40, 50]},
+////        {name: 'Data3', x: [0, 1, 2, 3], y: [10, 20, 30, 40]},
+////        {name: 'Data5', x: [0, 1, 2, 3], y: [10, 20, 30, 40]},
+////        {name: 'Data5', x: d3.range(dataSize).map(function(d, i){ return i; }), y: d3.range(dataSize).map(function(d, i){ return i * 10; })},
+//        {name: 'Data5', x: [1, 2, 3, 4], y: [10, 20, 30, 40]},
+////        {name: 'Data5', x: [0, 1, 2, 3, 4, 5, 6], y: [10, 20, 30, 40, 50, 60, 70]},
+////        {name: 'Data5', x: [0, 1, 2, 3, 4, 5, 6], y: [10, 20, 30, 40, 50, 60, 70]},
+////        {name: 'Data4', x: [0, 1, 2, 3], y: [10, 20, 30, 40]}
+////        {name: 'Line4', x: [3, 4, 5, 6], y: [50, 60, 70, 80]},
+////        {name: 'Line2', x: [4, 5, 6, 7], y: [50, 60, 70, 80]},
+////        {name: 'Line2', x: [5, 6, 7, 8], y: [50, 60, 70, 80]},
+////        {name: 'Line3', x: [9, 10, 11, 12], y: [50, 60, 70, 80]}
+//    ];
+//
+//    var geometryConfig = [
+////        {geometry: 'LinePlot', color: 'violet', opacity: 0.8, visibleInLegend: true, dash: 'dash'},
+////        {geometry: 'LinePlot', visibleInLegend: true},
+////        {geometry: 'LinePlot'}
+////        {geometry: 'DotPlot'},
 //        {geometry: 'DotPlot'},
-        {geometry: 'DotPlot'},
-        {geometry: 'StackedAreaChart'},
-        {geometry: 'LinePlot'},
-//        {geometry: 'BarChart'},
-//        {geometry: 'BarChart'},
-//        {geometry: 'BarChart'}
-    ];
-    var axisConfig = {
-        height: 500,
-        width: 500,
-        margin: {top: 60, right: 120, bottom: 20, left: 20},
-        container: '#container1',
-        title: 'Title',
-        flip: true,
-        radialDomain: [-50, 80],
-        radialAxisTheta: 0,
-//        angularTicksCount: 3,
-        minorTicks: 2,
-        originTheta: 0,
-        needsEndSpacing: true
-    };
-    var legendConfig = {
-        showLegend: true,
-        reverseOrder: true
-    };
-    var config = {data: data, axisConfig: axisConfig, geometryConfig: geometryConfig, legendConfig: legendConfig};
-    var polarAxis = µ.Axis().config(config)();
+////        {geometry: 'StackedAreaChart'},
+////        {geometry: 'LinePlot'},
+////        {geometry: 'BarChart'},
+////        {geometry: 'BarChart'},
+////        {geometry: 'BarChart'}
+//    ];
+//    var axisConfig = {
+//        height: 500,
+//        width: 500,
+//        margin: {top: 60, right: 120, bottom: 20, left: 20},
+//        container: '#container1',
+//        title: 'Title',
+//        flip: true,
+////        radialDomain: [-50, 80],
+//        radialAxisTheta: 0,
+////        angularTicksCount: 3,
+//        minorTicks: 2,
+//        originTheta: 0,
+//        needsEndSpacing: true
+//    };
+//    var legendConfig = {
+//        showLegend: true,
+//        reverseOrder: true
+//    };
+////    var config = {data: data, axisConfig: axisConfig, geometryConfig: geometryConfig, legendConfig: legendConfig};
+//    var config = {data: testConfig.data, axisConfig: testConfig.axisConfig, geometryConfig: testConfig.geometryConfig, legendConfig: legendConfig};
+//    var polarAxis = µ.Axis().config(config)();
 
 //    polarAxis.config({axisConfig: {width: 400}})();
 

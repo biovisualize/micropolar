@@ -12,6 +12,7 @@
                 var data = d3.zip(_data.x[0], _data.y[0]);
 
                 var line = d3.svg.line.radial()
+                    .interpolate(geometryConfig.lineInterpolation)
                     .radius(function(d) { return geometryConfig.radialScale(d[1]); })
                     .angle(function(d) { return geometryConfig.angularScale(d[0]) * Math.PI / 180; });
 
@@ -44,12 +45,13 @@
 
 µ.LinePlot.defaultConfig = function(){
     var config = {
-        data: [1, 2, 3, 4],
+        data: {name: 'geom1', x: [[1, 2, 3, 4]], y: [[1, 2, 3, 4]]},
         geometryConfig: {
             geometry: 'LinePlot',
             color: '#ffa500',
             dash: 'solid',
             lineStrokeSize: 2,
+            lineInterpolation: 'linear', // linear, step, basis, cardinal, monotone
             flip: true,
             originTheta: 0,
             container: 'body',

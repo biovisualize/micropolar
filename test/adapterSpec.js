@@ -56,8 +56,8 @@ describe("Adapter", function() {
     it("converts from Plotly to Micropolar data format", function() {
         var expectedMicropolarConfig = {
             data: [
-                {x: [0, 10, 20, 30, 40], y: [22, 11, 33, 55, 22], name : 'Line 1'},
-                {x: [0, 10, 20, 30, 40], y: [33, 44, 55, 66, 77], name : 'Line 2'}
+                {x: [0, 10, 20, 30, 40], y: [22, 11, 33, 55, 22], name : 'Line 1', type : 'PolarLinePlot'},
+                {x: [0, 10, 20, 30, 40], y: [33, 44, 55, 66, 77], name : 'Line 2', type : 'PolarLinePlot'}
             ],
             geometryConfig: [
                 {geometry: 'LinePlot', color: 'red', lineStrokeSize: 3, opacity: 1},

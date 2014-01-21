@@ -5,13 +5,23 @@
         var outputConfig = {};
         var r = {};
         if(_inputConfig.data){
-            outputConfig.data = _inputConfig.data.map(function(d, i){ return {x: d.x, y: d.y, name: d.name}; });
+            outputConfig.data = _inputConfig.data.map(function(d, i){
+                var data = {
+                    x: d.x,
+                    y: d.y,
+                    name: d.name,
+                    type: d.type,
+                };
+                if(d.yStack) data.yStack = d.yStack;
+                return data;
+            });
             outputConfig.geometryConfig = _inputConfig.data.map(function(d, i){
                 r = {};
                 if(d.type) r.geometry = d.type.substr('Polar'.length);
                 if(d.line && d.line.color) r.color = d.line.color;
                 if(d.line && d.line.width) r.lineStrokeSize = d.line.width;
                 if(d.line && d.line.dash) r.dash = d.line.dash;
+                if(d.line && d.line.interpolation) r.lineInterpolation = d.line.interpolation;
                 if(d.opacity) r.opacity = d.opacity;
                 if(typeof d.visible != 'undefined') r.visible = d.visible;
                 if(typeof d.visibleInLegend != 'undefined') r.visibleInLegend = d.visibleInLegend;

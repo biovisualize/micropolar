@@ -78,7 +78,7 @@ describe("Axis", function() {
             expect(radialScale.domain()).toEqual([10, 70]);
             expect(angularScale.domain()).toEqual([1, 5]);
             expect(radialScale.range()).toEqual([0, 225]);
-            expect(angularScale.range()).toEqual([0,360]);
+            expect(angularScale.range()).toEqual([360, 0]); // default is counterclockwise
         });
 
     });
