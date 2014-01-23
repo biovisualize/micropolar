@@ -24,15 +24,17 @@ var µ = micropolar;
             });
             var firstDataY = data[0].y;
             var isStacked = Array.isArray(_data[0].y[0]);
-            var dataYStack = [];
-            var prevArray = firstDataY[0].map(function(d, i) {
-                return 0;
-            });
-            firstDataY.forEach(function(d, i, a) {
-                dataYStack.push(prevArray);
-                prevArray = µ.util.sumArrays(d, prevArray);
-            });
-            data[0].yStack = dataYStack;
+            if (isStacked) {
+                var dataYStack = [];
+                var prevArray = firstDataY[0].map(function(d, i) {
+                    return 0;
+                });
+                firstDataY.forEach(function(d, i, a) {
+                    dataYStack.push(prevArray);
+                    prevArray = µ.util.sumArrays(d, prevArray);
+                });
+                data[0].yStack = dataYStack;
+            }
             var radius = Math.min(axisConfig.width - axisConfig.margin.left - axisConfig.margin.right, axisConfig.height - axisConfig.margin.top - axisConfig.margin.bottom) / 2;
             var extent;
             if (isStacked) {
@@ -69,6 +71,7 @@ var µ = micropolar;
             if (axisConfig.angularTicksStep) {
                 tickCount = (angularDomain[1] - angularDomain[0]) / tickCount;
             }
+            console.log(axisConfig.minorTicks);
             var angularTicksStep = axisConfig.angularTicksStep || (angularDomain[1] - angularDomain[0]) / (tickCount * (axisConfig.minorTicks + 1));
             if (!angularDomain[2]) angularDomain[2] = angularTicksStep;
             var angularAxisRange = d3.range.apply(this, angularDomain);
@@ -83,9 +86,10 @@ var µ = micropolar;
                 var newSvg = this.appendChild(this.ownerDocument.importNode(doc.documentElement, true));
                 svg = d3.select(newSvg);
             }
+            console.log(axisConfig.tickColor);
             var lineStyle = {
                 fill: "none",
-                stroke: "silver"
+                stroke: axisConfig.tickColor
             };
             var fontStyle = {
                 "font-size": axisConfig.fontSize,
@@ -116,7 +120,7 @@ var µ = micropolar;
                 stroke: axisConfig.stroke
             });
             function currentAngle(d, i) {
-                return (angularScale(d) + axisConfig.originTheta) % 360;
+                return angularScale(d) % 360 + axisConfig.originTheta;
             }
             if (axisConfig.showRadialAxis) {
                 var axis = d3.svg.axis().scale(radialScale).ticks(5).tickSize(5);
@@ -155,7 +159,7 @@ var µ = micropolar;
                 return !(i % (axisConfig.minorTicks + 1) == 0);
             }).style(lineStyle);
             angularAxisEnter.selectAll(".minor").style({
-                stroke: "#eee"
+                stroke: axisConfig.minorTickColor
             });
             angularAxis.select("line.grid-line").attr({
                 x1: axisConfig.tickLength ? radius - axisConfig.tickLength : 0,
@@ -177,8 +181,9 @@ var µ = micropolar;
                 if (i % (axisConfig.minorTicks + 1) != 0) return "";
                 if (ticks) return ticks[i / (axisConfig.minorTicks + 1)] + axisConfig.angularTicksSuffix; else return d + axisConfig.angularTicksSuffix;
             }).style(fontStyle);
-            if (axisConfig.rewriteTicks) ticksText.text(function(d, i) {
-                return axisConfig.rewriteTicks(this.textContent, i);
+            if (axisConfig.angularRewriteTicks) ticksText.text(function(d, i) {
+                if (i % (axisConfig.minorTicks + 1) != 0) return "";
+                return axisConfig.angularRewriteTicks(this.textContent, i);
             });
             var hasGeometry = svg.select("g.geometry-group").selectAll("g").size() > 0;
             if (geometryConfig[0] || hasGeometry) {
@@ -361,7 +366,10 @@ var µ = micropolar;
             showRadialCircle: true,
             minorTicks: 1,
             tickLength: null,
-            rewriteTicks: null,
+            tickColor: "silver",
+            minorTickColor: "#eee",
+            angularRewriteTicks: null,
+            radialRewriteTicks: null,
             angularTickOrientation: "horizontal",
             radialTickOrientation: "horizontal",
             container: "body",
@@ -474,12 +482,17 @@ var µ = micropolar;
 µ.PolyChart = function module() {
     var config = µ.PolyChart.defaultConfig();
     var dispatch = d3.dispatch("hover");
+    var dashArray = {
+        solid: "none",
+        dash: [ 5, 2 ],
+        dot: [ 2, 5 ]
+    };
     function exports() {
         var geometryConfig = config.geometryConfig;
         var container = geometryConfig.container;
         if (typeof container == "string") container = d3.select(container);
         container.datum(config.data).each(function(_data, _index) {
-            var isStack = _data.yStack;
+            var isStack = !!_data.yStack;
             var data = _data.y.map(function(d, i) {
                 if (isStack) return d3.zip(_data.x[0], d, _data.yStack[i]); else return d3.zip(_data.x[0], d);
             });
@@ -491,11 +504,15 @@ var µ = micropolar;
             generator.bar = function(d, i) {
                 var h = geometryConfig.radialScale(d[1]);
                 var stackTop = geometryConfig.radialScale(domainMin + (d[2] || 0));
-                var w = 20;
+                if (geometryConfig.barRadialOffset) {
+                    stackTop = 190;
+                    h -= stackTop;
+                }
+                var w = geometryConfig.barWidth;
                 return "M" + [ [ h + stackTop, -w / 2 ], [ h + stackTop, w / 2 ], [ stackTop, w / 2 ], [ stackTop, -w / 2 ] ].join("L") + "Z";
             };
             generator.dot = function(d, i) {
-                return d3.svg.symbol().type(geometryConfig.dotType)(d, i);
+                return d3.svg.symbol().size(geometryConfig.dotSize).type(geometryConfig.dotType)(d, i);
             };
             generator.arc = d3.svg.arc().startAngle(function(d) {
                 return -triangleAngle + Math.PI / 2;
@@ -511,14 +528,22 @@ var µ = micropolar;
                 fill: function(d, i, pI) {
                     return isStack ? geometryConfig.colorScale(pI) : geometryConfig.color;
                 },
-                stroke: "gray"
+                stroke: geometryConfig.strokeColor,
+                "stroke-width": geometryConfig.lineStrokeSize + "px",
+                "stroke-dasharray": dashArray[geometryConfig.dash],
+                opacity: geometryConfig.opacity,
+                display: geometryConfig.visible ? "block" : "none"
             };
             var geometryGroup = d3.select(this).classed("stacked-area-chart", true);
-            var geometry = geometryGroup.selectAll("g.layer").data(data).enter().append("g").classed("layer", true).selectAll("path.mark").data(function(d, i) {
+            var geometryLayer = geometryGroup.selectAll("g.layer").data(data);
+            geometryLayer.enter().append("g").classed("layer", true);
+            var geometry = geometryLayer.selectAll("path.mark").data(function(d, i) {
                 return d;
             });
             geometry.enter().append("path").attr({
                 "class": "mark"
+            }).append("title").text(function(d, i) {
+                return d;
             });
             geometry.attr({
                 d: generator[geometryConfig.geometryType],
@@ -528,9 +553,7 @@ var µ = micropolar;
                 } : function(d, i) {
                     return "rotate(" + (geometryConfig.originTheta + angularScale(d[0])) + ")";
                 }
-            }).style(markStyle).append("title").text(function(d, i) {
-                return d;
-            });
+            }).style(markStyle);
             function getPolarCoordinates(d, i) {
                 var r = geometryConfig.radialScale(d[1]);
                 var θ = geometryConfig.angularScale(d[0]) * Math.PI / 180;
@@ -569,9 +592,13 @@ var µ = micropolar;
             geometry: "LinePlot",
             geometryType: "arc",
             dotType: "circle",
+            dotSize: 64,
+            barRadialOffset: null,
+            barWidth: 20,
             color: "#ffa500",
+            strokeColor: "silver",
             dash: "solid",
-            lineStrokeSize: 2,
+            lineStrokeSize: 1,
             flip: true,
             originTheta: 0,
             container: "body",
@@ -840,16 +867,6 @@ var µ = micropolar;
         var outputConfig = {};
         var r = {};
         if (_inputConfig.data) {
-            outputConfig.data = _inputConfig.data.map(function(d, i) {
-                var data = {
-                    x: d.x,
-                    y: d.y,
-                    name: d.name,
-                    type: d.type
-                };
-                if (d.yStack) data.yStack = d.yStack;
-                return data;
-            });
             outputConfig.geometryConfig = _inputConfig.data.map(function(d, i) {
                 r = {};
                 if (d.type) r.geometry = d.type.substr("Polar".length);
@@ -860,7 +877,23 @@ var µ = micropolar;
                 if (d.opacity) r.opacity = d.opacity;
                 if (typeof d.visible != "undefined") r.visible = d.visible;
                 if (typeof d.visibleInLegend != "undefined") r.visibleInLegend = d.visibleInLegend;
+                if (d.marker && d.marker.type) r.dotType = d.marker.type;
+                if (d.marker && d.marker.color) r.color = d.marker.color;
+                if (d.marker && d.marker.line && d.marker.line.color) r.strokeColor = d.marker.line.color;
+                if (d.marker && d.marker.size) r.dotSize = d.marker.size;
+                if (d.marker && typeof d.marker.barRadialOffset != "undefined") r.barRadialOffset = d.marker.barRadialOffset;
+                if (d.marker && typeof d.marker.barWidth != "undefined") r.barWidth = d.marker.barWidth;
                 return r;
+            });
+            outputConfig.data = _inputConfig.data.map(function(d, i) {
+                var data = {
+                    x: d.x,
+                    y: d.y,
+                    name: d.name,
+                    type: d.type
+                };
+                if (d.yStack) data.yStack = d.yStack;
+                return data;
             });
         }
         if (_inputConfig.layout) {
@@ -884,11 +917,14 @@ var µ = micropolar;
                     if (typeof d.value.minorTickCount != "undefined") r.minorTicks = d.value.minorTickCount;
                     if (d.value.suffix) r.angularTicksSuffix = d.value.suffix;
                     if (typeof d.value.flip != "undefined") r.flip = d.value.flip;
+                    if (typeof d.value.rewriteTicks) r.angularRewriteTicks = d.value.rewriteTicks;
                 }
                 if (d.key === "yaxis") {
                     if (typeof d.value.range != "undefined") r.radialDomain = d.value.range;
                     if (d.value.suffix) r.radialTicksSuffix = d.value.suffix;
                     if (typeof d.value.orientation != "undefined") r.radialAxisTheta = d.value.orientation;
+                    if (typeof d.value.rewriteTicks) r.radialRewriteTicks = d.value.rewriteTicks;
+                    if (typeof d.value.labelOffset != "undefined") r.labelOffset = d.value.labelOffset;
                 }
                 if (d.key === "font") {
                     if (d.value.size) r.fontSize = d.value.size;
@@ -904,6 +940,8 @@ var µ = micropolar;
                     });
                 }
                 if (d.key === "orientation") r.originTheta = d.value;
+                if (d.key === "tickColor") r.tickColor = d.value;
+                if (d.key === "minorTickColor") r.minorTickColor = d.value;
             });
             outputConfig.axisConfig = r;
             if (_inputConfig.container) outputConfig.axisConfig.container = _inputConfig.container;

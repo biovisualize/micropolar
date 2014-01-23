@@ -31,6 +31,7 @@ var µ = micropolar;
                 // Stack Y
                 var firstDataY = data[0].y;
                 var isStacked = Array.isArray(_data[0].y[0]);
+                if(isStacked){
                 var dataYStack = [];
                 var prevArray = firstDataY[0].map(function(d, i){ return 0; });
                 firstDataY.forEach(function(d, i, a){
@@ -38,6 +39,7 @@ var µ = micropolar;
                     prevArray = µ.util.sumArrays(d, prevArray);
                 });
                 data[0].yStack = dataYStack;
+                }
 
                 // Radial scale
                 var radius = Math.min(axisConfig.width - axisConfig.margin.left - axisConfig.margin.right,
@@ -114,8 +116,7 @@ var µ = micropolar;
                     svg = d3.select(newSvg);
                 }
 
-
-                var lineStyle = {fill: 'none', stroke: 'silver'};
+                var lineStyle = {fill: 'none', stroke: axisConfig.tickColor};
                 var fontStyle = {'font-size': axisConfig.fontSize, 'font-family': axisConfig.fontFamily, fill: axisConfig.fontColor};
 
                 svg.attr({width: axisConfig.width, height: axisConfig.height})
@@ -143,7 +144,7 @@ var µ = micropolar;
                 svg.select('circle.background-circle').attr({r: radius})
                     .style({fill: axisConfig.backgroundColor, stroke: axisConfig.stroke});
 
-                function currentAngle(d, i){ return (angularScale(d) + axisConfig.originTheta) % 360; }
+                function currentAngle(d, i){ return (angularScale(d)% 360)+ axisConfig.originTheta;}
 
                 if(axisConfig.showRadialAxis){
                     var axis = d3.svg.axis()
@@ -186,7 +187,7 @@ var µ = micropolar;
                     .classed('major', function(d, i){ return (i % (axisConfig.minorTicks+1) == 0) })
                     .classed('minor', function(d, i){ return !(i % (axisConfig.minorTicks+1) == 0) })
                     .style(lineStyle);
-                angularAxisEnter.selectAll  ('.minor').style({stroke: '#eee'});
+                angularAxisEnter.selectAll('.minor').style({stroke: axisConfig.minorTickColor});
                 angularAxis.select('line.grid-line')
                     .attr({
                         x1: axisConfig.tickLength ? radius - axisConfig.tickLength : 0,
@@ -218,7 +219,10 @@ var µ = micropolar;
                     })
                     .style(fontStyle);
 
-                if (axisConfig.rewriteTicks) ticksText.text(function(d, i){ return axisConfig.rewriteTicks(this.textContent, i); });
+                if (axisConfig.angularRewriteTicks) ticksText.text(function(d, i){
+                    if(i % (axisConfig.minorTicks + 1) != 0) return '';
+                    return axisConfig.angularRewriteTicks(this.textContent, i);
+                });
 
 
                 // Geometry
@@ -394,8 +398,11 @@ var µ = micropolar;
             showRadialCircle: true,
             minorTicks: 1,
             tickLength: null,
+            tickColor: 'silver',
+            minorTickColor: '#eee',
 //            rewriteTicks: function(d, i){ if(d) return Math.round(d*100)/100; },
-            rewriteTicks: null,
+            angularRewriteTicks: null,
+            radialRewriteTicks: null,
             angularTickOrientation: 'horizontal', // 'radial', 'angular', 'horizontal'
             radialTickOrientation: 'horizontal', // 'angular', 'horizontal'
             container: 'body',
