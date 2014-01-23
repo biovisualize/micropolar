@@ -50,18 +50,19 @@ var µ = micropolar;
             var isOrdinal = typeof angularDataMerged[0] === "string";
             var ticks;
             if (isOrdinal) {
+                angularDataMerged = µ.util.deduplicate(angularDataMerged);
                 ticks = angularDataMerged.slice();
                 angularDataMerged = d3.range(angularDataMerged.length);
-                if (isStacked) data[0] = {
-                    name: data[0].name,
-                    x: [ angularDataMerged ],
-                    y: data[0].y,
-                    yStack: data[0].yStack
-                }; else data[0] = {
-                    name: data[0].name,
-                    x: [ angularDataMerged ],
-                    y: data[0].y
-                };
+                data = data.map(function(d, i) {
+                    var result = {
+                        name: d.name,
+                        x: [ angularDataMerged ],
+                        y: d.y,
+                        yStack: d.yStack
+                    };
+                    if (isStacked) result.yStack = d.yStack;
+                    return result;
+                });
             }
             var angularExtent = d3.extent(angularDataMerged);
             var angularDomain = axisConfig.angularDomain || angularExtent;
@@ -80,7 +81,7 @@ var µ = micropolar;
             angularScale = d3.scale.linear().domain(angularDomain.slice(0, 2)).range(axisConfig.flip ? [ 0, 360 ] : [ 360, 0 ]);
             svg = d3.select(this).select("svg.chart-root");
             if (typeof svg === "undefined" || svg.empty()) {
-                var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root">                         <g class="chart-group">                             <circle class="background-circle"></circle>                             <g class="angular axis-group"></g>                            <g class="geometry-group"></g>                            <g class="radial axis-group">                                 <circle class="outside-circle"></circle>                             </g>                             <g class="guides-group"><line></line><circle r="0"></circle></g>                         </g>                         <g class="legend-group"></g>                         <g class="title-group"><text></text></g>                     </svg>';
+                var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root">' + '<g class="chart-group">' + '<circle class="background-circle"></circle>' + '<g class="angular axis-group"></g>' + '<g class="geometry-group"></g>' + '<g class="radial axis-group">' + '<circle class="outside-circle"></circle>' + "</g>" + '<g class="guides-group"><line></line><circle r="0"></circle></g>' + "</g>" + '<g class="legend-group"></g>' + '<g class="title-group"><text></text></g>' + "</svg>";
                 var doc = new DOMParser().parseFromString(skeleton, "application/xml");
                 var newSvg = this.appendChild(this.ownerDocument.importNode(doc.documentElement, true));
                 svg = d3.select(newSvg);
@@ -92,7 +93,10 @@ var µ = micropolar;
             var fontStyle = {
                 "font-size": axisConfig.fontSize,
                 "font-family": axisConfig.fontFamily,
-                fill: axisConfig.fontColor
+                fill: axisConfig.fontColor,
+                "text-shadow": [ "-1px 0px", "1px -1px", "-1px 1px", "1px 1px" ].map(function(d, i) {
+                    return " " + d + " 0 " + axisConfig.fontOutlineColor;
+                }).join(",")
             };
             svg.attr({
                 width: axisConfig.width,
@@ -136,7 +140,9 @@ var µ = micropolar;
                     dx: 0,
                     dy: 0,
                     transform: function(d, i) {
-                        if (axisConfig.radialTickOrientation === "horizontal") return "rotate(" + -axisConfig.radialAxisTheta + ") translate(" + [ 0, fontStyle["font-size"] ] + ")"; else return "translate(" + [ 0, fontStyle["font-size"] ] + ")";
+                        if (axisConfig.radialTickOrientation === "horizontal") {
+                            return "rotate(" + -axisConfig.radialAxisTheta + ") translate(" + [ 0, fontStyle["font-size"] ] + ")";
+                        } else return "translate(" + [ 0, fontStyle["font-size"] ] + ")";
                     }
                 });
                 radialAxis.selectAll("g>line").style({
@@ -353,6 +359,7 @@ var µ = micropolar;
             fontSize: 11,
             fontColor: "black",
             fontFamily: "Tahoma, sans-serif",
+            fontOutlineColor: "#eee",
             flip: false,
             originTheta: 0,
             labelOffset: 10,
@@ -475,6 +482,12 @@ var µ = micropolar;
         arr = [].concat.apply([], arr);
     }
     return arr;
+};
+
+µ.util.deduplicate = function(arr) {
+    return arr.filter(function(v, i, a) {
+        return a.indexOf(v) == i;
+    });
 };
 
 µ.PolyChart = function module() {
@@ -865,7 +878,34 @@ var µ = micropolar;
         var outputConfig = {};
         var r = {};
         if (_inputConfig.data) {
-            outputConfig.geometryConfig = _inputConfig.data.map(function(d, i) {
+            outputConfig.data = _inputConfig.data.map(function(d, i) {
+                var data = {
+                    x: d.x,
+                    y: d.y,
+                    name: d.name,
+                    type: d.type
+                };
+                if (d.yStack) data.yStack = d.yStack;
+                return data;
+            });
+            if (_inputConfig.layout.barmode === "stack") {
+                outputConfig.data.filter(function(d, i) {
+                    return d.type === "PolarAreaChart" || d.type === "PolarBarChart";
+                });
+                var stacked = [];
+                var stackY = {};
+                outputConfig.data.forEach(function(d, i) {
+                    if (d.type === "PolarAreaChart" || d.type === "PolarBarChart") {
+                        if (typeof stackY.y === "undefined") {
+                            stackY = µ.util.deepExtend({}, d);
+                            stackY.y = [ stackY.y ];
+                            stacked.push(stackY);
+                        } else stackY.y.push(d.y.slice());
+                    } else stacked.push(d);
+                });
+                outputConfig.data = stacked;
+            }
+            outputConfig.geometryConfig = outputConfig.data.map(function(d, i) {
                 r = {};
                 if (d.type) r.geometry = d.type.substr("Polar".length);
                 if (d.line && d.line.color) r.color = d.line.color;
@@ -882,16 +922,6 @@ var µ = micropolar;
                 if (d.marker && typeof d.marker.barRadialOffset != "undefined") r.barRadialOffset = d.marker.barRadialOffset;
                 if (d.marker && typeof d.marker.barWidth != "undefined") r.barWidth = d.marker.barWidth;
                 return r;
-            });
-            outputConfig.data = _inputConfig.data.map(function(d, i) {
-                var data = {
-                    x: d.x,
-                    y: d.y,
-                    name: d.name,
-                    type: d.type
-                };
-                if (d.yStack) data.yStack = d.yStack;
-                return data;
             });
         }
         if (_inputConfig.layout) {

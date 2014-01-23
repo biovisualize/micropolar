@@ -29,16 +29,16 @@ var µ = micropolar;
                 });
 
                 // Stack Y
-                var firstDataY = data[0].y;
+                var firstDataY = data[0].y; // TODO: multiple stacking
                 var isStacked = Array.isArray(_data[0].y[0]);
                 if(isStacked){
-                var dataYStack = [];
-                var prevArray = firstDataY[0].map(function(d, i){ return 0; });
-                firstDataY.forEach(function(d, i, a){
-                    dataYStack.push(prevArray);
-                    prevArray = µ.util.sumArrays(d, prevArray);
-                });
-                data[0].yStack = dataYStack;
+                    var dataYStack = [];
+                    var prevArray = firstDataY[0].map(function(d, i){ return 0; });
+                    firstDataY.forEach(function(d, i, a){
+                        dataYStack.push(prevArray);
+                        prevArray = µ.util.sumArrays(d, prevArray);
+                    });
+                    data[0].yStack = dataYStack;
                 }
 
                 // Radial scale
@@ -63,10 +63,14 @@ var µ = micropolar;
                 var isOrdinal = typeof angularDataMerged[0] === 'string';
                 var ticks;
                 if(isOrdinal){
+                    angularDataMerged = µ.util.deduplicate(angularDataMerged);
                     ticks = angularDataMerged.slice();
                     angularDataMerged = d3.range(angularDataMerged.length);
-                    if(isStacked) data[0] = {name: data[0].name, x: [angularDataMerged], y: data[0].y, yStack: data[0].yStack};
-                    else data[0] = {name: data[0].name, x: [angularDataMerged], y: data[0].y};
+                    data = data.map(function(d, i){
+                        var result = {name: d.name, x: [angularDataMerged], y: d.y, yStack: d.yStack};
+                        if(isStacked) result.yStack = d.yStack;
+                        return result;
+                    });
                 }
 
                 var angularExtent = d3.extent(angularDataMerged);
@@ -98,26 +102,33 @@ var µ = micropolar;
                 svg = d3.select(this).select('svg.chart-root');
 
                 if(typeof svg === 'undefined' || svg.empty()){
-                    var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root"> \
-                        <g class="chart-group"> \
-                            <circle class="background-circle"></circle> \
-                            <g class="angular axis-group"></g> \
-                           <g class="geometry-group"></g> \
-                           <g class="radial axis-group"> \
-                                <circle class="outside-circle"></circle> \
-                            </g> \
-                            <g class="guides-group"><line></line><circle r="0"></circle></g> \
-                        </g> \
-                        <g class="legend-group"></g> \
-                        <g class="title-group"><text></text></g> \
-                    </svg>';
+                    var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root">' +
+                        '<g class="chart-group">' +
+                            '<circle class="background-circle"></circle>' +
+                            '<g class="angular axis-group"></g>' +
+                           '<g class="geometry-group"></g>' +
+                           '<g class="radial axis-group">' +
+                                '<circle class="outside-circle"></circle>' +
+                            '</g>' +
+                            '<g class="guides-group"><line></line><circle r="0"></circle></g>' +
+                        '</g>' +
+                        '<g class="legend-group"></g>' +
+                        '<g class="title-group"><text></text></g>' +
+                    '</svg>';
                     var doc = new DOMParser().parseFromString(skeleton, 'application/xml');
                     var newSvg = this.appendChild(this.ownerDocument.importNode(doc.documentElement, true));
                     svg = d3.select(newSvg);
                 }
 
                 var lineStyle = {fill: 'none', stroke: axisConfig.tickColor};
-                var fontStyle = {'font-size': axisConfig.fontSize, 'font-family': axisConfig.fontFamily, fill: axisConfig.fontColor};
+                var fontStyle = {
+                    'font-size': axisConfig.fontSize,
+                    'font-family': axisConfig.fontFamily,
+                    fill: axisConfig.fontColor,
+                    'text-shadow': ['-1px 0px', '1px -1px', '-1px 1px', '1px 1px']
+                        .map(function(d, i){ return ' ' + d + ' 0 ' + axisConfig.fontOutlineColor; })
+                        .join(',')
+                };
 
                 svg.attr({width: axisConfig.width, height: axisConfig.height})
 //                    .style({'pointer-events': 'none'});
@@ -161,7 +172,9 @@ var µ = micropolar;
                     	.attr({
                             x: 0, y: 0, dx: 0, dy: 0,
                     		transform: function(d, i){
-                                if(axisConfig.radialTickOrientation === 'horizontal') return 'rotate(' + (-axisConfig.radialAxisTheta) + ') translate(' + [0, fontStyle['font-size']] + ')';
+                                if(axisConfig.radialTickOrientation === 'horizontal') {
+                                    return 'rotate(' + (-axisConfig.radialAxisTheta) + ') translate(' + [0, fontStyle['font-size']] + ')';
+                                }
                                 else return 'translate(' + [0, fontStyle['font-size']] + ')';
                     		}
                     	});
@@ -387,6 +400,7 @@ var µ = micropolar;
             fontSize: 11,
             fontColor: 'black',
             fontFamily: 'Tahoma, sans-serif',
+            fontOutlineColor: '#eee',
             flip: false,
             originTheta: 0,
             labelOffset: 10,

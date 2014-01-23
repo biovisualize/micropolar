@@ -1,10 +1,5 @@
 .axis-group text{
     font: 10px sans-serif;
-    text-shadow:
-    -1px 0px 0 #fff,
-    1px -1px 0 #fff,
-    -1px 1px 0 #fff,
-    1px 1px 0 #fff; 
 }
 svg.clock text{
     font: 15px sans-serif !important;
