@@ -878,7 +878,25 @@ var µ = micropolar;
         var outputConfig = {};
         var r = {};
         if (_inputConfig.data) {
-            outputConfig.data = _inputConfig.data.map(function(d, i) {
+            var dataClone = _inputConfig.data.slice();
+            if (_inputConfig.layout.barmode === "stack") {
+                dataClone.filter(function(d, i) {
+                    return d.type === "PolarAreaChart" || d.type === "PolarBarChart";
+                });
+                var stacked = [];
+                var stackY = {};
+                dataClone.forEach(function(d, i) {
+                    if (d.type === "PolarAreaChart" || d.type === "PolarBarChart") {
+                        if (typeof stackY.y === "undefined") {
+                            stackY = µ.util.deepExtend({}, d);
+                            stackY.y = [ stackY.y ];
+                            stacked.push(stackY);
+                        } else stackY.y.push(d.y.slice());
+                    } else stacked.push(d);
+                });
+                dataClone = stacked;
+            }
+            outputConfig.data = dataClone.map(function(d, i) {
                 var data = {
                     x: d.x,
                     y: d.y,
@@ -888,24 +906,7 @@ var µ = micropolar;
                 if (d.yStack) data.yStack = d.yStack;
                 return data;
             });
-            if (_inputConfig.layout.barmode === "stack") {
-                outputConfig.data.filter(function(d, i) {
-                    return d.type === "PolarAreaChart" || d.type === "PolarBarChart";
-                });
-                var stacked = [];
-                var stackY = {};
-                outputConfig.data.forEach(function(d, i) {
-                    if (d.type === "PolarAreaChart" || d.type === "PolarBarChart") {
-                        if (typeof stackY.y === "undefined") {
-                            stackY = µ.util.deepExtend({}, d);
-                            stackY.y = [ stackY.y ];
-                            stacked.push(stackY);
-                        } else stackY.y.push(d.y.slice());
-                    } else stacked.push(d);
-                });
-                outputConfig.data = stacked;
-            }
-            outputConfig.geometryConfig = outputConfig.data.map(function(d, i) {
+            outputConfig.geometryConfig = dataClone.map(function(d, i) {
                 r = {};
                 if (d.type) r.geometry = d.type.substr("Polar".length);
                 if (d.line && d.line.color) r.color = d.line.color;
