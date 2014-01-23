@@ -71,7 +71,6 @@ var µ = micropolar;
             if (axisConfig.angularTicksStep) {
                 tickCount = (angularDomain[1] - angularDomain[0]) / tickCount;
             }
-            console.log(axisConfig.minorTicks);
             var angularTicksStep = axisConfig.angularTicksStep || (angularDomain[1] - angularDomain[0]) / (tickCount * (axisConfig.minorTicks + 1));
             if (!angularDomain[2]) angularDomain[2] = angularTicksStep;
             var angularAxisRange = d3.range.apply(this, angularDomain);
@@ -86,7 +85,6 @@ var µ = micropolar;
                 var newSvg = this.appendChild(this.ownerDocument.importNode(doc.documentElement, true));
                 svg = d3.select(newSvg);
             }
-            console.log(axisConfig.tickColor);
             var lineStyle = {
                 fill: "none",
                 stroke: axisConfig.tickColor
@@ -917,13 +915,13 @@ var µ = micropolar;
                     if (typeof d.value.minorTickCount != "undefined") r.minorTicks = d.value.minorTickCount;
                     if (d.value.suffix) r.angularTicksSuffix = d.value.suffix;
                     if (typeof d.value.flip != "undefined") r.flip = d.value.flip;
-                    if (typeof d.value.rewriteTicks) r.angularRewriteTicks = d.value.rewriteTicks;
+                    if (typeof d.value.rewriteTicks != "undefined") r.angularRewriteTicks = d.value.rewriteTicks;
                 }
                 if (d.key === "yaxis") {
                     if (typeof d.value.range != "undefined") r.radialDomain = d.value.range;
                     if (d.value.suffix) r.radialTicksSuffix = d.value.suffix;
                     if (typeof d.value.orientation != "undefined") r.radialAxisTheta = d.value.orientation;
-                    if (typeof d.value.rewriteTicks) r.radialRewriteTicks = d.value.rewriteTicks;
+                    if (typeof d.value.rewriteTicks != "undefined") r.radialRewriteTicks = d.value.rewriteTicks;
                     if (typeof d.value.labelOffset != "undefined") r.labelOffset = d.value.labelOffset;
                 }
                 if (d.key === "font") {
