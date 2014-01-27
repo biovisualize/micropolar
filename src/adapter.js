@@ -6,7 +6,7 @@
         var r = {};
         if(_inputConfig.data){
             var dataClone =  _inputConfig.data.slice();
-            if(_inputConfig.layout.barmode === 'stack'){
+            if(_inputConfig.layout && _inputConfig.layout.barmode === 'stack'){
                 dataClone.filter(function(d, i){
                     return d.type === 'PolarAreaChart' ||  d.type === 'PolarBarChart';
                 });

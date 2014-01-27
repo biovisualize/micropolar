@@ -59,9 +59,7 @@
                 geometryLayer.enter().append('g').classed('layer', true)
                 var geometry = geometryLayer.selectAll('path.mark')
                     .data(function(d, i){ return d; });
-                    geometry.enter().append('path').attr({ 'class': 'mark' })
-                        .append('title')
-                        .text(function(d, i){ return d; });
+                    geometry.enter().append('path').attr({ 'class': 'mark' });
                     geometry.attr({
                         d: generator[geometryConfig.geometryType],
                         transform: (geometryConfig.geometryType === 'dot')
@@ -75,7 +73,7 @@
 
                 function getPolarCoordinates(d, i){
                     var r = geometryConfig.radialScale(d[1]);
-                    var θ = (geometryConfig.angularScale(d[0])) * Math.PI / 180;
+                    var θ = (geometryConfig.angularScale(d[0]) + geometryConfig.originTheta) * Math.PI / 180;
                     return {r: r, θ: θ};
                 }
 

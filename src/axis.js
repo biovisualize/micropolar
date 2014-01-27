@@ -44,6 +44,7 @@ var µ = micropolar;
                 // Radial scale
                 var radius = Math.min(axisConfig.width - axisConfig.margin.left - axisConfig.margin.right,
                     axisConfig.height - axisConfig.margin.top - axisConfig.margin.bottom) / 2;
+                var chartCenter = [axisConfig.margin.left + radius, axisConfig.margin.top + radius]
 
                 var extent;
                 if(isStacked){
@@ -78,7 +79,8 @@ var µ = micropolar;
                 if(axisConfig.needsEndSpacing) angularDomain[1] += angularDataMerged[1] - angularDataMerged[0];
 
                 // Reduce the number of ticks
-                var tickCount = axisConfig.angularTicksCount || ((angularDomain[1] - angularDomain[0]) / (data[0].x[0][1] - data[0].x[0][0]));
+//                var tickCount = axisConfig.angularTicksCount || ((angularDomain[1] - angularDomain[0]) / (data[0].x[0][1] - data[0].x[0][0]));
+                var tickCount = axisConfig.angularTicksCount || 4;
                 if(tickCount > 8) tickCount = tickCount / (tickCount / 8) + tickCount%8;
                 if(axisConfig.angularTicksStep){
                     tickCount = (angularDomain[1] - angularDomain[0]) / tickCount;
@@ -95,7 +97,6 @@ var µ = micropolar;
                     .domain(angularDomain.slice(0, 2))
                     .range(axisConfig.flip? [0, 360] : [360, 0]);
 
-
                 // Chart skeleton
                 ////////////////////////////////////////////////////////////////////
 
@@ -106,8 +107,8 @@ var µ = micropolar;
                         '<g class="chart-group">' +
                             '<circle class="background-circle"></circle>' +
                             '<g class="angular axis-group"></g>' +
-                           '<g class="geometry-group"></g>' +
-                           '<g class="radial axis-group">' +
+                            '<g class="geometry-group"></g>' +
+                            '<g class="radial axis-group">' +
                                 '<circle class="outside-circle"></circle>' +
                             '</g>' +
                             '<g class="guides-group"><line></line><circle r="0"></circle></g>' +
@@ -134,7 +135,11 @@ var µ = micropolar;
 //                    .style({'pointer-events': 'none'});
 
                 var chartGroup = svg.select('.chart-group')
-                    .attr('transform', 'translate(' + [axisConfig.margin.left + radius, axisConfig.margin.top + radius] + ')');
+                    .attr('transform', 'translate(' + chartCenter + ')');
+
+                svg.select('.guides-group').style({'pointer-events': 'none'});
+                svg.select('.angular.axis-group').style({'pointer-events': 'none'});
+                svg.select('.radial.axis-group').style({'pointer-events': 'none'});
 
 
                 // Radial axis
@@ -152,7 +157,7 @@ var µ = micropolar;
                 }
 
                 radialAxis.select('circle.outside-circle').attr({r: radius}).style(lineStyle);
-                svg.select('circle.background-circle').attr({r: radius})
+                var backgroundCircle = svg.select('circle.background-circle').attr({r: radius})
                     .style({fill: axisConfig.backgroundColor, stroke: axisConfig.stroke});
 
                 function currentAngle(d, i){ return (angularScale(d)% 360)+ axisConfig.originTheta;}
@@ -313,42 +318,96 @@ var µ = micropolar;
                 }
 
 
-                // Hover guides
+                // Hover guides, tooltips and hovering
                 ////////////////////////////////////////////////////////////////////
 
                 //TODO: get this out
-                function getMousePos(){ 
-            		var mousePos = d3.mouse(svg.node());
-                    var mouseX = mousePos[0] - axisConfig.width / 2;
-                    var mouseY = mousePos[1] - axisConfig.height / 2;
-                    var mouseAngle = (Math.atan2(mouseY, mouseX) + Math.PI) / Math.PI * 180;
-                    var r = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
-                	return {angle: mouseAngle, radius: r}; 
+                function convertToCartesian(radius, theta){
+                    var thetaRadians = theta * Math.PI / 180;
+                    var x = radius * Math.cos(thetaRadians);
+                    var y = radius * Math.sin(thetaRadians);
+                    return [x, y];
+                }
+
+                function round(_value, _digits){
+                    var digits = _digits || 2;
+                    var mult = Math.pow(10, digits);
+                    return Math.round(_value * mult) / mult;
+                }
+
+                var angularTooltip = µ.tooltipPanel('angular').config({fontSize: 8});
+                var radialTooltip = µ.tooltipPanel('radial').config({fontSize: 8});
+                var geometryTooltip = µ.tooltipPanel('geometry').config({hasTick: true});
+                var angularValue, radialValue;
+
+                function getMousePos(){
+            		var mousePos = d3.mouse(backgroundCircle.node());
+                    var mouseX = mousePos[0];
+                    var mouseY = mousePos[1];
+                    var mouse = {};
+                    mouse.x = mouseX;
+                    mouse.y = mouseY;
+                    mouse.pos = mousePos;
+                    mouse.angle = (Math.atan2(mouseY, mouseX) + Math.PI) * 180 / Math.PI;
+                    mouse.radius = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+                	return mouse;
                 }
                 svg.select('.geometry-group g').style({'pointer-events': 'visible'});
                 var guides = svg.select('.guides-group');
-                chartGroup.on('mousemove.angular-guide', function(d, i){ 
-                        var mouseAngle = getMousePos().angle;
-                        guides.select('line')
-                            .attr({x1: 0, y1: 0, x2: -radius, y2: 0, transform: 'rotate('+mouseAngle+')'})
-//                            .style({stroke: 'grey', opacity: 1});
-                     })
-                    .on('mouseout.angular-guide', function(d, i){ guides.select('line').style({opacity: 0}); });
+                if(!isOrdinal){
+                    chartGroup
+                        .on('mousemove.angular-guide', function(d, i){
+                            var mouseAngle = getMousePos().angle;
+                            guides.select('line')
+                                .attr({x1: 0, y1: 0, x2: -radius, y2: 0, transform: 'rotate('+mouseAngle+')'})
+                                .style({stroke: 'grey', opacity: 0.5, 'pointer-events': 'none'});
+                            var angleWithOriginOffset = (mouseAngle + 360 + axisConfig.originTheta) % 360;
+                            angularValue = angularScale.invert(angleWithOriginOffset);
+                            var pos = convertToCartesian(radius + 12, mouseAngle + 180);
+                            angularTooltip.text(round(angularValue)).move([pos[0] + chartCenter[0], pos[1] + chartCenter[1]])
+                         })
+                        .on('mouseout.angular-guide', function(d, i){ guides.select('line').style({opacity: 0}); });
+                }
 
-                chartGroup.on('mousemove.radial-guide', function(d, i){
+                chartGroup
+                    .on('mousemove.radial-guide', function(d, i){
                         var r = getMousePos().radius;
                         guides.select('circle')
                             .attr({r: r})
-//                            .style({stroke: 'grey', fill: 'none', opacity: 1});
-                            .style({stroke: 'grey', fill: 'none', opacity: 0});
+                            .style({stroke: 'grey', fill: 'none', opacity: 0.5});
+                        radialValue = radialScale.invert(getMousePos().radius);
+                        var pos = convertToCartesian(r, axisConfig.radialAxisTheta);
+                        radialTooltip.text(round(radialValue)).move([pos[0] + chartCenter[0], pos[1] + chartCenter[1]])
                      })
-                    .on('mouseout.radial-guide', function(d, i){ 
-                        guides.select('circle').style({opacity: 0}); 
+                    .on('mouseout.radial-guide', function(d, i){
+                        guides.select('circle').style({opacity: 0});
                     });
 
-                svg.selectAll('.geometry-group .mark').on('mouseenter.tooltip', function(d, i){
-//                    console.log(d);
-                });
+                svg.selectAll('.geometry-group .mark')
+                    .on('mouseenter.tooltip', function(d, i){
+                        var el = d3.select(this);
+                        var color = el.style('fill');
+                        var opacity = el.style('opacity') || 1;
+                        el.attr({'data-fill': color});
+                        el.attr({'data-opacity': opacity});
+                        var newColor = d3.hsl(color).darker();
+                        el.style({fill: newColor.toString(), opacity: 1});
+                    })
+                    .on('mousemove.tooltip', function(d, i){
+                        var bbox = this.getBoundingClientRect();
+                        var pos = [bbox.left + bbox.width / 2, bbox.top + bbox.height / 2];
+                        var text = 'θ: ' + round(d[0]) + ', r: ' + round(d[1]);
+                        var el = d3.select(this);
+                        var color = el.attr('data-fill');
+                        geometryTooltip.config({color: color}).text(text).move([pos[0], pos[1]]);
+                    })
+                    .on('mouseout.tooltip', function(d, i){
+                        geometryTooltip.remove();
+                        angularTooltip.remove();
+                        radialTooltip.remove();
+                        var el = d3.select(this);
+                        el.style({fill: el.attr('data-fill'), opacity: el.attr('data-opacity')})
+                    });
 
             });
         return exports;
@@ -400,7 +459,7 @@ var µ = micropolar;
             fontSize: 11,
             fontColor: 'black',
             fontFamily: 'Tahoma, sans-serif',
-            fontOutlineColor: '#eee',
+            fontOutlineColor: 'white',
             flip: false,
             originTheta: 0,
             labelOffset: 10,
@@ -414,7 +473,6 @@ var µ = micropolar;
             tickLength: null,
             tickColor: 'silver',
             minorTickColor: '#eee',
-//            rewriteTicks: function(d, i){ if(d) return Math.round(d*100)/100; },
             angularRewriteTicks: null,
             radialRewriteTicks: null,
             angularTickOrientation: 'horizontal', // 'radial', 'angular', 'horizontal'
