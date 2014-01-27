@@ -11,3 +11,4 @@ offline/*
 .idea/inspectionProfiles/Project_Default.xml
 src/makefile
 examples/test.csv
+examples.html
