@@ -9,3 +9,5 @@ offline/*
 .idea/scopes/scope_settings.xml
 .idea/inspectionProfiles/profiles_settings.xml
 .idea/inspectionProfiles/Project_Default.xml
+src/makefile
+examples/test.csv
