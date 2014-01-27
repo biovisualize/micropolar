@@ -36,6 +36,7 @@ var µ = micropolar;
                 data[0].yStack = dataYStack;
             }
             var radius = Math.min(axisConfig.width - axisConfig.margin.left - axisConfig.margin.right, axisConfig.height - axisConfig.margin.top - axisConfig.margin.bottom) / 2;
+            var chartCenter = [ axisConfig.margin.left + radius, axisConfig.margin.top + radius ];
             var extent;
             if (isStacked) {
                 var highestStackedValue = d3.max(µ.util.sumArrays(µ.util.arrayLast(firstDataY), µ.util.arrayLast(dataYStack)));
@@ -67,7 +68,7 @@ var µ = micropolar;
             var angularExtent = d3.extent(angularDataMerged);
             var angularDomain = axisConfig.angularDomain || angularExtent;
             if (axisConfig.needsEndSpacing) angularDomain[1] += angularDataMerged[1] - angularDataMerged[0];
-            var tickCount = axisConfig.angularTicksCount || (angularDomain[1] - angularDomain[0]) / (data[0].x[0][1] - data[0].x[0][0]);
+            var tickCount = axisConfig.angularTicksCount || 4;
             if (tickCount > 8) tickCount = tickCount / (tickCount / 8) + tickCount % 8;
             if (axisConfig.angularTicksStep) {
                 tickCount = (angularDomain[1] - angularDomain[0]) / tickCount;
@@ -102,7 +103,16 @@ var µ = micropolar;
                 width: axisConfig.width,
                 height: axisConfig.height
             });
-            var chartGroup = svg.select(".chart-group").attr("transform", "translate(" + [ axisConfig.margin.left + radius, axisConfig.margin.top + radius ] + ")");
+            var chartGroup = svg.select(".chart-group").attr("transform", "translate(" + chartCenter + ")");
+            svg.select(".guides-group").style({
+                "pointer-events": "none"
+            });
+            svg.select(".angular.axis-group").style({
+                "pointer-events": "none"
+            });
+            svg.select(".radial.axis-group").style({
+                "pointer-events": "none"
+            });
             var radialAxis = svg.select(".radial.axis-group");
             if (axisConfig.showRadialCircle) {
                 var gridCircles = radialAxis.selectAll("circle.grid-circle").data(radialScale.ticks(5));
@@ -115,7 +125,7 @@ var µ = micropolar;
             radialAxis.select("circle.outside-circle").attr({
                 r: radius
             }).style(lineStyle);
-            svg.select("circle.background-circle").attr({
+            var backgroundCircle = svg.select("circle.background-circle").attr({
                 r: radius
             }).style({
                 fill: axisConfig.backgroundColor,
@@ -261,35 +271,67 @@ var µ = micropolar;
                     y: titleBBox.height
                 });
             }
+            function convertToCartesian(radius, theta) {
+                var thetaRadians = theta * Math.PI / 180;
+                var x = radius * Math.cos(thetaRadians);
+                var y = radius * Math.sin(thetaRadians);
+                return [ x, y ];
+            }
+            function round(_value, _digits) {
+                var digits = _digits || 2;
+                var mult = Math.pow(10, digits);
+                return Math.round(_value * mult) / mult;
+            }
+            var angularTooltip = µ.tooltipPanel("angular").config({
+                fontSize: 8
+            });
+            var radialTooltip = µ.tooltipPanel("radial").config({
+                fontSize: 8
+            });
+            var geometryTooltip = µ.tooltipPanel("geometry").config({
+                hasTick: true
+            });
+            var angularValue, radialValue;
             function getMousePos() {
-                var mousePos = d3.mouse(svg.node());
-                var mouseX = mousePos[0] - axisConfig.width / 2;
-                var mouseY = mousePos[1] - axisConfig.height / 2;
-                var mouseAngle = (Math.atan2(mouseY, mouseX) + Math.PI) / Math.PI * 180;
-                var r = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
-                return {
-                    angle: mouseAngle,
-                    radius: r
-                };
+                var mousePos = d3.mouse(backgroundCircle.node());
+                var mouseX = mousePos[0];
+                var mouseY = mousePos[1];
+                var mouse = {};
+                mouse.x = mouseX;
+                mouse.y = mouseY;
+                mouse.pos = mousePos;
+                mouse.angle = (Math.atan2(mouseY, mouseX) + Math.PI) * 180 / Math.PI;
+                mouse.radius = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+                return mouse;
             }
             svg.select(".geometry-group g").style({
                 "pointer-events": "visible"
             });
             var guides = svg.select(".guides-group");
-            chartGroup.on("mousemove.angular-guide", function(d, i) {
-                var mouseAngle = getMousePos().angle;
-                guides.select("line").attr({
-                    x1: 0,
-                    y1: 0,
-                    x2: -radius,
-                    y2: 0,
-                    transform: "rotate(" + mouseAngle + ")"
+            if (!isOrdinal) {
+                chartGroup.on("mousemove.angular-guide", function(d, i) {
+                    var mouseAngle = getMousePos().angle;
+                    guides.select("line").attr({
+                        x1: 0,
+                        y1: 0,
+                        x2: -radius,
+                        y2: 0,
+                        transform: "rotate(" + mouseAngle + ")"
+                    }).style({
+                        stroke: "grey",
+                        opacity: .5,
+                        "pointer-events": "none"
+                    });
+                    var angleWithOriginOffset = (mouseAngle + 360 + axisConfig.originTheta) % 360;
+                    angularValue = angularScale.invert(angleWithOriginOffset);
+                    var pos = convertToCartesian(radius + 12, mouseAngle + 180);
+                    angularTooltip.text(round(angularValue)).move([ pos[0] + chartCenter[0], pos[1] + chartCenter[1] ]);
+                }).on("mouseout.angular-guide", function(d, i) {
+                    guides.select("line").style({
+                        opacity: 0
+                    });
                 });
-            }).on("mouseout.angular-guide", function(d, i) {
-                guides.select("line").style({
-                    opacity: 0
-                });
-            });
+            }
             chartGroup.on("mousemove.radial-guide", function(d, i) {
                 var r = getMousePos().radius;
                 guides.select("circle").attr({
@@ -297,14 +339,50 @@ var µ = micropolar;
                 }).style({
                     stroke: "grey",
                     fill: "none",
-                    opacity: 0
+                    opacity: .5
                 });
+                radialValue = radialScale.invert(getMousePos().radius);
+                var pos = convertToCartesian(r, axisConfig.radialAxisTheta);
+                radialTooltip.text(round(radialValue)).move([ pos[0] + chartCenter[0], pos[1] + chartCenter[1] ]);
             }).on("mouseout.radial-guide", function(d, i) {
                 guides.select("circle").style({
                     opacity: 0
                 });
             });
-            svg.selectAll(".geometry-group .mark").on("mouseenter.tooltip", function(d, i) {});
+            svg.selectAll(".geometry-group .mark").on("mouseenter.tooltip", function(d, i) {
+                var el = d3.select(this);
+                var color = el.style("fill");
+                var opacity = el.style("opacity") || 1;
+                el.attr({
+                    "data-fill": color
+                });
+                el.attr({
+                    "data-opacity": opacity
+                });
+                var newColor = d3.hsl(color).darker();
+                el.style({
+                    fill: newColor.toString(),
+                    opacity: 1
+                });
+            }).on("mousemove.tooltip", function(d, i) {
+                var bbox = this.getBoundingClientRect();
+                var pos = [ bbox.left + bbox.width / 2, bbox.top + bbox.height / 2 ];
+                var text = "θ: " + round(d[0]) + ", r: " + round(d[1]);
+                var el = d3.select(this);
+                var color = el.attr("data-fill");
+                geometryTooltip.config({
+                    color: color
+                }).text(text).move([ pos[0], pos[1] ]);
+            }).on("mouseout.tooltip", function(d, i) {
+                geometryTooltip.remove();
+                angularTooltip.remove();
+                radialTooltip.remove();
+                var el = d3.select(this);
+                el.style({
+                    fill: el.attr("data-fill"),
+                    opacity: el.attr("data-opacity")
+                });
+            });
         });
         return exports;
     }
@@ -359,7 +437,7 @@ var µ = micropolar;
             fontSize: 11,
             fontColor: "black",
             fontFamily: "Tahoma, sans-serif",
-            fontOutlineColor: "#eee",
+            fontOutlineColor: "white",
             flip: false,
             originTheta: 0,
             labelOffset: 10,
@@ -553,8 +631,6 @@ var µ = micropolar;
             });
             geometry.enter().append("path").attr({
                 "class": "mark"
-            }).append("title").text(function(d, i) {
-                return d;
             });
             geometry.attr({
                 d: generator[geometryConfig.geometryType],
@@ -567,7 +643,7 @@ var µ = micropolar;
             }).style(markStyle);
             function getPolarCoordinates(d, i) {
                 var r = geometryConfig.radialScale(d[1]);
-                var θ = geometryConfig.angularScale(d[0]) * Math.PI / 180;
+                var θ = (geometryConfig.angularScale(d[0]) + geometryConfig.originTheta) * Math.PI / 180;
                 return {
                     r: r,
                     θ: θ
@@ -879,7 +955,7 @@ var µ = micropolar;
         var r = {};
         if (_inputConfig.data) {
             var dataClone = _inputConfig.data.slice();
-            if (_inputConfig.layout.barmode === "stack") {
+            if (_inputConfig.layout && _inputConfig.layout.barmode === "stack") {
                 dataClone.filter(function(d, i) {
                     return d.type === "PolarAreaChart" || d.type === "PolarBarChart";
                 });
