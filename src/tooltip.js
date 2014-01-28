@@ -1,7 +1,7 @@
-µ.tooltipPanel = function(_id){
+µ.tooltipPanel = function(){
     var tooltipEl, tooltipTextEl, backgroundEl, circleEl;
     var config = {container: null, hasTick: false, fontSize: 12, color: 'white', padding: 5};
-    var id = 'tooltip-'+_id
+    var id = 'tooltip-' + µ.tooltipPanel.uid++;
     var exports = function(){
         tooltipEl = config.container.selectAll('g.' + id).data([0]);
         var tooltipEnter = tooltipEl.enter().append('g')
@@ -55,9 +55,16 @@
         tooltipEl.style({display: 'none'});
         return exports;
     };
+    exports.show = function(){
+        if(!tooltipEl) return;
+        tooltipEl.style({display: 'block'});
+        return exports;
+    };
     exports.config = function(_x){
         µ.util.deepExtend(config, _x);
         return exports;
     };
     return exports;
 };
+
+µ.tooltipPanel.uid = 1;

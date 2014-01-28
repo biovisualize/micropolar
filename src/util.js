@@ -83,6 +83,32 @@
     return arr;
 }
 
-µ.util.deduplicate = function(arr){ return arr.filter(function (v, i, a) { return a.indexOf(v) == i }); }
+µ.util.deduplicate = function(arr){ return arr.filter(function (v, i, a) { return a.indexOf(v) == i }); };
+
+µ.util.convertToCartesian = function(radius, theta){
+    var thetaRadians = theta * Math.PI / 180;
+    var x = radius * Math.cos(thetaRadians);
+    var y = radius * Math.sin(thetaRadians);
+    return [x, y];
+}
+
+µ.util.round = function(_value, _digits){
+    var digits = _digits || 2;
+    var mult = Math.pow(10, digits);
+    return Math.round(_value * mult) / mult;
+}
+
+µ.util.getMousePos = function(_referenceElement){
+    var mousePos = d3.mouse(_referenceElement.node());
+    var mouseX = mousePos[0];
+    var mouseY = mousePos[1];
+    var mouse = {};
+    mouse.x = mouseX;
+    mouse.y = mouseY;
+    mouse.pos = mousePos;
+    mouse.angle = (Math.atan2(mouseY, mouseX) + Math.PI) * 180 / Math.PI;
+    mouse.radius = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+    return mouse;
+}
 
 
