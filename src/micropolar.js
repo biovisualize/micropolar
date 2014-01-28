@@ -271,85 +271,67 @@ var µ = micropolar;
                     y: titleBBox.height
                 });
             }
-            function convertToCartesian(radius, theta) {
-                var thetaRadians = theta * Math.PI / 180;
-                var x = radius * Math.cos(thetaRadians);
-                var y = radius * Math.sin(thetaRadians);
-                return [ x, y ];
-            }
-            function round(_value, _digits) {
-                var digits = _digits || 2;
-                var mult = Math.pow(10, digits);
-                return Math.round(_value * mult) / mult;
-            }
             svg.select(".geometry-group g").style({
                 "pointer-events": "visible"
             });
             var guides = svg.select(".guides-group");
             var tooltipContainer = svg.select(".tooltips-group");
-            var angularTooltip = µ.tooltipPanel("angular").config({
+            var angularTooltip = µ.tooltipPanel().config({
                 container: tooltipContainer,
                 fontSize: 8
             })();
-            var radialTooltip = µ.tooltipPanel("radial").config({
+            var radialTooltip = µ.tooltipPanel().config({
                 container: tooltipContainer,
                 fontSize: 8
             })();
-            var geometryTooltip = µ.tooltipPanel("geometry").config({
+            var geometryTooltip = µ.tooltipPanel().config({
                 container: tooltipContainer,
                 hasTick: true
             })();
             var angularValue, radialValue;
-            function getMousePos() {
-                var mousePos = d3.mouse(backgroundCircle.node());
-                var mouseX = mousePos[0];
-                var mouseY = mousePos[1];
-                var mouse = {};
-                mouse.x = mouseX;
-                mouse.y = mouseY;
-                mouse.pos = mousePos;
-                mouse.angle = (Math.atan2(mouseY, mouseX) + Math.PI) * 180 / Math.PI;
-                mouse.radius = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
-                return mouse;
-            }
             if (!isOrdinal) {
+                var angularGuideLine = guides.select("line").attr({
+                    x1: 0,
+                    y1: 0,
+                    y2: 0
+                }).style({
+                    stroke: "grey",
+                    "pointer-events": "none"
+                });
                 chartGroup.on("mousemove.angular-guide", function(d, i) {
-                    var mouseAngle = getMousePos().angle;
-                    guides.select("line").attr({
-                        x1: 0,
-                        y1: 0,
+                    var mouseAngle = µ.util.getMousePos(backgroundCircle).angle;
+                    angularGuideLine.attr({
                         x2: -radius,
-                        y2: 0,
                         transform: "rotate(" + mouseAngle + ")"
                     }).style({
-                        stroke: "grey",
-                        opacity: .5,
-                        "pointer-events": "none"
+                        opacity: .5
                     });
                     var angleWithOriginOffset = (mouseAngle + 360 + axisConfig.originTheta) % 360;
                     angularValue = angularScale.invert(angleWithOriginOffset);
-                    var pos = convertToCartesian(radius + 12, mouseAngle + 180);
-                    angularTooltip.text(round(angularValue)).move([ pos[0] + chartCenter[0], pos[1] + chartCenter[1] ]);
+                    var pos = µ.util.convertToCartesian(radius + 12, mouseAngle + 180);
+                    angularTooltip.text(µ.util.round(angularValue)).move([ pos[0] + chartCenter[0], pos[1] + chartCenter[1] ]);
                 }).on("mouseout.angular-guide", function(d, i) {
                     guides.select("line").style({
                         opacity: 0
                     });
                 });
             }
+            var angularGuideCircle = guides.select("circle").style({
+                stroke: "grey",
+                fill: "none"
+            });
             chartGroup.on("mousemove.radial-guide", function(d, i) {
-                var r = getMousePos().radius;
-                guides.select("circle").attr({
+                var r = µ.util.getMousePos(backgroundCircle).radius;
+                angularGuideCircle.attr({
                     r: r
                 }).style({
-                    stroke: "grey",
-                    fill: "none",
                     opacity: .5
                 });
-                radialValue = radialScale.invert(getMousePos().radius);
-                var pos = convertToCartesian(r, axisConfig.radialAxisTheta);
-                radialTooltip.text(round(radialValue)).move([ pos[0] + chartCenter[0], pos[1] + chartCenter[1] ]);
+                radialValue = radialScale.invert(µ.util.getMousePos(backgroundCircle).radius);
+                var pos = µ.util.convertToCartesian(r, axisConfig.radialAxisTheta);
+                radialTooltip.text(µ.util.round(radialValue)).move([ pos[0] + chartCenter[0], pos[1] + chartCenter[1] ]);
             }).on("mouseout.radial-guide", function(d, i) {
-                guides.select("circle").style({
+                angularGuideCircle.style({
                     opacity: 0
                 });
                 geometryTooltip.hide();
@@ -363,7 +345,7 @@ var µ = micropolar;
                 el.attr({
                     "data-opacity": opacity
                 });
-                if (color) {
+                if (color != "none") {
                     el.attr({
                         "data-fill": color
                     });
@@ -372,8 +354,15 @@ var µ = micropolar;
                         fill: newColor,
                         opacity: 1
                     });
+                    var bbox = this.getBoundingClientRect();
+                    var pos = [ bbox.left + bbox.width / 2, bbox.top + bbox.height / 2 ];
+                    var text = "θ: " + µ.util.round(d[0]) + ", r: " + µ.util.round(d[1]);
+                    geometryTooltip.config({
+                        color: newColor
+                    }).text(text);
+                    geometryTooltip.move(pos);
                 } else {
-                    color = el.style("fill");
+                    color = el.style("stroke");
                     el.attr({
                         "data-stroke": color
                     });
@@ -383,16 +372,8 @@ var µ = micropolar;
                         opacity: 1
                     });
                 }
-                var bbox = this.getBoundingClientRect();
-                var pos = [ bbox.left + bbox.width / 2, bbox.top + bbox.height / 2 ];
-                var text = "θ: " + round(d[0]) + ", r: " + round(d[1]);
-                geometryTooltip.config({
-                    color: newColor
-                }).text(text);
-                geometryTooltip.move(pos);
             }).on("mousemove.tooltip", function(d, i) {
-                var text = "θ: " + round(d[0]) + ", r: " + round(d[1]);
-                geometryTooltip.text(text);
+                if (d3.select(this).attr("data-fill")) geometryTooltip.show();
             }).on("mouseout.tooltip", function(d, i) {
                 geometryTooltip.hide();
                 angularTooltip.hide();
@@ -590,6 +571,32 @@ var µ = micropolar;
     return arr.filter(function(v, i, a) {
         return a.indexOf(v) == i;
     });
+};
+
+µ.util.convertToCartesian = function(radius, theta) {
+    var thetaRadians = theta * Math.PI / 180;
+    var x = radius * Math.cos(thetaRadians);
+    var y = radius * Math.sin(thetaRadians);
+    return [ x, y ];
+};
+
+µ.util.round = function(_value, _digits) {
+    var digits = _digits || 2;
+    var mult = Math.pow(10, digits);
+    return Math.round(_value * mult) / mult;
+};
+
+µ.util.getMousePos = function(_referenceElement) {
+    var mousePos = d3.mouse(_referenceElement.node());
+    var mouseX = mousePos[0];
+    var mouseY = mousePos[1];
+    var mouse = {};
+    mouse.x = mouseX;
+    mouse.y = mouseY;
+    mouse.pos = mousePos;
+    mouse.angle = (Math.atan2(mouseY, mouseX) + Math.PI) * 180 / Math.PI;
+    mouse.radius = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+    return mouse;
 };
 
 µ.PolyChart = function module() {
@@ -970,7 +977,7 @@ var µ = micropolar;
     return config;
 };
 
-µ.tooltipPanel = function(_id) {
+µ.tooltipPanel = function() {
     var tooltipEl, tooltipTextEl, backgroundEl, circleEl;
     var config = {
         container: null,
@@ -979,7 +986,7 @@ var µ = micropolar;
         color: "white",
         padding: 5
     };
-    var id = "tooltip-" + _id;
+    var id = "tooltip-" + µ.tooltipPanel.uid++;
     var exports = function() {
         tooltipEl = config.container.selectAll("g." + id).data([ 0 ]);
         var tooltipEnter = tooltipEl.enter().append("g").classed("tooltip", true).classed(id, true).style({
@@ -1051,12 +1058,21 @@ var µ = micropolar;
         });
         return exports;
     };
+    exports.show = function() {
+        if (!tooltipEl) return;
+        tooltipEl.style({
+            display: "block"
+        });
+        return exports;
+    };
     exports.config = function(_x) {
         µ.util.deepExtend(config, _x);
         return exports;
     };
     return exports;
 };
+
+µ.tooltipPanel.uid = 1;
 
 µ.adapter = {};
 
