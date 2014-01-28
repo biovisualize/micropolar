@@ -336,6 +336,7 @@ var µ = micropolar;
                 });
                 geometryTooltip.hide();
                 angularTooltip.hide();
+                radialTooltip.hide();
             });
             svg.selectAll(".geometry-group .mark").on("mouseenter.tooltip", function(d, i) {
                 var el = d3.select(this);
@@ -376,8 +377,6 @@ var µ = micropolar;
                 if (d3.select(this).attr("data-fill")) geometryTooltip.show();
             }).on("mouseout.tooltip", function(d, i) {
                 geometryTooltip.hide();
-                angularTooltip.hide();
-                radialTooltip.hide();
                 var el = d3.select(this);
                 var fillColor = el.attr("data-fill");
                 if (fillColor) el.style({
