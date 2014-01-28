@@ -114,6 +114,7 @@ var µ = micropolar;
                             '<g class="guides-group"><line></line><circle r="0"></circle></g>' +
                         '</g>' +
                         '<g class="legend-group"></g>' +
+                        '<g class="tooltips-group"></g>' +
                         '<g class="title-group"><text></text></g>' +
                     '</svg>';
                     var doc = new DOMParser().parseFromString(skeleton, 'application/xml');
@@ -335,9 +336,13 @@ var µ = micropolar;
                     return Math.round(_value * mult) / mult;
                 }
 
-                var angularTooltip = µ.tooltipPanel('angular').config({fontSize: 8});
-                var radialTooltip = µ.tooltipPanel('radial').config({fontSize: 8});
-                var geometryTooltip = µ.tooltipPanel('geometry').config({hasTick: true});
+                svg.select('.geometry-group g').style({'pointer-events': 'visible'});
+                var guides = svg.select('.guides-group');
+
+                var tooltipContainer = svg.select('.tooltips-group');
+                var angularTooltip = µ.tooltipPanel('angular').config({container: tooltipContainer, fontSize: 8})();
+                var radialTooltip = µ.tooltipPanel('radial').config({container: tooltipContainer, fontSize: 8})();
+                var geometryTooltip = µ.tooltipPanel('geometry').config({container: tooltipContainer, hasTick: true})();
                 var angularValue, radialValue;
 
                 function getMousePos(){
@@ -352,8 +357,7 @@ var µ = micropolar;
                     mouse.radius = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
                 	return mouse;
                 }
-                svg.select('.geometry-group g').style({'pointer-events': 'visible'});
-                var guides = svg.select('.guides-group');
+
                 if(!isOrdinal){
                     chartGroup
                         .on('mousemove.angular-guide', function(d, i){
@@ -361,6 +365,7 @@ var µ = micropolar;
                             guides.select('line')
                                 .attr({x1: 0, y1: 0, x2: -radius, y2: 0, transform: 'rotate('+mouseAngle+')'})
                                 .style({stroke: 'grey', opacity: 0.5, 'pointer-events': 'none'});
+
                             var angleWithOriginOffset = (mouseAngle + 360 + axisConfig.originTheta) % 360;
                             angularValue = angularScale.invert(angleWithOriginOffset);
                             var pos = convertToCartesian(radius + 12, mouseAngle + 180);
@@ -381,32 +386,48 @@ var µ = micropolar;
                      })
                     .on('mouseout.radial-guide', function(d, i){
                         guides.select('circle').style({opacity: 0});
+                        geometryTooltip.hide();
+                        angularTooltip.hide();
                     });
 
                 svg.selectAll('.geometry-group .mark')
                     .on('mouseenter.tooltip', function(d, i){
                         var el = d3.select(this);
                         var color = el.style('fill');
+                        var newColor = 'black';
                         var opacity = el.style('opacity') || 1;
-                        el.attr({'data-fill': color});
                         el.attr({'data-opacity': opacity});
-                        var newColor = d3.hsl(color).darker();
-                        el.style({fill: newColor.toString(), opacity: 1});
+                        if(color){
+                            el.attr({'data-fill': color});
+                            newColor = d3.hsl(color).darker().toString();
+                            el.style({fill: newColor, opacity: 1});
+                        }
+                        else{
+                            color = el.style('fill');
+                            el.attr({'data-stroke': color});
+                            newColor = d3.hsl(color).darker().toString();
+                            el.style({stroke: newColor, opacity: 1});
+                        }
+
+                        var bbox = this.getBoundingClientRect();
+                        var pos = [bbox.left + bbox.width/2, bbox.top + bbox.height/2];
+                        var text = 'θ: ' + round(d[0]) + ', r: ' + round(d[1]);
+
+                        geometryTooltip.config({color: newColor}).text(text);
+                        geometryTooltip.move(pos);
                     })
                     .on('mousemove.tooltip', function(d, i){
-                        var bbox = this.getBoundingClientRect();
-                        var pos = [bbox.left + bbox.width / 2, bbox.top + bbox.height / 2];
                         var text = 'θ: ' + round(d[0]) + ', r: ' + round(d[1]);
-                        var el = d3.select(this);
-                        var color = el.attr('data-fill');
-                        geometryTooltip.config({color: color}).text(text).move([pos[0], pos[1]]);
+                        geometryTooltip.text(text);
                     })
                     .on('mouseout.tooltip', function(d, i){
-                        geometryTooltip.remove();
-                        angularTooltip.remove();
-                        radialTooltip.remove();
+                        geometryTooltip.hide();
+                        angularTooltip.hide();
+                        radialTooltip.hide();
                         var el = d3.select(this);
-                        el.style({fill: el.attr('data-fill'), opacity: el.attr('data-opacity')})
+                        var fillColor = el.attr('data-fill');
+                        if(fillColor)  el.style({fill: fillColor, opacity: el.attr('data-opacity')});
+                        else  el.style({stroke: el.attr('data-stroke'), opacity: el.attr('data-opacity')});
                     });
 
             });
