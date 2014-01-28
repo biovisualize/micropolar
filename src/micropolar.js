@@ -103,7 +103,9 @@ var µ = micropolar;
                 width: axisConfig.width,
                 height: axisConfig.height
             });
-            var chartGroup = svg.select(".chart-group").attr("transform", "translate(" + chartCenter + ")");
+            var chartGroup = svg.select(".chart-group").attr("transform", "translate(" + chartCenter + ")").style({
+                cursor: "crosshair"
+            });
             svg.select(".guides-group").style({
                 "pointer-events": "none"
             });
@@ -356,7 +358,8 @@ var µ = micropolar;
                         opacity: 1
                     });
                     var bbox = this.getBoundingClientRect();
-                    var pos = [ bbox.left + bbox.width / 2, bbox.top + bbox.height / 2 ];
+                    var svgBBox = svg.node().getBoundingClientRect();
+                    var pos = [ bbox.left - svgBBox.left + bbox.width / 2, bbox.top - svgBBox.top + bbox.height / 2 ];
                     var text = "θ: " + µ.util.round(d[0]) + ", r: " + µ.util.round(d[1]);
                     geometryTooltip.config({
                         color: newColor
@@ -988,7 +991,7 @@ var µ = micropolar;
     var id = "tooltip-" + µ.tooltipPanel.uid++;
     var exports = function() {
         tooltipEl = config.container.selectAll("g." + id).data([ 0 ]);
-        var tooltipEnter = tooltipEl.enter().append("g").classed("tooltip", true).classed(id, true).style({
+        var tooltipEnter = tooltipEl.enter().append("g").classed(id, true).style({
             "pointer-events": "none"
         });
         circleEl = tooltipEnter.append("circle").attr({

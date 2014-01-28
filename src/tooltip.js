@@ -5,7 +5,7 @@
     var exports = function(){
         tooltipEl = config.container.selectAll('g.' + id).data([0]);
         var tooltipEnter = tooltipEl.enter().append('g')
-            .classed('tooltip', true).classed(id, true)
+            .classed(id, true)
             .style({'pointer-events': 'none'});
         circleEl = tooltipEnter.append('circle').attr({cx: 5, r: 5}).style({fill: 'white', 'fill-opacity': 0.9});
         backgroundEl = tooltipEnter.append('rect').style({fill: 'white', 'fill-opacity': 0.9});

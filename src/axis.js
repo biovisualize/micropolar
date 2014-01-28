@@ -136,7 +136,8 @@ var µ = micropolar;
 //                    .style({'pointer-events': 'none'});
 
                 var chartGroup = svg.select('.chart-group')
-                    .attr('transform', 'translate(' + chartCenter + ')');
+                    .attr('transform', 'translate(' + chartCenter + ')')
+                    .style({cursor: 'crosshair'});
 
                 svg.select('.guides-group').style({'pointer-events': 'none'});
                 svg.select('.angular.axis-group').style({'pointer-events': 'none'});
@@ -375,7 +376,8 @@ var µ = micropolar;
                             newColor = d3.hsl(color).darker().toString();
                             el.style({fill: newColor, opacity: 1});
                             var bbox = this.getBoundingClientRect();
-                            var pos = [bbox.left + bbox.width/2, bbox.top + bbox.height/2];
+                            var svgBBox = svg.node().getBoundingClientRect();
+                            var pos = [bbox.left - svgBBox.left + bbox.width/2, bbox.top - svgBBox.top + bbox.height/2];
                             var text = 'θ: ' + µ.util.round(d[0]) + ', r: ' + µ.util.round(d[1]);
                             geometryTooltip.config({color: newColor}).text(text);
                             geometryTooltip.move(pos);
