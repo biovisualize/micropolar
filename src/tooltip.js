@@ -23,7 +23,7 @@
                 fill: fillColor,
                 'font-size': config.fontSize + 'px'
             })
-            .text(_text);
+            .text(text);
         var padding = config.padding;
         var bbox = tooltipTextEl.node().getBBox();
         backgroundEl.attr({
@@ -45,7 +45,6 @@
     };
     exports.move = function(_pos){
         if(!tooltipEl) return;
-        var bbox = tooltipEl.node().getBoundingClientRect();
         tooltipEl.attr({transform: 'translate(' + [_pos[0], _pos[1]] + ')'})
             .style({display: 'block'});
 
