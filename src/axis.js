@@ -360,6 +360,7 @@ var µ = micropolar;
                         angularGuideCircle.style({opacity: 0});
                         geometryTooltip.hide();
                         angularTooltip.hide();
+                        radialTooltip.hide();
                     });
 
                 svg.selectAll('.geometry-group .mark')
@@ -391,8 +392,6 @@ var µ = micropolar;
                     })
                     .on('mouseout.tooltip', function(d, i){
                         geometryTooltip.hide();
-                        angularTooltip.hide();
-                        radialTooltip.hide();
                         var el = d3.select(this);
                         var fillColor = el.attr('data-fill');
                         if(fillColor)  el.style({fill: fillColor, opacity: el.attr('data-opacity')});
