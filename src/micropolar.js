@@ -66,8 +66,9 @@ var µ = micropolar;
                 });
             }
             var angularExtent = d3.extent(angularDataMerged);
-            var angularDomain = axisConfig.angularDomain || angularExtent;
-            if (axisConfig.needsEndSpacing) angularDomain[1] += angularDataMerged[1] - angularDataMerged[0];
+            var angularDomain = axisConfig.angularDomain ? axisConfig.angularDomain.slice() : angularExtent;
+            var angularDomainStep = angularDataMerged[1] - angularDataMerged[0];
+            if (axisConfig.needsEndSpacing) angularDomain[1] += angularDomainStep;
             var tickCount = axisConfig.angularTicksCount || 4;
             if (tickCount > 8) tickCount = tickCount / (tickCount / 8) + tickCount % 8;
             if (axisConfig.angularTicksStep) {
@@ -80,6 +81,7 @@ var µ = micropolar;
                 return parseFloat(d.toPrecision(12));
             });
             angularScale = d3.scale.linear().domain(angularDomain.slice(0, 2)).range(axisConfig.flip ? [ 0, 360 ] : [ 360, 0 ]);
+            angularScale.endPadding = axisConfig.needsEndSpacing ? angularDomainStep : 0;
             svg = d3.select(this).select("svg.chart-root");
             if (typeof svg === "undefined" || svg.empty()) {
                 var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root">' + '<g class="chart-group">' + '<circle class="background-circle"></circle>' + '<g class="angular axis-group"></g>' + '<g class="geometry-group"></g>' + '<g class="radial axis-group">' + '<circle class="outside-circle"></circle>' + "</g>" + '<g class="guides-group"><line></line><circle r="0"></circle></g>' + "</g>" + '<g class="legend-group"></g>' + '<g class="tooltips-group"></g>' + '<g class="title-group"><text></text></g>' + "</svg>";
@@ -1140,7 +1142,7 @@ var µ = micropolar;
                 if (d.key === "title") r.title = d.value;
                 if (d.key === "showlegend") outputConfig.legendConfig.showLegend = d.value;
                 if (d.key === "direction") r.flip = d.value === "clockwise";
-                if (d.key === "needsEndSpacing") r.needsEndSpacing = d.needsEndSpacing;
+                if (d.key === "needsEndSpacing") r.needsEndSpacing = d.value;
                 if (d.key === "legend") {
                     if (d.value.traceorder) outputConfig.legendConfig.reverseOrder = d.value.traceorder === "reversed";
                 }

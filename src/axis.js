@@ -75,8 +75,9 @@ var µ = micropolar;
                 }
 
                 var angularExtent = d3.extent(angularDataMerged);
-               	var angularDomain = axisConfig.angularDomain || angularExtent;
-                if(axisConfig.needsEndSpacing) angularDomain[1] += angularDataMerged[1] - angularDataMerged[0];
+               	var angularDomain = (axisConfig.angularDomain) ? axisConfig.angularDomain.slice() : angularExtent;
+                var angularDomainStep = angularDataMerged[1] - angularDataMerged[0];
+                if(axisConfig.needsEndSpacing) angularDomain[1] += angularDomainStep;
 
                 // Reduce the number of ticks
 //                var tickCount = axisConfig.angularTicksCount || ((angularDomain[1] - angularDomain[0]) / (data[0].x[0][1] - data[0].x[0][0]));
@@ -96,6 +97,8 @@ var µ = micropolar;
                 angularScale = d3.scale.linear()
                     .domain(angularDomain.slice(0, 2))
                     .range(axisConfig.flip? [0, 360] : [360, 0]);
+
+                angularScale.endPadding = axisConfig.needsEndSpacing ? angularDomainStep : 0;
 
                 // Chart skeleton
                 ////////////////////////////////////////////////////////////////////
