@@ -4,14 +4,26 @@
 
     function exports() {
         var legendConfig = config.legendConfig;
+
+        // filter invisible
         var data = config.data.filter(function(d, i){
             return (legendConfig.elements[i] && (legendConfig.elements[i].visibleInLegend
                 || typeof legendConfig.elements[i].visibleInLegend === 'undefined'));
         });
+
+        var flattenData = config.data.map(function(d, i){
+            return [].concat(d).map(function(dB, iB){
+                var element = µ.util.deepExtend({}, legendConfig.elements[i]);
+                element.name = dB;
+                return element;
+            });
+        });
+        data = d3.merge(flattenData);
+
         if(legendConfig.reverseOrder) data = data.reverse();
         var container = legendConfig.container;
         if (typeof container == 'string' || container.nodeName) container = d3.select(container);
-        var colors = legendConfig.elements.map(function(d, i){ return d.color; });
+        var colors = data.map(function(d, i){ return d.color; });
         var lineHeight = legendConfig.fontSize;
         var isContinuous = (legendConfig.isContinuous == null) ? typeof data[0] === 'number' : legendConfig.isContinuous;
         var height = isContinuous ? legendConfig.height : (lineHeight) * data.length;
@@ -30,9 +42,10 @@
         svgEnter.append('g').classed('legend-axis', true);
         svgEnter.append('g').classed('legend-marks', true);
 
-        var colorScale = d3.scale[(isContinuous) ? 'linear' : 'ordinal']().domain(config.data).range(colors);
+        var dataNumbered = d3.range(data.length);
+        var colorScale = d3.scale[(isContinuous) ? 'linear' : 'ordinal']().domain(dataNumbered).range(colors);
         var dataScale = d3.scale[(isContinuous) ? 'linear' : 'ordinal']()
-            .domain(data)[(isContinuous) ? 'range' : 'rangePoints']([0, height]);
+            .domain(dataNumbered)[(isContinuous) ? 'range' : 'rangePoints']([0, height]);
 
         var shapeGenerator = function(_type, _size){
             var squareSize = _size * 3;
@@ -62,12 +75,12 @@
                 .data(data);
             legendElement.enter().append('path').classed('legend-mark', true);
             legendElement.attr({
-                transform: function(d, i){ return 'translate(' + [lineHeight / 2, dataScale(d) + lineHeight / 2] + ')'; },
+                transform: function(d, i){ return 'translate(' + [lineHeight / 2, dataScale(i) + lineHeight / 2] + ')'; },
                 d: function(d, i){
-                    var symbolType = legendConfig.elements[i].symbol;
+                    var symbolType = d.symbol;
                     return shapeGenerator(symbolType, lineHeight);
                 },
-                fill: function(d, i){ return colorScale(d, i); }
+                fill: function(d, i){ return colorScale(i); }
             });
             legendElement.exit().remove();
         }
@@ -78,7 +91,8 @@
             .call(legendAxis);
         axis.selectAll('.domain').style({fill: 'none', stroke: 'none'});
         axis.selectAll('line').style({fill: 'none', stroke: (isContinuous) ? legendConfig.textColor : 'none'});
-        axis.selectAll('text').style({fill: legendConfig.textColor, 'font-size': legendConfig.fontSize});
+        axis.selectAll('text').style({fill: legendConfig.textColor, 'font-size': legendConfig.fontSize})
+            .text(function(d, i){ return data[i].name; });
 
 //        svg.attr({width: svg.node().getBBox().width + 10});
         return exports;

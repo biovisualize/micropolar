@@ -17,9 +17,13 @@
                         if(typeof stackY.y === 'undefined'){
                             stackY = µ.util.deepExtend({}, d);
                             stackY.y = [stackY.y];
+                            stackY.name = [stackY.name];
                             stacked.push(stackY);
                         }
-                        else stackY.y.push(d.y.slice());
+                        else{
+                            stackY.y.push(d.y.slice());
+                            stackY.name.push(d.name.slice());
+                        }
                     }
                     else stacked.push(d);
                 })
