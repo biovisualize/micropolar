@@ -127,18 +127,20 @@ var µ = micropolar;
 
                 if(typeof svg === 'undefined' || svg.empty()){
                     var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root">' +
-                        '<g class="chart-group">' +
-                            '<circle class="background-circle"></circle>' +
-                            '<g class="angular axis-group"></g>' +
-                            '<g class="geometry-group"></g>' +
-                            '<g class="radial axis-group">' +
-                                '<circle class="outside-circle"></circle>' +
+                        '<g class="outer-group">' +
+                            '<g class="chart-group">' +
+                                '<circle class="background-circle"></circle>' +
+                                '<g class="angular axis-group"></g>' +
+                                '<g class="geometry-group"></g>' +
+                                '<g class="radial axis-group">' +
+                                    '<circle class="outside-circle"></circle>' +
+                                '</g>' +
+                                '<g class="guides-group"><line></line><circle r="0"></circle></g>' +
                             '</g>' +
-                            '<g class="guides-group"><line></line><circle r="0"></circle></g>' +
+                            '<g class="legend-group"></g>' +
+                            '<g class="tooltips-group"></g>' +
+                            '<g class="title-group"><text></text></g>' +
                         '</g>' +
-                        '<g class="legend-group"></g>' +
-                        '<g class="tooltips-group"></g>' +
-                        '<g class="title-group"><text></text></g>' +
                     '</svg>';
                     var doc = new DOMParser().parseFromString(skeleton, 'application/xml');
                     var newSvg = this.appendChild(this.ownerDocument.importNode(doc.documentElement, true));
@@ -440,6 +442,10 @@ var µ = micropolar;
                         else  el.style({stroke: el.attr('data-stroke'), opacity: el.attr('data-opacity')});
                     });
 
+                var outerGroup = svg.select('.outer-group')
+                    .attr('transform', 'translate(' + [(axisConfig.width / 2 - radius - axisConfig.margin.left),
+                        (axisConfig.height / 2 - radius - axisConfig.margin.top)] + ')');
+
             });
         return exports;
     }
@@ -482,10 +488,10 @@ var µ = micropolar;
             height: 450,
             width: 500,
             margin: {
-                top: 50,
-                right: 150,
-                bottom: 50,
-                left: 50
+                top: 40,
+                right: 40,
+                bottom: 40,
+                left: 40
             },
             fontSize: 11,
             fontColor: 'black',

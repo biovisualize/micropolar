@@ -5,13 +5,6 @@
     function exports() {
         var legendConfig = config.legendConfig;
 
-        // filter invisible
-        var data = config.data.filter(function(d, i){
-            return (legendConfig.elements[i] && (legendConfig.elements[i].visibleInLegend
-                || typeof legendConfig.elements[i].visibleInLegend === 'undefined'));
-        });
-
-        // TODO: get this logic out
         var flattenData = config.data.map(function(d, i){
             return [].concat(d).map(function(dB, iB){
                 var element = µ.util.deepExtend({}, legendConfig.elements[i]);
@@ -20,7 +13,13 @@
                 return element;
             });
         });
-        data = d3.merge(flattenData);
+        var data = d3.merge(flattenData);
+
+        // filter invisible
+        data = data.filter(function(d, i){
+            return (legendConfig.elements[i] && (legendConfig.elements[i].visibleInLegend
+                || typeof legendConfig.elements[i].visibleInLegend === 'undefined'));
+        });
 
         if(legendConfig.reverseOrder) data = data.reverse();
         var container = legendConfig.container;

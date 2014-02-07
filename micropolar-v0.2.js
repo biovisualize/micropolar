@@ -99,7 +99,7 @@ var µ = micropolar;
             angularScale.endPadding = axisConfig.needsEndSpacing ? angularDomainStep : 0;
             svg = d3.select(this).select("svg.chart-root");
             if (typeof svg === "undefined" || svg.empty()) {
-                var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root">' + '<g class="chart-group">' + '<circle class="background-circle"></circle>' + '<g class="angular axis-group"></g>' + '<g class="geometry-group"></g>' + '<g class="radial axis-group">' + '<circle class="outside-circle"></circle>' + "</g>" + '<g class="guides-group"><line></line><circle r="0"></circle></g>' + "</g>" + '<g class="legend-group"></g>' + '<g class="tooltips-group"></g>' + '<g class="title-group"><text></text></g>' + "</svg>";
+                var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root">' + '<g class="outer-group">' + '<g class="chart-group">' + '<circle class="background-circle"></circle>' + '<g class="angular axis-group"></g>' + '<g class="geometry-group"></g>' + '<g class="radial axis-group">' + '<circle class="outside-circle"></circle>' + "</g>" + '<g class="guides-group"><line></line><circle r="0"></circle></g>' + "</g>" + '<g class="legend-group"></g>' + '<g class="tooltips-group"></g>' + '<g class="title-group"><text></text></g>' + "</g>" + "</svg>";
                 var doc = new DOMParser().parseFromString(skeleton, "application/xml");
                 var newSvg = this.appendChild(this.ownerDocument.importNode(doc.documentElement, true));
                 svg = d3.select(newSvg);
@@ -422,6 +422,7 @@ var µ = micropolar;
                     opacity: el.attr("data-opacity")
                 });
             });
+            var outerGroup = svg.select(".outer-group").attr("transform", "translate(" + [ axisConfig.width / 2 - radius - axisConfig.margin.left, axisConfig.height / 2 - radius - axisConfig.margin.top ] + ")");
         });
         return exports;
     }
@@ -468,10 +469,10 @@ var µ = micropolar;
             height: 450,
             width: 500,
             margin: {
-                top: 50,
-                right: 150,
-                bottom: 50,
-                left: 50
+                top: 40,
+                right: 40,
+                bottom: 40,
+                left: 40
             },
             fontSize: 11,
             fontColor: "black",
@@ -926,9 +927,6 @@ var µ = micropolar;
     var dispatch = d3.dispatch("hover");
     function exports() {
         var legendConfig = config.legendConfig;
-        var data = config.data.filter(function(d, i) {
-            return legendConfig.elements[i] && (legendConfig.elements[i].visibleInLegend || typeof legendConfig.elements[i].visibleInLegend === "undefined");
-        });
         var flattenData = config.data.map(function(d, i) {
             return [].concat(d).map(function(dB, iB) {
                 var element = µ.util.deepExtend({}, legendConfig.elements[i]);
@@ -937,7 +935,10 @@ var µ = micropolar;
                 return element;
             });
         });
-        data = d3.merge(flattenData);
+        var data = d3.merge(flattenData);
+        data = data.filter(function(d, i) {
+            return legendConfig.elements[i] && (legendConfig.elements[i].visibleInLegend || typeof legendConfig.elements[i].visibleInLegend === "undefined");
+        });
         if (legendConfig.reverseOrder) data = data.reverse();
         var container = legendConfig.container;
         if (typeof container == "string" || container.nodeName) container = d3.select(container);
