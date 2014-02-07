@@ -111,4 +111,23 @@
     return mouse;
 }
 
+µ.util.duplicatesCount = function(arr) {
+    var uniques = {}, val;
+    var dups = {};
+    for (var i = 0, len = arr.length; i < len; i++) {
+        val = arr[i];
+        if (val in uniques) {
+            uniques[val]++;
+            dups[val] = uniques[val];
+        } else {
+            uniques[val] = 1;
+        }
+    }
+    return(dups);
+};
+
+µ.util.duplicates = function(arr) {
+    return Object.keys(µ.util.duplicatesCount(arr));
+};
+
 

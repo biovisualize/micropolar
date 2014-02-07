@@ -19,30 +19,40 @@ var µ = micropolar;
                 // Scales
                 ////////////////////////////////////////////////////////////////////
 
-                var dataWithGroupId = _data.map(function(d, i){
+                var data = _data.slice();
+
+                // Stack
+                var isStacked = false;
+                var dataWithGroupId = data.map(function(d, i){
                     d.groupId = config.geometryConfig[i].groupId;
+                    isStacked = isStacked || (typeof d.groupId !== 'undefined')
                     return d;
                 });
-                var grouped =  d3.nest().key(function(d, i){ return d.groupId || 'unstacked'; }).entries(dataWithGroupId);
+                if(isStacked){
+                    var grouped =  d3.nest().key(function(d, i){
+                            return (typeof d.groupId != 'undefined') ? d.groupId : 'unstacked';
+                        })
+                        .entries(dataWithGroupId);
+                    var dataYStack = [];
+                    var stacked = grouped.map(function(d, i){
+                        if (d.key === 'unstacked') return d.values;
+                        else{
+                            var prevArray = d.values[0].y.map(function(d, i){ return 0; });
+                            d.values.forEach(function(d, i, a){
+                                d.yStack = [prevArray];
+                                dataYStack.push(prevArray);
+                                prevArray = µ.util.sumArrays(d.y, prevArray);
+                            });
+                            return d.values;
+                        }
+                    });
 
-                var dataYStack = [];
-                var stacked = grouped.map(function(d, i){
-                    if (d.key === 'unstacked') return d.values;
-                    else{
-                        var prevArray = d.values[0].y.map(function(d, i){ return 0; });
-                        d.values.forEach(function(d, i, a){
-                            d.yStack = [prevArray];
-                            dataYStack.push(prevArray);
-                            prevArray = µ.util.sumArrays(d.y, prevArray);
-                        });
-                        return d.values;
-                    }
-                });
-
-                _data = d3.merge(stacked);
+                    data = d3.merge(stacked);
+                }
 
                 // Make sure x,y are arrays of array
-                var data = _data.map(function(d, i){
+                //TODO: get rid of this
+                var data = data.map(function(d, i){
                     var validated = {};
                     validated.name = d.name;
                     validated.x = (Array.isArray(d.x[0])) ? d.x : [d.x];
@@ -51,11 +61,6 @@ var µ = micropolar;
                     return validated;
                 });
 
-                var isStacked = true;
-
-                // Stack Y
-                var firstDataY = data[0].y;
-
                 // Radial scale
                 var radius = Math.min(axisConfig.width - axisConfig.margin.left - axisConfig.margin.right,
                     axisConfig.height - axisConfig.margin.top - axisConfig.margin.bottom) / 2;
@@ -63,7 +68,7 @@ var µ = micropolar;
 
                 var extent;
                 if(isStacked){
-                    var highestStackedValue = d3.max(µ.util.sumArrays(µ.util.arrayLast(firstDataY), µ.util.arrayLast(dataYStack)));
+                    var highestStackedValue = d3.max(µ.util.sumArrays(µ.util.arrayLast(data).y[0], µ.util.arrayLast(dataYStack)));
                     extent = [0, highestStackedValue];
                 }
                 else extent = d3.extent(µ.util.flattenArray(data.map(function(d, i){ return d.y; })));

@@ -15,29 +15,34 @@ var µ = micropolar;
         var container = axisConfig.container;
         if (typeof container == "string" || container.nodeName) container = d3.select(container);
         container.datum(data).each(function(_data, _index) {
-            var dataWithGroupId = _data.map(function(d, i) {
+            var data = _data.slice();
+            var isStacked = false;
+            var dataWithGroupId = data.map(function(d, i) {
                 d.groupId = config.geometryConfig[i].groupId;
+                isStacked = isStacked || typeof d.groupId !== "undefined";
                 return d;
             });
-            var grouped = d3.nest().key(function(d, i) {
-                return d.groupId || "unstacked";
-            }).entries(dataWithGroupId);
-            var dataYStack = [];
-            var stacked = grouped.map(function(d, i) {
-                if (d.key === "unstacked") return d.values; else {
-                    var prevArray = d.values[0].y.map(function(d, i) {
-                        return 0;
-                    });
-                    d.values.forEach(function(d, i, a) {
-                        d.yStack = [ prevArray ];
-                        dataYStack.push(prevArray);
-                        prevArray = µ.util.sumArrays(d.y, prevArray);
-                    });
-                    return d.values;
-                }
-            });
-            _data = d3.merge(stacked);
-            var data = _data.map(function(d, i) {
+            if (isStacked) {
+                var grouped = d3.nest().key(function(d, i) {
+                    return typeof d.groupId != "undefined" ? d.groupId : "unstacked";
+                }).entries(dataWithGroupId);
+                var dataYStack = [];
+                var stacked = grouped.map(function(d, i) {
+                    if (d.key === "unstacked") return d.values; else {
+                        var prevArray = d.values[0].y.map(function(d, i) {
+                            return 0;
+                        });
+                        d.values.forEach(function(d, i, a) {
+                            d.yStack = [ prevArray ];
+                            dataYStack.push(prevArray);
+                            prevArray = µ.util.sumArrays(d.y, prevArray);
+                        });
+                        return d.values;
+                    }
+                });
+                data = d3.merge(stacked);
+            }
+            var data = data.map(function(d, i) {
                 var validated = {};
                 validated.name = d.name;
                 validated.x = Array.isArray(d.x[0]) ? d.x : [ d.x ];
@@ -45,13 +50,11 @@ var µ = micropolar;
                 validated.yStack = d.yStack;
                 return validated;
             });
-            var isStacked = true;
-            var firstDataY = data[0].y;
             var radius = Math.min(axisConfig.width - axisConfig.margin.left - axisConfig.margin.right, axisConfig.height - axisConfig.margin.top - axisConfig.margin.bottom) / 2;
             var chartCenter = [ axisConfig.margin.left + radius, axisConfig.margin.top + radius ];
             var extent;
             if (isStacked) {
-                var highestStackedValue = d3.max(µ.util.sumArrays(µ.util.arrayLast(firstDataY), µ.util.arrayLast(dataYStack)));
+                var highestStackedValue = d3.max(µ.util.sumArrays(µ.util.arrayLast(data).y[0], µ.util.arrayLast(dataYStack)));
                 extent = [ 0, highestStackedValue ];
             } else extent = d3.extent(µ.util.flattenArray(data.map(function(d, i) {
                 return d.y;
@@ -630,6 +633,25 @@ var µ = micropolar;
     return mouse;
 };
 
+µ.util.duplicatesCount = function(arr) {
+    var uniques = {}, val;
+    var dups = {};
+    for (var i = 0, len = arr.length; i < len; i++) {
+        val = arr[i];
+        if (val in uniques) {
+            uniques[val]++;
+            dups[val] = uniques[val];
+        } else {
+            uniques[val] = 1;
+        }
+    }
+    return dups;
+};
+
+µ.util.duplicates = function(arr) {
+    return Object.keys(µ.util.duplicatesCount(arr));
+};
+
 µ.PolyChart = function module() {
     var config = µ.PolyChart.defaultConfig();
     var dispatch = d3.dispatch("hover");
@@ -646,7 +668,7 @@ var µ = micropolar;
         container.datum(config.data).each(function(_data, _index) {
             var isStack = !!_data.yStack;
             var data = _data.y.map(function(d, i) {
-                if (isStack) return d3.zip(_data.x[0], d, _data.yStack[i]); else return d3.zip(_data.x, d);
+                if (isStack) return d3.zip(_data.x[0], d, _data.yStack[i]); else return d3.zip(_data.x[0], d);
             });
             var angularScale = geometryConfig.angularScale;
             var angularScaleReversed = geometryConfig.angularScale.copy().range(geometryConfig.angularScale.range().slice().reverse());
@@ -1145,39 +1167,8 @@ var µ = micropolar;
         var outputConfig = {};
         var r = {};
         if (_inputConfig.data) {
-            var dataClone = _inputConfig.data.slice();
-            if (_inputConfig.layout && _inputConfig.layout.barmode === "stack") {
-                dataClone.filter(function(d, i) {
-                    return d.type === "PolarAreaChart" || d.type === "PolarBarChart";
-                });
-                var stacked = [];
-                var stackY = {};
-                dataClone.forEach(function(d, i) {
-                    if (d.type === "PolarAreaChart" || d.type === "PolarBarChart") {
-                        if (typeof stackY.y === "undefined") {
-                            stackY = µ.util.deepExtend({}, d);
-                            stackY.y = [ stackY.y ];
-                            stackY.name = [ stackY.name ];
-                            stacked.push(stackY);
-                        } else {
-                            stackY.y.push(d.y.slice());
-                            stackY.name.push(d.name.slice());
-                        }
-                    } else stacked.push(d);
-                });
-                dataClone = stacked;
-            }
-            outputConfig.data = dataClone.map(function(d, i) {
-                var data = {
-                    x: d.x,
-                    y: d.y,
-                    name: d.name,
-                    type: d.type
-                };
-                if (d.yStack) data.yStack = d.yStack;
-                return data;
-            });
-            outputConfig.geometryConfig = dataClone.map(function(d, i) {
+            outputConfig.data = _inputConfig.data.slice();
+            outputConfig.geometryConfig = outputConfig.data.map(function(d, i) {
                 r = {};
                 if (d.type) r.geometry = d.type.substr("Polar".length);
                 if (d.line && d.line.color) r.color = d.line.color;
@@ -1195,6 +1186,15 @@ var µ = micropolar;
                 if (d.marker && typeof d.marker.barWidth != "undefined") r.barWidth = d.marker.barWidth;
                 return r;
             });
+            if (_inputConfig.layout && _inputConfig.layout.barmode === "stack") {
+                var duplicates = µ.util.duplicates(outputConfig.data.map(function(d, i) {
+                    return d.type;
+                }));
+                outputConfig.data.forEach(function(d, i) {
+                    var idx = duplicates.indexOf(d.type);
+                    if (idx != -1) outputConfig.geometryConfig[i].groupId = idx;
+                });
+            }
         }
         if (_inputConfig.layout) {
             outputConfig.legendConfig = {};

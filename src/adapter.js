@@ -5,43 +5,9 @@
         var outputConfig = {};
         var r = {};
         if(_inputConfig.data){
-            var dataClone =  _inputConfig.data.slice();
-            if(_inputConfig.layout && _inputConfig.layout.barmode === 'stack'){
-                dataClone.filter(function(d, i){
-                    return d.type === 'PolarAreaChart' ||  d.type === 'PolarBarChart';
-                });
-                var stacked = [];
-                var stackY = {};
-                dataClone.forEach(function(d, i){
-                    if(d.type === 'PolarAreaChart' ||  d.type === 'PolarBarChart'){
-                        if(typeof stackY.y === 'undefined'){
-                            stackY = µ.util.deepExtend({}, d);
-                            stackY.y = [stackY.y];
-                            stackY.name = [stackY.name];
-                            stacked.push(stackY);
-                        }
-                        else{
-                            stackY.y.push(d.y.slice());
-                            stackY.name.push(d.name.slice());
-                        }
-                    }
-                    else stacked.push(d);
-                })
-                dataClone = stacked;
-            }
+            outputConfig.data =  _inputConfig.data.slice();
 
-            outputConfig.data = dataClone.map(function(d, i){
-                var data = {
-                    x: d.x,
-                    y: d.y,
-                    name: d.name,
-                    type: d.type
-                };
-                if(d.yStack) data.yStack = d.yStack;
-                return data;
-            });
-
-            outputConfig.geometryConfig = dataClone.map(function(d, i){
+            outputConfig.geometryConfig = outputConfig.data.map(function(d, i){
                 r = {};
                 if(d.type) r.geometry = d.type.substr('Polar'.length);
                 if(d.line && d.line.color) r.color = d.line.color;
@@ -59,6 +25,14 @@
                 if(d.marker && typeof d.marker.barWidth != 'undefined') r.barWidth = d.marker.barWidth;
                 return r;
             });
+
+            if(_inputConfig.layout && _inputConfig.layout.barmode === 'stack'){
+                var duplicates = µ.util.duplicates(outputConfig.data.map(function(d, i){ return d.type; }))
+                outputConfig.data.forEach(function(d, i){
+                    var idx = duplicates.indexOf(d.type);
+                    if(idx != -1) outputConfig.geometryConfig[i].groupId = idx;
+                });
+            }
 
         }
         if(_inputConfig.layout){

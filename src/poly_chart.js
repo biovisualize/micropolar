@@ -15,7 +15,7 @@
                 var isStack = !!_data.yStack;
                 var data = _data.y.map(function(d, i){
                     if(isStack) return d3.zip(_data.x[0], d, _data.yStack[i]);
-                    else return d3.zip(_data.x, d);
+                    else return d3.zip(_data.x[0], d);
                 });
 
                 // Scales
