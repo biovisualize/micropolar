@@ -15,7 +15,7 @@
                 var isStack = !!_data.yStack;
                 var data = _data.y.map(function(d, i){
                     if(isStack) return d3.zip(_data.x[0], d, _data.yStack[i]);
-                    else return d3.zip(_data.x[0], d);
+                    else return d3.zip(_data.x, d);
                 });
 
                 // Scales
@@ -90,7 +90,14 @@
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        µ.util.deepExtend(config, _x);
+        var newConfig = _x;
+        if(Array.isArray(_x)){
+            newConfig = _x[0];
+            newConfig.data.y = _x.map(function(d, i){ return d.data.y[0]; });
+            newConfig.data.yStack = _x.map(function(d, i){ return d.data.yStack[0]; });
+            newConfig.geometryConfig.color = _x.map(function(d, i){ return d.geometryConfig.color; });
+        }
+        µ.util.deepExtend(config, newConfig);
         return this;
     };
 

@@ -19,27 +19,42 @@ var µ = micropolar;
                 // Scales
                 ////////////////////////////////////////////////////////////////////
 
+                var dataWithGroupId = _data.map(function(d, i){
+                    d.groupId = config.geometryConfig[i].groupId;
+                    return d;
+                });
+                var grouped =  d3.nest().key(function(d, i){ return d.groupId || 'unstacked'; }).entries(dataWithGroupId);
+
+                var dataYStack = [];
+                var stacked = grouped.map(function(d, i){
+                    if (d.key === 'unstacked') return d.values;
+                    else{
+                        var prevArray = d.values[0].y.map(function(d, i){ return 0; });
+                        d.values.forEach(function(d, i, a){
+                            d.yStack = [prevArray];
+                            dataYStack.push(prevArray);
+                            prevArray = µ.util.sumArrays(d.y, prevArray);
+                        });
+                        return d.values;
+                    }
+                });
+
+                _data = d3.merge(stacked);
+
                 // Make sure x,y are arrays of array
                 var data = _data.map(function(d, i){
                     var validated = {};
                     validated.name = d.name;
                     validated.x = (Array.isArray(d.x[0])) ? d.x : [d.x];
                     validated.y = (Array.isArray(d.y[0])) ? d.y : [d.y];
+                    validated.yStack = d.yStack;
                     return validated;
                 });
 
+                var isStacked = true;
+
                 // Stack Y
-                var firstDataY = data[0].y; // TODO: multiple stacking
-                var isStacked = Array.isArray(_data[0].y[0]);
-                if(isStacked){
-                    var dataYStack = [];
-                    var prevArray = firstDataY[0].map(function(d, i){ return 0; });
-                    firstDataY.forEach(function(d, i, a){
-                        dataYStack.push(prevArray);
-                        prevArray = µ.util.sumArrays(d, prevArray);
-                    });
-                    data[0].yStack = dataYStack;
-                }
+                var firstDataY = data[0].y;
 
                 // Radial scale
                 var radius = Math.min(axisConfig.width - axisConfig.margin.left - axisConfig.margin.right,
@@ -254,6 +269,7 @@ var µ = micropolar;
                 var hasGeometry = svg.select('g.geometry-group').selectAll('g').size() > 0;
                 if(geometryConfig[0] || hasGeometry){
                     var colorIndex = 0;
+                    var geometryConfigs = [];
                     geometryConfig.forEach(function(d, i){
                         var groupClass = 'geometry' + i;
                         var geometryContainer = svg.select('g.geometry-group')
@@ -263,17 +279,8 @@ var µ = micropolar;
                             .classed(groupClass, true);
 
                         if(!d.color){
-                            if(data[i].yStack){
-                                d.color = data[i].y.map(function(d, i){
-                                    var color = axisConfig.defaultColorRange[colorIndex];
-                                    colorIndex = (colorIndex+1) % axisConfig.defaultColorRange.length;
-                                    return color;
-                                })
-                            }
-                            else{
-                                d.color = axisConfig.defaultColorRange[colorIndex];
-                                colorIndex = (colorIndex+1) % axisConfig.defaultColorRange.length;
-                            }
+                            d.color = axisConfig.defaultColorRange[colorIndex];
+                            colorIndex = (colorIndex+1) % axisConfig.defaultColorRange.length;
                         }
                         var geometry = µ[geometryConfig[i].geometry]();
                         var individualGeometryConfig = µ.util.deepExtend({}, d);
@@ -285,11 +292,25 @@ var µ = micropolar;
                         individualGeometryConfig.flip = axisConfig.flip;
 
                         var individualGeometryConfigMixin = µ.util.deepExtend(µ[d.geometry].defaultConfig().geometryConfig, individualGeometryConfig);
-                        geometry.config({
-                            data: data[i],
-                            geometryConfig: individualGeometryConfigMixin
-                        })();
+
+                        geometryConfigs.push({data: data[i], geometryConfig: individualGeometryConfigMixin, geometry: geometry});
+
                     });
+
+                    var geometryConfigsGrouped =  d3.nest().key(function(d, i){ return d.geometryConfig.groupId || 'unstacked'; }).entries(geometryConfigs);
+                    var geometryConfigsGrouped2 = [];
+                    geometryConfigsGrouped.forEach(function(d, i){
+                        if (d.key === 'unstacked') geometryConfigsGrouped2 = geometryConfigsGrouped2.concat(d.values);
+                        else geometryConfigsGrouped2.push(d.values);
+                    });
+
+                    geometryConfigsGrouped2.forEach(function(d, i){
+                        var geometry;
+                        if(Array.isArray(d)) geometry = d[0].geometry;
+                        else geometry = d.geometry;
+                        geometry.config(d)();
+                    });
+
                 }
 
 
@@ -311,6 +332,7 @@ var µ = micropolar;
                         d.color = d.color || 'black'
                         return d;
                     });
+
                     var legendConfigMixin1 = µ.util.deepExtend(µ.Legend.defaultConfig().legendConfig, legendConfig);
                     var legendConfigMixin2 = µ.util.deepExtend(legendConfigMixin1, {container: legendContainer, elements: elements});
                     var legendConfigMixin3 = {
