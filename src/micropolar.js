@@ -211,8 +211,16 @@ var µ = micropolar;
                     var geometryContainer = svg.select("g.geometry-group").selectAll("g." + groupClass).data([ 0 ]);
                     geometryContainer.enter().append("g").classed(groupClass, true);
                     if (!d.color) {
-                        d.color = axisConfig.defaultColorRange[colorIndex];
-                        colorIndex = (colorIndex + 1) % axisConfig.defaultColorRange.length;
+                        if (data[i].yStack) {
+                            d.color = data[i].y.map(function(d, i) {
+                                var color = axisConfig.defaultColorRange[colorIndex];
+                                colorIndex = (colorIndex + 1) % axisConfig.defaultColorRange.length;
+                                return color;
+                            });
+                        } else {
+                            d.color = axisConfig.defaultColorRange[colorIndex];
+                            colorIndex = (colorIndex + 1) % axisConfig.defaultColorRange.length;
+                        }
                     }
                     var geometry = µ[geometryConfig[i].geometry]();
                     var individualGeometryConfig = µ.util.deepExtend({}, d);
@@ -241,6 +249,7 @@ var µ = micropolar;
                 var elements = geometryConfig.map(function(d, i) {
                     d.symbol = "line";
                     d.visibleInLegend = typeof d.visibleInLegend === "undefined" || d.visibleInLegend;
+                    d.color = d.color || "black";
                     return d;
                 });
                 var legendConfigMixin1 = µ.util.deepExtend(µ.Legend.defaultConfig().legendConfig, legendConfig);
@@ -611,6 +620,7 @@ var µ = micropolar;
         dash: [ 5, 2 ],
         dot: [ 2, 5 ]
     };
+    var colorScale;
     function exports() {
         var geometryConfig = config.geometryConfig;
         var container = geometryConfig.container;
@@ -647,10 +657,13 @@ var µ = micropolar;
             }).outerRadius(function(d) {
                 return geometryConfig.radialScale(domainMin + (d[2] || 0)) + geometryConfig.radialScale(d[1]);
             });
+            colorScale = function(i) {
+                return [].concat(geometryConfig.color)[i];
+            };
             var triangleAngle = angularScale2(data[0][1][0]) * Math.PI / 180 / 2;
             var markStyle = {
                 fill: function(d, i, pI) {
-                    return isStack ? geometryConfig.colorScale(pI) : geometryConfig.color;
+                    return colorScale(pI);
                 },
                 stroke: geometryConfig.strokeColor,
                 "stroke-width": geometryConfig.lineStrokeSize + "px",
@@ -698,6 +711,9 @@ var µ = micropolar;
         if (!arguments.length) return config;
         µ.util.deepExtend(config, _x);
         return this;
+    };
+    exports.getColorScale = function() {
+        return colorScale;
     };
     d3.rebind(exports, dispatch, "on");
     return exports;
@@ -860,10 +876,19 @@ var µ = micropolar;
         var data = config.data.filter(function(d, i) {
             return legendConfig.elements[i] && (legendConfig.elements[i].visibleInLegend || typeof legendConfig.elements[i].visibleInLegend === "undefined");
         });
+        var flattenData = config.data.map(function(d, i) {
+            return [].concat(d).map(function(dB, iB) {
+                var element = µ.util.deepExtend({}, legendConfig.elements[i]);
+                element.name = dB;
+                element.color = [].concat(legendConfig.elements[i].color)[iB];
+                return element;
+            });
+        });
+        data = d3.merge(flattenData);
         if (legendConfig.reverseOrder) data = data.reverse();
         var container = legendConfig.container;
         if (typeof container == "string" || container.nodeName) container = d3.select(container);
-        var colors = legendConfig.elements.map(function(d, i) {
+        var colors = data.map(function(d, i) {
             return d.color;
         });
         var lineHeight = legendConfig.fontSize;
@@ -880,8 +905,9 @@ var µ = micropolar;
         });
         svgEnter.append("g").classed("legend-axis", true);
         svgEnter.append("g").classed("legend-marks", true);
-        var colorScale = d3.scale[isContinuous ? "linear" : "ordinal"]().domain(config.data).range(colors);
-        var dataScale = d3.scale[isContinuous ? "linear" : "ordinal"]().domain(data)[isContinuous ? "range" : "rangePoints"]([ 0, height ]);
+        var dataNumbered = d3.range(data.length);
+        var colorScale = d3.scale[isContinuous ? "linear" : "ordinal"]().domain(dataNumbered).range(colors);
+        var dataScale = d3.scale[isContinuous ? "linear" : "ordinal"]().domain(dataNumbered)[isContinuous ? "range" : "rangePoints"]([ 0, height ]);
         var shapeGenerator = function(_type, _size) {
             var squareSize = _size * 3;
             if (_type === "line") {
@@ -916,14 +942,14 @@ var µ = micropolar;
             legendElement.enter().append("path").classed("legend-mark", true);
             legendElement.attr({
                 transform: function(d, i) {
-                    return "translate(" + [ lineHeight / 2, dataScale(d) + lineHeight / 2 ] + ")";
+                    return "translate(" + [ lineHeight / 2, dataScale(i) + lineHeight / 2 ] + ")";
                 },
                 d: function(d, i) {
-                    var symbolType = legendConfig.elements[i].symbol;
+                    var symbolType = d.symbol;
                     return shapeGenerator(symbolType, lineHeight);
                 },
                 fill: function(d, i) {
-                    return colorScale(d, i);
+                    return colorScale(i);
                 }
             });
             legendElement.exit().remove();
@@ -943,6 +969,8 @@ var µ = micropolar;
         axis.selectAll("text").style({
             fill: legendConfig.textColor,
             "font-size": legendConfig.fontSize
+        }).text(function(d, i) {
+            return data[i].name;
         });
         return exports;
     }
@@ -1029,8 +1057,8 @@ var µ = micropolar;
             y: -(bbox.height + padding),
             width: bbox.width + padding * 2,
             height: bbox.height + padding * 2,
-            rx: 5,
-            ry: 5
+            rx: 0,
+            ry: 0
         }).style({
             fill: config.color,
             stroke: strokeColor,
@@ -1098,8 +1126,12 @@ var µ = micropolar;
                         if (typeof stackY.y === "undefined") {
                             stackY = µ.util.deepExtend({}, d);
                             stackY.y = [ stackY.y ];
+                            stackY.name = [ stackY.name ];
                             stacked.push(stackY);
-                        } else stackY.y.push(d.y.slice());
+                        } else {
+                            stackY.y.push(d.y.slice());
+                            stackY.name.push(d.name.slice());
+                        }
                     } else stacked.push(d);
                 });
                 dataClone = stacked;

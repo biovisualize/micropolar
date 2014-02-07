@@ -11,10 +11,12 @@
                 || typeof legendConfig.elements[i].visibleInLegend === 'undefined'));
         });
 
+        // TODO: get this logic out
         var flattenData = config.data.map(function(d, i){
             return [].concat(d).map(function(dB, iB){
                 var element = µ.util.deepExtend({}, legendConfig.elements[i]);
                 element.name = dB;
+                element.color = [].concat(legendConfig.elements[i].color)[iB];
                 return element;
             });
         });
@@ -80,7 +82,9 @@
                     var symbolType = d.symbol;
                     return shapeGenerator(symbolType, lineHeight);
                 },
-                fill: function(d, i){ return colorScale(i); }
+                fill: function(d, i){
+                    return colorScale(i);
+                }
             });
             legendElement.exit().remove();
         }

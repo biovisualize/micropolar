@@ -263,8 +263,17 @@ var µ = micropolar;
                             .classed(groupClass, true);
 
                         if(!d.color){
-                            d.color = axisConfig.defaultColorRange[colorIndex];
-                            colorIndex = (colorIndex+1) % axisConfig.defaultColorRange.length;
+                            if(data[i].yStack){
+                                d.color = data[i].y.map(function(d, i){
+                                    var color = axisConfig.defaultColorRange[colorIndex];
+                                    colorIndex = (colorIndex+1) % axisConfig.defaultColorRange.length;
+                                    return color;
+                                })
+                            }
+                            else{
+                                d.color = axisConfig.defaultColorRange[colorIndex];
+                                colorIndex = (colorIndex+1) % axisConfig.defaultColorRange.length;
+                            }
                         }
                         var geometry = µ[geometryConfig[i].geometry]();
                         var individualGeometryConfig = µ.util.deepExtend({}, d);
@@ -299,6 +308,7 @@ var µ = micropolar;
                     var elements = geometryConfig.map(function(d, i){
                         d.symbol = 'line'; //hardcoded
                         d.visibleInLegend = (typeof d.visibleInLegend === 'undefined') || d.visibleInLegend;
+                        d.color = d.color || 'black'
                         return d;
                     });
                     var legendConfigMixin1 = µ.util.deepExtend(µ.Legend.defaultConfig().legendConfig, legendConfig);

@@ -31,8 +31,8 @@
                 y: -(bbox.height + padding),
                 width: bbox.width + padding*2,
                 height: bbox.height + padding*2,
-                rx: 5,
-                ry: 5
+                rx: 0,
+                ry: 0
             })
             .style({
                 fill: config.color,

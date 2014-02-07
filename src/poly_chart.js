@@ -2,6 +2,7 @@
     var config = µ.PolyChart.defaultConfig();
     var dispatch = d3.dispatch('hover');
     var dashArray = {solid: 'none', dash: [5, 2], dot: [2, 5] };
+    var colorScale;
 
     function exports() {
         var geometryConfig = config.geometryConfig;
@@ -44,9 +45,11 @@
                     .innerRadius(function(d) { return geometryConfig.radialScale(domainMin +  (d[2]||0)); })
                     .outerRadius(function(d) { return geometryConfig.radialScale(domainMin +  (d[2]||0)) + geometryConfig.radialScale(d[1]) });
 
+//                colorScale = function(i){ return (isStack) ? geometryConfig.colorScale(i) : geometryConfig.color };
+                colorScale = function(i){ return [].concat(geometryConfig.color)[i]; };
                 var triangleAngle = (angularScale2(data[0][1][0]) * Math.PI / 180 / 2);
                 var markStyle = {
-                    fill: function(d, i, pI){ return (isStack) ? geometryConfig.colorScale(pI) : geometryConfig.color },
+                    fill: function(d, i, pI){ return colorScale(pI) },
                     stroke: geometryConfig.strokeColor,
                     'stroke-width': geometryConfig.lineStrokeSize + 'px',
                     'stroke-dasharray': dashArray[geometryConfig.dash],
@@ -85,10 +88,14 @@
 
             });
     }
-    exports.config = function (_x) {
+    exports.config = function(_x) {
         if (!arguments.length) return config;
         µ.util.deepExtend(config, _x);
         return this;
+    };
+
+    exports.getColorScale = function() {
+        return colorScale;
     };
 
     d3.rebind(exports, dispatch, 'on');
