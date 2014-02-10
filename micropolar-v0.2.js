@@ -16,9 +16,17 @@ var µ = micropolar;
         if (typeof container == "string" || container.nodeName) container = d3.select(container);
         container.datum(data).each(function(_data, _index) {
             var data = _data.slice();
+            data = data.filter(function(d, i) {
+                var visible = geometryConfig[i].visible;
+                return typeof visible === "undefined" || visible === true;
+            });
+            geometryConfig = geometryConfig.filter(function(d, i) {
+                var visible = d.visible;
+                return typeof visible === "undefined" || visible === true;
+            });
             var isStacked = false;
             var dataWithGroupId = data.map(function(d, i) {
-                d.groupId = config.geometryConfig[i].groupId;
+                d.groupId = geometryConfig[i].groupId;
                 isStacked = isStacked || typeof d.groupId !== "undefined";
                 return d;
             });
@@ -99,7 +107,7 @@ var µ = micropolar;
             angularScale.endPadding = axisConfig.needsEndSpacing ? angularDomainStep : 0;
             svg = d3.select(this).select("svg.chart-root");
             if (typeof svg === "undefined" || svg.empty()) {
-                var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root">' + '<g class="outer-group">' + '<g class="chart-group">' + '<circle class="background-circle"></circle>' + '<g class="angular axis-group"></g>' + '<g class="geometry-group"></g>' + '<g class="radial axis-group">' + '<circle class="outside-circle"></circle>' + "</g>" + '<g class="guides-group"><line></line><circle r="0"></circle></g>' + "</g>" + '<g class="legend-group"></g>' + '<g class="tooltips-group"></g>' + '<g class="title-group"><text></text></g>' + "</g>" + "</svg>";
+                var skeleton = '<svg xmlns="http://www.w3.org/2000/svg" class="chart-root">' + '<g class="outer-group">' + '<g class="chart-group">' + '<circle class="background-circle"></circle>' + '<g class="geometry-group"></g>' + '<g class="radial axis-group">' + '<circle class="outside-circle"></circle>' + "</g>" + '<g class="angular axis-group"></g>' + '<g class="guides-group"><line></line><circle r="0"></circle></g>' + "</g>" + '<g class="legend-group"></g>' + '<g class="tooltips-group"></g>' + '<g class="title-group"><text></text></g>' + "</g>" + "</svg>";
                 var doc = new DOMParser().parseFromString(skeleton, "application/xml");
                 var newSvg = this.appendChild(this.ownerDocument.importNode(doc.documentElement, true));
                 svg = d3.select(newSvg);
@@ -222,14 +230,16 @@ var µ = micropolar;
             if (geometryConfig[0] || hasGeometry) {
                 var colorIndex = 0;
                 var geometryConfigs = [];
-                geometryConfig.forEach(function(d, i) {
-                    var groupClass = "geometry" + i;
-                    var geometryContainer = svg.select("g.geometry-group").selectAll("g." + groupClass).data([ 0 ]);
-                    geometryContainer.enter().append("g").classed(groupClass, true);
+                config.geometryConfig.forEach(function(d, i) {
                     if (!d.color) {
                         d.color = axisConfig.defaultColorRange[colorIndex];
                         colorIndex = (colorIndex + 1) % axisConfig.defaultColorRange.length;
                     }
+                });
+                geometryConfig.forEach(function(d, i) {
+                    var groupClass = "geometry" + i;
+                    var geometryContainer = svg.select("g.geometry-group").selectAll("g." + groupClass).data([ 0 ]);
+                    geometryContainer.enter().append("g").classed(groupClass, true);
                     var geometry = µ[geometryConfig[i].geometry]();
                     var individualGeometryConfig = µ.util.deepExtend({}, d);
                     individualGeometryConfig.radialScale = radialScale;
@@ -391,7 +401,7 @@ var µ = micropolar;
                     });
                     var bbox = this.getBoundingClientRect();
                     var svgBBox = svg.node().getBoundingClientRect();
-                    var pos = [ bbox.left - svgBBox.left + bbox.width / 2, bbox.top - svgBBox.top + bbox.height / 2 ];
+                    var pos = [ bbox.left - svgBBox.left + bbox.width / 2 - centerPosition[0], bbox.top - svgBBox.top + bbox.height / 2 - centerPosition[1] ];
                     var text = "θ: " + µ.util.round(d[0]) + ", r: " + µ.util.round(d[1]);
                     geometryTooltip.config({
                         color: newColor
@@ -422,7 +432,8 @@ var µ = micropolar;
                     opacity: el.attr("data-opacity")
                 });
             });
-            var outerGroup = svg.select(".outer-group").attr("transform", "translate(" + [ axisConfig.width / 2 - radius - axisConfig.margin.left, axisConfig.height / 2 - radius - axisConfig.margin.top ] + ")");
+            var centerPosition = [ axisConfig.width / 2 - radius - axisConfig.margin.left, axisConfig.height / 2 - radius - axisConfig.margin.top ];
+            var outerGroup = svg.select(".outer-group").attr("transform", "translate(" + centerPosition + ")");
         });
         return exports;
     }

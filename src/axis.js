@@ -19,12 +19,23 @@ var µ = micropolar;
                 // Scales
                 ////////////////////////////////////////////////////////////////////
 
+                // clone data
                 var data = _data.slice();
+
+                //remove invisible
+                data = data.filter(function(d, i){
+                    var visible = geometryConfig[i].visible;
+                    return typeof visible === 'undefined' || visible === true;
+                });
+                geometryConfig = geometryConfig.filter(function(d, i){
+                    var visible = d.visible;
+                    return typeof visible === 'undefined' || visible === true;
+                });
 
                 // Stack
                 var isStacked = false;
                 var dataWithGroupId = data.map(function(d, i){
-                    d.groupId = config.geometryConfig[i].groupId;
+                    d.groupId = geometryConfig[i].groupId;
                     isStacked = isStacked || (typeof d.groupId !== 'undefined')
                     return d;
                 });
@@ -130,11 +141,11 @@ var µ = micropolar;
                         '<g class="outer-group">' +
                             '<g class="chart-group">' +
                                 '<circle class="background-circle"></circle>' +
-                                '<g class="angular axis-group"></g>' +
                                 '<g class="geometry-group"></g>' +
                                 '<g class="radial axis-group">' +
                                     '<circle class="outside-circle"></circle>' +
                                 '</g>' +
+                                '<g class="angular axis-group"></g>' +
                                 '<g class="guides-group"><line></line><circle r="0"></circle></g>' +
                             '</g>' +
                             '<g class="legend-group"></g>' +
@@ -277,6 +288,15 @@ var µ = micropolar;
                 if(geometryConfig[0] || hasGeometry){
                     var colorIndex = 0;
                     var geometryConfigs = [];
+
+                    // assign color for every geometry, even invisible
+                    config.geometryConfig.forEach(function(d, i){
+                        if(!d.color){
+                            d.color = axisConfig.defaultColorRange[colorIndex];
+                            colorIndex = (colorIndex+1) % axisConfig.defaultColorRange.length;
+                        }
+                    });
+
                     geometryConfig.forEach(function(d, i){
                         var groupClass = 'geometry' + i;
                         var geometryContainer = svg.select('g.geometry-group')
@@ -285,10 +305,6 @@ var µ = micropolar;
                         geometryContainer.enter().append('g')
                             .classed(groupClass, true);
 
-                        if(!d.color){
-                            d.color = axisConfig.defaultColorRange[colorIndex];
-                            colorIndex = (colorIndex+1) % axisConfig.defaultColorRange.length;
-                        }
                         var geometry = µ[geometryConfig[i].geometry]();
                         var individualGeometryConfig = µ.util.deepExtend({}, d);
                         individualGeometryConfig.radialScale = radialScale;
@@ -332,7 +348,6 @@ var µ = micropolar;
                     var legendContainer = svg.select('.legend-group')
                         .attr({transform: 'translate(' + [radius + rightmostTickEndX, axisConfig.margin.top] + ')'})
                         .style({display: 'block'});
-
                     var elements = geometryConfig.map(function(d, i){
                         d.symbol = 'line'; //hardcoded
                         d.visibleInLegend = (typeof d.visibleInLegend === 'undefined') || d.visibleInLegend;
@@ -419,7 +434,8 @@ var µ = micropolar;
                             el.style({fill: newColor, opacity: 1});
                             var bbox = this.getBoundingClientRect();
                             var svgBBox = svg.node().getBoundingClientRect();
-                            var pos = [bbox.left - svgBBox.left + bbox.width/2, bbox.top - svgBBox.top + bbox.height/2];
+                            var pos = [bbox.left - svgBBox.left + bbox.width/2 - centerPosition[0],
+                                bbox.top - svgBBox.top + bbox.height/2 - centerPosition[1]];
                             var text = 'θ: ' + µ.util.round(d[0]) + ', r: ' + µ.util.round(d[1]);
                             geometryTooltip.config({color: newColor}).text(text);
                             geometryTooltip.move(pos);
@@ -442,9 +458,10 @@ var µ = micropolar;
                         else  el.style({stroke: el.attr('data-stroke'), opacity: el.attr('data-opacity')});
                     });
 
+                var centerPosition = [(axisConfig.width / 2 - radius - axisConfig.margin.left),
+                        (axisConfig.height / 2 - radius - axisConfig.margin.top)];
                 var outerGroup = svg.select('.outer-group')
-                    .attr('transform', 'translate(' + [(axisConfig.width / 2 - radius - axisConfig.margin.left),
-                        (axisConfig.height / 2 - radius - axisConfig.margin.top)] + ')');
+                    .attr('transform', 'translate(' + centerPosition + ')');
 
             });
         return exports;
