@@ -25,7 +25,7 @@
                     .datum(data)
                     .attr({
                         d: line,
-                        transform: 'rotate('+(geometryConfig.originTheta + 90)+')',
+                        transform: 'rotate('+(geometryConfig.orientation + 90)+')',
                         'stroke-width': geometryConfig.lineStrokeSize + 'px',
                         'stroke-dasharray': dashArray[geometryConfig.dash],
                         opacity: geometryConfig.opacity,
@@ -52,8 +52,8 @@
             dash: 'solid',
             lineStrokeSize: 2,
             lineInterpolation: 'linear', // linear, step, basis, cardinal, monotone
-            flip: true,
-            originTheta: 0,
+            direction: 'clockwise',
+            orientation: 0,
             container: 'body',
             opacity: 1,
             radialScale: null,

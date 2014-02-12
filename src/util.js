@@ -67,13 +67,16 @@
     return obj[next] && (! keys.length || objHasKeys(obj[next], keys));
 };
 
-µ.util.sumArrays = function(a, b){ return d3.zip(a, b).map(function(d, i){ return d3.sum(d); }); }
-µ.util.arrayLast = function(a){ return a[a.length-1]; }
+µ.util.sumArrays = function(a, b){ return d3.zip(a, b).map(function(d, i){ return d3.sum(d); }); };
+
+µ.util.arrayLast = function(a){ return a[a.length-1]; };
+
 µ.util.arrayEqual = function(a, b) {
     var i = Math.max(a.length, b.length, 1);
     while(i-- >= 0 && a[i] === b[i]);
     return (i === -2);
-}
+};
+
 µ.util.flattenArray = function(arr) {
     var r = [];
     while (!µ.util.arrayEqual(r, arr)) {
@@ -81,7 +84,7 @@
         arr = [].concat.apply([], arr);
     }
     return arr;
-}
+};
 
 µ.util.deduplicate = function(arr){ return arr.filter(function (v, i, a) { return a.indexOf(v) == i }); };
 
@@ -90,13 +93,13 @@
     var x = radius * Math.cos(thetaRadians);
     var y = radius * Math.sin(thetaRadians);
     return [x, y];
-}
+};
 
 µ.util.round = function(_value, _digits){
     var digits = _digits || 2;
     var mult = Math.pow(10, digits);
     return Math.round(_value * mult) / mult;
-}
+};
 
 µ.util.getMousePos = function(_referenceElement){
     var mousePos = d3.mouse(_referenceElement.node());
@@ -109,7 +112,7 @@
     mouse.angle = (Math.atan2(mouseY, mouseX) + Math.PI) * 180 / Math.PI;
     mouse.radius = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
     return mouse;
-}
+};
 
 µ.util.duplicatesCount = function(arr) {
     var uniques = {}, val;
@@ -128,6 +131,32 @@
 
 µ.util.duplicates = function(arr) {
     return Object.keys(µ.util.duplicatesCount(arr));
+};
+
+µ.util.translator = function(obj, sourceBranch, targetBranch, reverse){
+    //translate target to source
+    if(reverse){
+        var targetBranchCopy = targetBranch.slice();
+        targetBranch = sourceBranch;
+        sourceBranch = targetBranchCopy;
+    }
+    //find value if exists
+    var value = sourceBranch.reduce(function(previousValue, currentValue){
+        if(typeof previousValue != 'undefined') return previousValue[currentValue];
+    }, obj)
+    if(typeof value === 'undefined') return;
+    //delete leaf
+    sourceBranch.reduce(function(previousValue, currentValue, index){
+        if(typeof previousValue == 'undefined') return;
+        if(index === sourceBranch.length-1) delete previousValue[currentValue];
+        return previousValue[currentValue];
+    }, obj);
+    //set value, build branch if doesn't exists
+    targetBranch.reduce(function(previousValue, currentValue, index){
+        if(typeof previousValue[currentValue] === 'undefined') previousValue[currentValue] = {};
+        if(index === targetBranch.length-1) previousValue[currentValue] = value;
+        return previousValue[currentValue];
+    }, obj);
 };
 
 

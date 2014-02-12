@@ -21,7 +21,7 @@
                 // Scales
                 var angularScale = geometryConfig.angularScale;
                 var angularScaleReversed = geometryConfig.angularScale.copy().range(geometryConfig.angularScale.range().slice().reverse());
-                var angularScale2 = (geometryConfig.flip) ? angularScale : angularScaleReversed;
+                var angularScale2 = (geometryConfig.direction === 'clockwise') ? angularScale : angularScaleReversed;
 
                 // Geometry generators
                 var generator = {};
@@ -51,7 +51,7 @@
                 var markStyle = {
                     fill: function(d, i, pI){ return colorScale(pI) },
                     stroke: geometryConfig.strokeColor,
-                    'stroke-width': geometryConfig.lineStrokeSize + 'px',
+                    'stroke-width': geometryConfig.strokeSize + 'px',
                     'stroke-dasharray': dashArray[geometryConfig.dash],
                     opacity: geometryConfig.opacity,
                     display: (geometryConfig.visible) ? 'block' : 'none'
@@ -70,13 +70,13 @@
                                 var coord = convertToCartesian(getPolarCoordinates(d));
                                 return 'translate('+[coord.x, coord.y]+')';
                             }
-                            : function (d, i){ return 'rotate(' + (geometryConfig.originTheta + (angularScale(d[0]))) + ')'; }
+                            : function (d, i){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0]))) + ')'; }
                     })
                     .style(markStyle);
 
                 function getPolarCoordinates(d, i){
                     var r = geometryConfig.radialScale(d[1]);
-                    var θ = (geometryConfig.angularScale(d[0]) + geometryConfig.originTheta) * Math.PI / 180;
+                    var θ = (geometryConfig.angularScale(d[0]) + geometryConfig.orientation) * Math.PI / 180;
                     return {r: r, θ: θ};
                 }
 
@@ -92,7 +92,7 @@
         if (!arguments.length) return config;
         var newConfig = _x;
         if(Array.isArray(_x)){
-            newConfig = _x[0];
+            newConfig = _x[0]; //TODO add dash, strokeColor, etc. or refactor to use array of configs directly
             newConfig.data.y = _x.map(function(d, i){ return d.data.y[0]; });
             newConfig.data.yStack = _x.map(function(d, i){ return d.data.yStack[0]; });
             newConfig.geometryConfig.color = _x.map(function(d, i){ return d.geometryConfig.color; });
@@ -120,11 +120,11 @@
             barRadialOffset: null,
             barWidth: 20,
             color: '#ffa500',
+            strokeSize: 1,
             strokeColor: 'silver',
             dash: 'solid',
-            lineStrokeSize: 1,
-            flip: true,
-            originTheta: 0,
+            direction: 'clockwise',
+            orientation: 0,
             container: 'body',
             opacity: 1,
             radialScale: null,
