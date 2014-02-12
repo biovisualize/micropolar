@@ -26,7 +26,10 @@
                 });
 
                 delete r.marker;
-                if(d.type) r.geometry = d.type.substr('Polar'.length);
+                if(r.type){
+                    r.geometry = r.type.substr('Polar'.length);
+                    delete r.type;
+                }
 
                 return r;
             });

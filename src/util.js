@@ -46,6 +46,9 @@
     return _obj;
 };
 
+µ.util.cloneJson = function(json) {
+    return JSON.parse(JSON.stringify(json));
+};
 
 // Taken from http://andrewdupont.net/2009/08/28/deep-extending-objects-in-javascript/
 µ.util.deepExtend = function(destination, source) {

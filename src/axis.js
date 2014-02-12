@@ -2,7 +2,9 @@ var micropolar = {version: '0.2.1'};
 var µ = micropolar;
 
 µ.Axis = function module() {
-    var config = µ.Axis.defaultConfig();
+    var config = µ.Axis.defaultConfig(),
+        inputConfig = {},
+        liveConfig = {};
     var svg, dispatch = d3.dispatch('hover'),
     	radialScale, angularScale;
 
@@ -21,10 +23,11 @@ var µ = micropolar;
                 var dataOriginal = _data.slice();
 
                 //remove invisible
-                data = dataOriginal.filter(function(d, i){
+                var data = dataOriginal.filter(function(d, i){
                     var visible = d.visible;
                     return typeof visible === 'undefined' || visible === true;
                 });
+                liveConfig = {data: data, layout: axisConfig};
 
                 // Stack
                 var isStacked = false;
@@ -50,19 +53,14 @@ var µ = micropolar;
                             return d.values;
                         }
                     });
-
                     data = d3.merge(stacked);
                 }
 
                 // Make sure x,y are arrays of array
                 //TODO: get rid of this
-                var data = data.map(function(d, i){
-                    var validated = d;
-                    validated.name = d.name;
-                    validated.x = (Array.isArray(d.x[0])) ? d.x : [d.x];
-                    validated.y = (Array.isArray(d.y[0])) ? d.y : [d.y];
-                    validated.yStack = d.yStack;
-                    return validated;
+                data.forEach(function(d, i){
+                    d.x = (Array.isArray(d.x[0])) ? d.x : [d.x];
+                    d.y = (Array.isArray(d.y[0])) ? d.y : [d.y];
                 });
 
                 // Radial scale
@@ -80,6 +78,7 @@ var µ = micropolar;
                 radialScale = d3.scale.linear()
                     .domain(axisConfig.radialAxis.domain || extent)
                     .range([0, radius]);
+                liveConfig.layout.radialAxis.domain = radialScale.domain();
 
                 // Angular scale
                 var angularDataMerged = µ.util.flattenArray(data.map(function(d, i){ return d.x; }));
@@ -122,6 +121,7 @@ var µ = micropolar;
                 angularScale = d3.scale.linear()
                     .domain(angularDomain.slice(0, 2))
                     .range((axisConfig.direction === 'clockwise') ? [0, 360] : [360, 0]);
+                liveConfig.layout.angularAxis.domain = angularScale.domain();
 
                 angularScale.endPadding = axisConfig.needsEndSpacing ? angularDomainStep : 0;
 
@@ -304,7 +304,7 @@ var µ = micropolar;
                         geometryContainer.enter().append('g')
                             .classed(groupClass, true);
 
-                        var geometryConfig = d;
+                        var geometryConfig = µ.util.deepExtend({}, d);
                         geometryConfig.radialScale = radialScale;
                         geometryConfig.angularScale = angularScale;
                         geometryConfig.container = geometryContainer;
@@ -463,8 +463,15 @@ var µ = micropolar;
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        µ.util.deepExtend(config, _x);
+        inputConfig = µ.util.deepExtend(inputConfig, _x);
+        µ.util.deepExtend(config, µ.util.cloneJson(_x));
         return this;
+    };
+    exports.getLiveConfig = function(){
+        return liveConfig;
+    };
+    exports.getinputConfig = function(){
+        return inputConfig;
     };
     exports.radialScale = function(_x){
         return radialScale;
