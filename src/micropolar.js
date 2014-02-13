@@ -5,19 +5,22 @@ var micropolar = {
 var µ = micropolar;
 
 µ.Axis = function module() {
-    var config = µ.Axis.defaultConfig();
+    var config = µ.Axis.defaultConfig(), inputConfig = {}, liveConfig = {};
     var svg, dispatch = d3.dispatch("hover"), radialScale, angularScale;
-    function exports() {
+    function exports(container) {
         var data = config.data;
         var axisConfig = config.layout;
-        var container = axisConfig.container;
         if (typeof container == "string" || container.nodeName) container = d3.select(container);
         container.datum(data).each(function(_data, _index) {
             var dataOriginal = _data.slice();
-            data = dataOriginal.filter(function(d, i) {
+            var data = dataOriginal.filter(function(d, i) {
                 var visible = d.visible;
                 return typeof visible === "undefined" || visible === true;
             });
+            liveConfig = {
+                data: µ.util.cloneJson(dataOriginal),
+                layout: µ.util.cloneJson(axisConfig)
+            };
             var isStacked = false;
             var dataWithGroupId = data.map(function(d, i) {
                 isStacked = isStacked || typeof d.groupId !== "undefined";
@@ -43,13 +46,9 @@ var µ = micropolar;
                 });
                 data = d3.merge(stacked);
             }
-            var data = data.map(function(d, i) {
-                var validated = d;
-                validated.name = d.name;
-                validated.x = Array.isArray(d.x[0]) ? d.x : [ d.x ];
-                validated.y = Array.isArray(d.y[0]) ? d.y : [ d.y ];
-                validated.yStack = d.yStack;
-                return validated;
+            data.forEach(function(d, i) {
+                d.x = Array.isArray(d.x[0]) ? d.x : [ d.x ];
+                d.y = Array.isArray(d.y[0]) ? d.y : [ d.y ];
             });
             var radius = Math.min(axisConfig.width - axisConfig.margin.left - axisConfig.margin.right, axisConfig.height - axisConfig.margin.top - axisConfig.margin.bottom) / 2;
             var chartCenter = [ axisConfig.margin.left + radius, axisConfig.margin.top + radius ];
@@ -60,7 +59,8 @@ var µ = micropolar;
             } else extent = d3.extent(µ.util.flattenArray(data.map(function(d, i) {
                 return d.y;
             })));
-            radialScale = d3.scale.linear().domain(axisConfig.radialAxis.domain || extent).range([ 0, radius ]);
+            radialScale = d3.scale.linear().domain(axisConfig.radialAxis && axisConfig.radialAxis.domain ? axisConfig.radialAxis.domain : extent).range([ 0, radius ]);
+            liveConfig.layout.radialAxis.domain = radialScale.domain();
             var angularDataMerged = µ.util.flattenArray(data.map(function(d, i) {
                 return d.x;
             }));
@@ -80,19 +80,21 @@ var µ = micropolar;
             var angularExtent = d3.extent(angularDataMerged);
             var angularDomain = axisConfig.angularAxis.domain ? axisConfig.angularAxis.domain.slice() : angularExtent;
             var angularDomainStep = angularDataMerged[1] - angularDataMerged[0];
-            if (axisConfig.needsEndSpacing) angularDomain[1] += angularDomainStep;
+            var angularDomainWithPadding = angularDomain.slice();
+            if (axisConfig.needsEndSpacing) angularDomainWithPadding[1] += angularDomainStep;
             var tickCount = axisConfig.angularAxis.ticksCount || 4;
             if (tickCount > 8) tickCount = tickCount / (tickCount / 8) + tickCount % 8;
             if (axisConfig.angularAxis.ticksStep) {
-                tickCount = (angularDomain[1] - angularDomain[0]) / tickCount;
+                tickCount = (angularDomainWithPadding[1] - angularDomainWithPadding[0]) / tickCount;
             }
-            var angularTicksStep = axisConfig.angularAxis.ticksStep || (angularDomain[1] - angularDomain[0]) / (tickCount * (axisConfig.minorTicks + 1));
-            if (!angularDomain[2]) angularDomain[2] = angularTicksStep;
-            var angularAxisRange = d3.range.apply(this, angularDomain);
+            var angularTicksStep = axisConfig.angularAxis.ticksStep || (angularDomainWithPadding[1] - angularDomainWithPadding[0]) / (tickCount * (axisConfig.minorTicks + 1));
+            if (!angularDomainWithPadding[2]) angularDomainWithPadding[2] = angularTicksStep;
+            var angularAxisRange = d3.range.apply(this, angularDomainWithPadding);
             angularAxisRange = angularAxisRange.map(function(d, i) {
                 return parseFloat(d.toPrecision(12));
             });
-            angularScale = d3.scale.linear().domain(angularDomain.slice(0, 2)).range(axisConfig.direction === "clockwise" ? [ 0, 360 ] : [ 360, 0 ]);
+            angularScale = d3.scale.linear().domain(angularDomainWithPadding.slice(0, 2)).range(axisConfig.direction === "clockwise" ? [ 0, 360 ] : [ 360, 0 ]);
+            liveConfig.layout.angularAxis.domain = angularScale.domain();
             angularScale.endPadding = axisConfig.needsEndSpacing ? angularDomainStep : 0;
             svg = d3.select(this).select("svg.chart-root");
             if (typeof svg === "undefined" || svg.empty()) {
@@ -229,6 +231,7 @@ var µ = micropolar;
                 dataOriginal.forEach(function(d, i) {
                     if (!d.color) {
                         d.color = axisConfig.defaultColorRange[colorIndex];
+                        liveConfig.data[i].color = d.color;
                         colorIndex = (colorIndex + 1) % axisConfig.defaultColorRange.length;
                     }
                 });
@@ -236,29 +239,35 @@ var µ = micropolar;
                     var groupClass = "geometry" + i;
                     var geometryContainer = svg.select("g.geometry-group").selectAll("g." + groupClass).data([ 0 ]);
                     geometryContainer.enter().append("g").classed(groupClass, true);
-                    var geometryConfig = d;
+                    var geometryConfig = {};
                     geometryConfig.radialScale = radialScale;
                     geometryConfig.angularScale = angularScale;
                     geometryConfig.container = geometryContainer;
+                    geometryConfig.geometry = d.geometry;
                     if (!geometryConfig.orientation) geometryConfig.orientation = axisConfig.orientation;
                     geometryConfig.direction = axisConfig.direction;
                     geometryConfig.index = i;
                     geometryConfigs.push({
-                        data: data[i],
+                        data: d,
                         geometryConfig: geometryConfig
                     });
                 });
                 var geometryConfigsGrouped = d3.nest().key(function(d, i) {
-                    return d.geometryConfig.groupId || "unstacked";
+                    return typeof d.data.groupId != "undefined" || "unstacked";
                 }).entries(geometryConfigs);
                 var geometryConfigsGrouped2 = [];
                 geometryConfigsGrouped.forEach(function(d, i) {
-                    if (d.key === "unstacked") geometryConfigsGrouped2 = geometryConfigsGrouped2.concat(d.values); else geometryConfigsGrouped2.push(d.values);
+                    if (d.key === "unstacked") geometryConfigsGrouped2 = geometryConfigsGrouped2.concat(d.values.map(function(d, i) {
+                        return [ d ];
+                    })); else geometryConfigsGrouped2.push(d.values);
                 });
                 geometryConfigsGrouped2.forEach(function(d, i) {
                     var geometry;
                     if (Array.isArray(d)) geometry = d[0].geometryConfig.geometry; else geometry = d.geometryConfig.geometry;
-                    µ[geometry]().config(d)();
+                    var finalGeometryConfig = d.map(function(dB, iB) {
+                        return µ.util.deepExtend(µ[geometry].defaultConfig(), dB);
+                    });
+                    µ[geometry]().config(finalGeometryConfig)();
                 });
             }
             if (axisConfig.showLegend) {
@@ -428,8 +437,15 @@ var µ = micropolar;
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        µ.util.deepExtend(config, _x);
+        inputConfig = µ.util.deepExtend(inputConfig, _x);
+        µ.util.deepExtend(config, µ.util.cloneJson(_x));
         return this;
+    };
+    exports.getLiveConfig = function() {
+        return liveConfig;
+    };
+    exports.getinputConfig = function() {
+        return inputConfig;
     };
     exports.radialScale = function(_x) {
         return radialScale;
@@ -504,7 +520,6 @@ var µ = micropolar;
             tickLength: null,
             tickColor: "silver",
             minorTickColor: "#eee",
-            container: "body",
             backgroundColor: "none",
             needsEndSpacing: true,
             showLegend: true,
@@ -568,6 +583,10 @@ var µ = micropolar;
         _obj[d] = µ.util.ensureArray(_obj[d], _count);
     });
     return _obj;
+};
+
+µ.util.cloneJson = function(json) {
+    return JSON.parse(JSON.stringify(json));
 };
 
 µ.util.deepExtend = function(destination, source) {
@@ -687,7 +706,7 @@ var µ = micropolar;
 };
 
 µ.PolyChart = function module() {
-    var config = µ.PolyChart.defaultConfig();
+    var config = [ µ.PolyChart.defaultConfig() ];
     var dispatch = d3.dispatch("hover");
     var dashArray = {
         solid: "none",
@@ -696,34 +715,64 @@ var µ = micropolar;
     };
     var colorScale;
     function exports() {
-        var geometryConfig = config.geometryConfig;
+        var geometryConfig = config[0].geometryConfig;
         var container = geometryConfig.container;
         if (typeof container == "string") container = d3.select(container);
-        container.datum(config.data).each(function(_data, _index) {
-            console.log(geometryConfig);
-            var isStack = !!_data.yStack;
-            var data = _data.y.map(function(d, i) {
-                if (isStack) return d3.zip(_data.x[0], d, _data.yStack[i]); else return d3.zip(_data.x[0], d);
+        container.datum(config).each(function(_config, _index) {
+            var isStack = !!_config[0].data.yStack;
+            var data = _config.map(function(d, i) {
+                if (isStack) return d3.zip(d.data.x[0], d.data.y[0], d.data.yStack[0]); else return d3.zip(d.data.x[0], d.data.y[0]);
             });
             var angularScale = geometryConfig.angularScale;
             var angularScaleReversed = geometryConfig.angularScale.copy().range(geometryConfig.angularScale.range().slice().reverse());
             var angularScale2 = geometryConfig.direction === "clockwise" ? angularScale : angularScaleReversed;
-            var generator = {};
             var domainMin = geometryConfig.radialScale.domain()[0];
-            generator.bar = function(d, i) {
+            var generator = {};
+            generator.bar = function(d, i, pI) {
+                var dataConfig = _config[pI].data;
                 var h = geometryConfig.radialScale(d[1]);
                 var stackTop = geometryConfig.radialScale(domainMin + (d[2] || 0));
-                if (geometryConfig.barRadialOffset) {
-                    stackTop = 190;
+                if (dataConfig.barRadialOffset) {
+                    stackTop = dataConfig.barRadialOffset;
                     h -= stackTop;
                 }
-                var w = geometryConfig.barWidth;
-                return "M" + [ [ h + stackTop, -w / 2 ], [ h + stackTop, w / 2 ], [ stackTop, w / 2 ], [ stackTop, -w / 2 ] ].join("L") + "Z";
+                var w = dataConfig.barWidth;
+                d3.select(this).attr({
+                    d: "M" + [ [ h + stackTop, -w / 2 ], [ h + stackTop, w / 2 ], [ stackTop, w / 2 ], [ stackTop, -w / 2 ] ].join("L") + "Z",
+                    transform: function(d, i) {
+                        return "rotate(" + (geometryConfig.orientation + angularScale(d[0])) + ")";
+                    }
+                });
             };
-            generator.dot = function(d, i) {
-                return d3.svg.symbol().size(geometryConfig.dotSize).type(geometryConfig.dotType)(d, i);
+            generator.dot = function(d, i, pI) {
+                var symbol = d3.svg.symbol().size(_config[pI].data.dotSize).type(_config[pI].data.dotType)(d, i);
+                d3.select(this).attr({
+                    d: symbol,
+                    transform: function(d, i) {
+                        var coord = convertToCartesian(getPolarCoordinates(d));
+                        return "translate(" + [ coord.x, coord.y ] + ")";
+                    }
+                });
             };
-            generator.arc = d3.svg.arc().startAngle(function(d) {
+            var line = d3.svg.line.radial().radius(function(d) {
+                return geometryConfig.radialScale(d[1]);
+            }).angle(function(d) {
+                return geometryConfig.angularScale(d[0]) * Math.PI / 180;
+            });
+            generator.line = function(d, i, pI) {
+                if (i > 0) return;
+                var lineData = d[2] ? data[pI].map(function(d, i) {
+                    return [ d[0], d[1] + d[2] ];
+                }) : data[pI];
+                d3.select(this).attr({
+                    d: line(lineData),
+                    transform: function(d, i) {
+                        return "rotate(" + (geometryConfig.orientation + angularScale(d[0]) + 90) + ")";
+                    }
+                });
+            };
+            var triangleAngle = angularScale2(data[0][1][0]) * Math.PI / 180 / 2;
+            var arc = d3.svg.arc().startAngle(function(d) {
                 return -triangleAngle + Math.PI / 2;
             }).endAngle(function(d) {
                 return triangleAngle + Math.PI / 2;
@@ -732,22 +781,35 @@ var µ = micropolar;
             }).outerRadius(function(d) {
                 return geometryConfig.radialScale(domainMin + (d[2] || 0)) + geometryConfig.radialScale(d[1]);
             });
-            colorScale = function(i) {
-                return [].concat(geometryConfig.color)[i];
+            generator.arc = function(d, i, pI) {
+                d3.select(this).attr({
+                    d: arc,
+                    transform: function(d, i) {
+                        return "rotate(" + (geometryConfig.orientation + angularScale(d[0])) + ")";
+                    }
+                });
             };
-            var triangleAngle = angularScale2(data[0][1][0]) * Math.PI / 180 / 2;
             var markStyle = {
                 fill: function(d, i, pI) {
-                    return colorScale(pI);
+                    return _config[pI].data.color;
                 },
-                stroke: geometryConfig.strokeColor,
-                "stroke-width": geometryConfig.strokeSize + "px",
-                "stroke-dasharray": dashArray[geometryConfig.dash],
-                opacity: geometryConfig.opacity,
-                display: geometryConfig.visible ? "block" : "none"
+                stroke: function(d, i, pI) {
+                    return _config[pI].data.strokeColor;
+                },
+                "stroke-width": function(d, i, pI) {
+                    return _config[pI].data.strokeSize + "px";
+                },
+                "stroke-dasharray": function(d, i, pI) {
+                    return dashArray[_config[pI].data.strokeDash];
+                },
+                opacity: function(d, i, pI) {
+                    return _config[pI].data.opacity;
+                },
+                display: function(d, i, pI) {
+                    return typeof _config[pI].data.visible === "undefined" || _config[pI].data.visible ? "block" : "none";
+                }
             };
-            var geometryGroup = d3.select(this).classed("stacked-area-chart", true);
-            var geometryLayer = geometryGroup.selectAll("g.layer").data(data);
+            var geometryLayer = d3.select(this).selectAll("g.layer").data(data);
             geometryLayer.enter().append("g").classed("layer", true);
             var geometry = geometryLayer.selectAll("path.mark").data(function(d, i) {
                 return d;
@@ -755,15 +817,7 @@ var µ = micropolar;
             geometry.enter().append("path").attr({
                 "class": "mark"
             });
-            geometry.attr({
-                d: generator[geometryConfig.geometryType],
-                transform: geometryConfig.geometryType === "dot" ? function(d, i) {
-                    var coord = convertToCartesian(getPolarCoordinates(d));
-                    return "translate(" + [ coord.x, coord.y ] + ")";
-                } : function(d, i) {
-                    return "rotate(" + (geometryConfig.orientation + angularScale(d[0])) + ")";
-                }
-            }).style(markStyle);
+            geometry.each(generator[geometryConfig.geometryType]).style(markStyle);
             function getPolarCoordinates(d, i) {
                 var r = geometryConfig.radialScale(d[1]);
                 var θ = (geometryConfig.angularScale(d[0]) + geometryConfig.orientation) * Math.PI / 180;
@@ -784,20 +838,11 @@ var µ = micropolar;
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        var newConfig = _x;
-        if (Array.isArray(_x)) {
-            newConfig = _x[0];
-            newConfig.data.y = _x.map(function(d, i) {
-                return d.data.y[0];
-            });
-            newConfig.data.yStack = _x.map(function(d, i) {
-                return d.data.yStack[0];
-            });
-            newConfig.geometryConfig.color = _x.map(function(d, i) {
-                return d.geometryConfig.color;
-            });
-        }
-        µ.util.deepExtend(config, newConfig);
+        _x.forEach(function(d, i) {
+            if (!config[i]) config[i] = {};
+            µ.util.deepExtend(config[i], µ.PolyChart.defaultConfig());
+            µ.util.deepExtend(config[i], d);
+        });
         return this;
     };
     exports.getColorScale = function() {
@@ -812,11 +857,7 @@ var µ = micropolar;
         data: {
             name: "geom1",
             x: [ [ 1, 2, 3, 4 ] ],
-            y: [ [ 1, 2, 3, 4 ] ]
-        },
-        geometryConfig: {
-            geometry: "LinePlot",
-            geometryType: "arc",
+            y: [ [ 1, 2, 3, 4 ] ],
             dotType: "circle",
             dotSize: 64,
             barRadialOffset: null,
@@ -824,16 +865,20 @@ var µ = micropolar;
             color: "#ffa500",
             strokeSize: 1,
             strokeColor: "silver",
-            dash: "solid",
+            strokeDash: "solid",
+            opacity: 1,
+            index: 0,
+            visible: true,
+            visibleInLegend: true
+        },
+        geometryConfig: {
+            geometry: "LinePlot",
+            geometryType: "arc",
             direction: "clockwise",
             orientation: 0,
             container: "body",
-            opacity: 1,
             radialScale: null,
             angularScale: null,
-            index: 0,
-            visible: true,
-            visibleInLegend: true,
             colorScale: d3.scale.category20()
         }
     };
@@ -881,76 +926,13 @@ var µ = micropolar;
 };
 
 µ.LinePlot = function module() {
-    var config = µ.LinePlot.defaultConfig();
-    var dispatch = d3.dispatch("hover");
-    var dashArray = {
-        solid: "none",
-        dash: [ 5, 2 ],
-        dot: [ 2, 5 ]
-    };
-    function exports() {
-        var geometryConfig = config.geometryConfig;
-        var container = geometryConfig.container;
-        if (typeof container == "string") container = d3.select(container);
-        container.datum(config.data).each(function(_data, _index) {
-            var data = d3.zip(_data.x[0], _data.y[0]);
-            var line = d3.svg.line.radial().interpolate(geometryConfig.lineInterpolation).radius(function(d) {
-                return geometryConfig.radialScale(d[1]);
-            }).angle(function(d) {
-                return geometryConfig.angularScale(d[0]) * Math.PI / 180;
-            });
-            var markStyle = {
-                fill: "none",
-                "stroke-width": geometryConfig.lineStrokeSize,
-                stroke: geometryConfig.color,
-                "pointer-events": "stroke"
-            };
-            var geometryGroup = d3.select(this).classed("line-plot", true);
-            var geometry = geometryGroup.selectAll("path.mark").data([ 0 ]);
-            geometry.enter().append("path").attr({
-                "class": "mark"
-            });
-            geometryGroup.select("path.mark").datum(data).attr({
-                d: line,
-                transform: "rotate(" + (geometryConfig.orientation + 90) + ")",
-                "stroke-width": geometryConfig.lineStrokeSize + "px",
-                "stroke-dasharray": dashArray[geometryConfig.dash],
-                opacity: geometryConfig.opacity,
-                display: geometryConfig.visible ? "block" : "none"
-            }).style(markStyle);
-        });
-    }
-    exports.config = function(_x) {
-        if (!arguments.length) return config;
-        µ.util.deepExtend(config, _x);
-        return this;
-    };
-    d3.rebind(exports, dispatch, "on");
-    return exports;
+    return µ.PolyChart();
 };
 
 µ.LinePlot.defaultConfig = function() {
     var config = {
-        data: {
-            name: "geom1",
-            x: [ [ 1, 2, 3, 4 ] ],
-            y: [ [ 1, 2, 3, 4 ] ]
-        },
         geometryConfig: {
-            geometry: "LinePlot",
-            color: "#ffa500",
-            dash: "solid",
-            lineStrokeSize: 2,
-            lineInterpolation: "linear",
-            direction: "clockwise",
-            orientation: 0,
-            container: "body",
-            opacity: 1,
-            radialScale: null,
-            angularScale: null,
-            index: 0,
-            visible: true,
-            visibleInLegend: true
+            geometryType: "line"
         }
     };
     return config;
@@ -1198,25 +1180,26 @@ var µ = micropolar;
 
 µ.adapter.plotly = function module() {
     var exports = {};
-    exports.convert = function(_inputConfig) {
+    exports.convert = function(_inputConfig, reverse) {
         var outputConfig = {};
         if (_inputConfig.data) {
             outputConfig.data = _inputConfig.data.map(function(d, i) {
                 var r = µ.util.deepExtend({}, d);
-                var toTranslate = [ [ r, [ "marker", "line", "color" ], [ "strokeColor" ] ], [ r, [ "marker", "color" ], [ "color" ] ], [ r, [ "marker", "opacity" ], [ "opacity" ] ], [ r, [ "marker", "line", "color" ], [ "strokeColor" ] ], [ r, [ "marker", "line", "dash" ], [ "dash" ] ], [ r, [ "marker", "line", "width" ], [ "strokeSize" ] ], [ r, [ "marker", "type" ], [ "dotType" ] ], [ r, [ "marker", "size" ], [ "dotSize" ] ], [ r, [ "marker", "barRadialOffset" ], [ "barRadialOffset" ] ], [ r, [ "marker", "barWidth" ], [ "barWidth" ] ], [ r, [ "line", "interpolation" ], [ "lineInterpolation" ] ] ];
+                var toTranslate = [ [ r, [ "marker", "color" ], [ "color" ] ], [ r, [ "marker", "opacity" ], [ "opacity" ] ], [ r, [ "marker", "line", "color" ], [ "strokeColor" ] ], [ r, [ "marker", "line", "dash" ], [ "strokeDash" ] ], [ r, [ "marker", "line", "width" ], [ "strokeSize" ] ], [ r, [ "marker", "type" ], [ "dotType" ] ], [ r, [ "marker", "size" ], [ "dotSize" ] ], [ r, [ "marker", "barRadialOffset" ], [ "barRadialOffset" ] ], [ r, [ "marker", "barWidth" ], [ "barWidth" ] ], [ r, [ "line", "interpolation" ], [ "lineInterpolation" ] ], [ r, [ "type" ], [ "geometry" ] ] ];
                 toTranslate.forEach(function(d, i) {
-                    µ.util.translator.apply(null, d);
+                    µ.util.translator.apply(null, d.concat(reverse));
                 });
-                delete r.marker;
-                if (d.type) r.geometry = d.type.substr("Polar".length);
+                if (!reverse) delete r.marker;
+                if (r.geometry && r.geometry.indexOf("Polar") != -1 && !reverse) r.geometry = r.geometry.substr("Polar".length);
+                if (r.type && r.type.indexOf("Polar") == -1 && reverse) r.type = "Polar" + r.type;
                 return r;
             });
             if (_inputConfig.layout && _inputConfig.layout.barmode === "stack") {
                 var duplicates = µ.util.duplicates(outputConfig.data.map(function(d, i) {
-                    return d.type;
+                    return d.geometry;
                 }));
                 outputConfig.data.forEach(function(d, i) {
-                    var idx = duplicates.indexOf(d.type);
+                    var idx = duplicates.indexOf(d.geometry);
                     if (idx != -1) outputConfig.data[i].groupId = idx;
                 });
             }
@@ -1225,7 +1208,7 @@ var µ = micropolar;
             var r = µ.util.deepExtend({}, _inputConfig.layout);
             var toTranslate = [ [ r, [ "plot_bgcolor" ], [ "backgroundColor" ] ], [ r, [ "showlegend" ], [ "showLegend" ] ], [ r.angularAxis, [ "showLine" ], [ "gridLinesVisible" ] ], [ r.angularAxis, [ "showticklabels" ], [ "labelsVisible" ] ], [ r.angularAxis, [ "nticks" ], [ "ticksCount" ] ] ];
             toTranslate.forEach(function(d, i) {
-                µ.util.translator.apply(null, d);
+                µ.util.translator.apply(null, d.concat(reverse));
             });
             if (r.margin && typeof r.margin.t != "undefined") {
                 var source = [ "t", "r", "b", "l", "pad" ];
@@ -1237,7 +1220,6 @@ var µ = micropolar;
                 r.margin = margin;
             }
             outputConfig.layout = r;
-            if (_inputConfig.container) outputConfig.layout.container = _inputConfig.container;
         }
         return outputConfig;
     };

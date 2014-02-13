@@ -1,7 +1,7 @@
 µ.adapter = {};
 µ.adapter.plotly = function module() {
     var exports = {};
-    exports.convert = function(_inputConfig) {
+    exports.convert = function(_inputConfig, reverse) {
         var outputConfig = {};
         if(_inputConfig.data){
             //convert data
@@ -9,36 +9,36 @@
                 var r = µ.util.deepExtend({}, d);
 
                 var toTranslate = [
-                    [r, ['marker', 'line', 'color'], ['strokeColor']],
                     [r, ['marker', 'color'], ['color']],
                     [r, ['marker', 'opacity'], ['opacity']],
                     [r, ['marker', 'line', 'color'], ['strokeColor']],
-                    [r, ['marker', 'line', 'dash'], ['dash']],
+                    [r, ['marker', 'line', 'dash'], ['strokeDash']],
                     [r, ['marker', 'line', 'width'], ['strokeSize']],
                     [r, ['marker', 'type'], ['dotType']],
                     [r, ['marker', 'size'], ['dotSize']],
                     [r, ['marker', 'barRadialOffset'], ['barRadialOffset']],
                     [r, ['marker', 'barWidth'], ['barWidth']],
-                    [r, ['line', 'interpolation'], ['lineInterpolation']]
+                    [r, ['line', 'interpolation'], ['lineInterpolation']],
+                    [r, ['type'], ['geometry']]
                 ];
                 toTranslate.forEach(function(d, i){
-                    µ.util.translator.apply(null, d);
+                    µ.util.translator.apply(null, d.concat(reverse));
                 });
 
-                delete r.marker;
-                if(r.type){
-                    r.geometry = r.type.substr('Polar'.length);
-                    delete r.type;
-                }
+
+                if(!reverse) delete r.marker;
+
+                if(r.geometry && r.geometry.indexOf('Polar') != -1 && !reverse) r.geometry = r.geometry.substr('Polar'.length);
+                if(r.type && r.type.indexOf('Polar') == -1 && reverse) r.type = 'Polar' + r.type;
 
                 return r;
             });
 
             //add groupId for stack
             if(_inputConfig.layout && _inputConfig.layout.barmode === 'stack'){
-                var duplicates = µ.util.duplicates(outputConfig.data.map(function(d, i){ return d.type; }))
+                var duplicates = µ.util.duplicates(outputConfig.data.map(function(d, i){ return d.geometry; }));
                 outputConfig.data.forEach(function(d, i){
-                    var idx = duplicates.indexOf(d.type);
+                    var idx = duplicates.indexOf(d.geometry);
                     if(idx != -1) outputConfig.data[i].groupId = idx;
                 });
             }
@@ -56,7 +56,7 @@
                 [r.angularAxis, ['nticks'], ['ticksCount']]
             ];
             toTranslate.forEach(function(d, i){
-                µ.util.translator.apply(null, d);
+                µ.util.translator.apply(null, d.concat(reverse));
             });
 
             if(r.margin && typeof r.margin.t != 'undefined'){
@@ -70,8 +70,6 @@
             }
 
             outputConfig.layout = r;
-
-            if(_inputConfig.container) outputConfig.layout.container = _inputConfig.container;
         }
 
         return outputConfig;

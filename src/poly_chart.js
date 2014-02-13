@@ -1,77 +1,107 @@
 µ.PolyChart = function module() {
-    var config = µ.PolyChart.defaultConfig();
+    var config = [µ.PolyChart.defaultConfig()];
     var dispatch = d3.dispatch('hover');
     var dashArray = {solid: 'none', dash: [5, 2], dot: [2, 5] };
     var colorScale;
 
     function exports() {
-        var geometryConfig = config.geometryConfig;
+        var geometryConfig = config[0].geometryConfig;
         var container = geometryConfig.container;
         if (typeof container == 'string') container = d3.select(container);
-        container.datum(config.data)
-            .each(function (_data, _index) {
+        container.datum(config)
+            .each(function (_config, _index) {
 
                 // Zip the data
-                var isStack = !!_data.yStack;
-                var data = _data.y.map(function(d, i){
-                    if(isStack) return d3.zip(_data.x[0], d, _data.yStack[i]);
-                    else return d3.zip(_data.x[0], d);
+                var isStack = !!_config[0].data.yStack;
+                var data = _config.map(function(d, i){
+                    if(isStack) return d3.zip(d.data.x[0], d.data.y[0], d.data.yStack[0]);
+                    else return d3.zip(d.data.x[0], d.data.y[0]);
                 });
 
                 // Scales
                 var angularScale = geometryConfig.angularScale;
                 var angularScaleReversed = geometryConfig.angularScale.copy().range(geometryConfig.angularScale.range().slice().reverse());
                 var angularScale2 = (geometryConfig.direction === 'clockwise') ? angularScale : angularScaleReversed;
+                var domainMin = geometryConfig.radialScale.domain()[0];
 
                 // Geometry generators
                 var generator = {};
-                var domainMin = geometryConfig.radialScale.domain()[0];
-                generator.bar = function(d, i){
+
+                // Bar
+                generator.bar = function(d, i, pI){
+                    var dataConfig = _config[pI].data;
                     var h = geometryConfig.radialScale(d[1]);
                     var stackTop = geometryConfig.radialScale(domainMin + (d[2]||0));
-                    if(geometryConfig.barRadialOffset){
-                        stackTop = 190;
+                    if(dataConfig.barRadialOffset){
+                        stackTop = dataConfig.barRadialOffset;
                         h -= stackTop;
                     }
-                    var w = geometryConfig.barWidth;
-                    return 'M'+[[h+stackTop, -w/2], [h+stackTop, w/2], [stackTop, w/2], [stackTop, -w/2]].join('L')+'Z';
+                    var w = dataConfig.barWidth;
+                    d3.select(this).attr({
+                        d: 'M'+[[h+stackTop, -w/2], [h+stackTop, w/2], [stackTop, w/2], [stackTop, -w/2]].join('L')+'Z',
+                        transform: function (d, i){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0]))) + ')'; }
+                    });
                 };
-                generator.dot = function (d, i) {
-                    return d3.svg.symbol().size(geometryConfig.dotSize).type(geometryConfig.dotType)(d, i);
+
+                // Dot
+                generator.dot = function (d, i, pI) {
+                    var symbol = d3.svg.symbol().size(_config[pI].data.dotSize).type(_config[pI].data.dotType)(d, i);
+                    d3.select(this).attr({
+                        d: symbol,
+                        transform: function (d, i) {
+                            var coord = convertToCartesian(getPolarCoordinates(d));
+                            return 'translate('+[coord.x, coord.y]+')';
+                        }
+                    });
                 };
-                generator.arc = d3.svg.arc()
-                    .startAngle(function(d) { return -triangleAngle + Math.PI/2; })
-                    .endAngle(function(d) { return triangleAngle + Math.PI/2; })
-                    .innerRadius(function(d) { return geometryConfig.radialScale(domainMin +  (d[2]||0)); })
-                    .outerRadius(function(d) { return geometryConfig.radialScale(domainMin +  (d[2]||0)) + geometryConfig.radialScale(d[1]) });
+
+                // Line
+                var line = d3.svg.line.radial()
+//                    .interpolate(geometryConfig.lineInterpolation)
+                    .radius(function(d) { return geometryConfig.radialScale(d[1]); })
+                    .angle(function(d) { return geometryConfig.angularScale(d[0]) * Math.PI / 180; });
+                generator.line = function (d, i, pI) {
+                    if(i>0) return;
+                    var lineData = (d[2]) ? data[pI].map(function(d, i){ return [d[0], d[1] + d[2]]; }) : data[pI];
+                    d3.select(this).attr({
+                        d: line(lineData),
+                        transform: function (d, i){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0])) + 90) + ')'; }
+                    });
+                };
+
+                // Arc
+                var triangleAngle = (angularScale2(data[0][1][0]) * Math.PI / 180 / 2);
+                var arc = d3.svg.arc()
+                    .startAngle(function(d){ return -triangleAngle + Math.PI/2; })
+                    .endAngle(function(d){ return triangleAngle + Math.PI/2; })
+                    .innerRadius(function(d){ return geometryConfig.radialScale(domainMin +  (d[2]||0)); })
+                    .outerRadius(function(d){ return geometryConfig.radialScale(domainMin +  (d[2]||0)) + geometryConfig.radialScale(d[1]); });
+                generator.arc = function(d, i, pI){
+                    d3.select(this).attr({
+                        d: arc,
+                        transform: function (d, i){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0]))) + ')'; }
+                    });
+                };
 
 //                colorScale = function(i){ return (isStack) ? geometryConfig.colorScale(i) : geometryConfig.color };
-                colorScale = function(i){ return [].concat(geometryConfig.color)[i]; };
-                var triangleAngle = (angularScale2(data[0][1][0]) * Math.PI / 180 / 2);
+//                colorScale = function(i, pI){ return [].concat(geometryConfig.color)[i]; };
                 var markStyle = {
-                    fill: function(d, i, pI){ return colorScale(pI) },
-                    stroke: geometryConfig.strokeColor,
-                    'stroke-width': geometryConfig.strokeSize + 'px',
-                    'stroke-dasharray': dashArray[geometryConfig.dash],
-                    opacity: geometryConfig.opacity,
-                    display: (geometryConfig.visible) ? 'block' : 'none'
+                    fill: function(d, i, pI){ return _config[pI].data.color; },
+                    'stroke': function(d, i, pI){ return  _config[pI].data.strokeColor; },
+                    'stroke-width': function(d, i, pI){ return _config[pI].data.strokeSize + 'px'; },
+                    'stroke-dasharray': function(d, i, pI){ return dashArray[_config[pI].data.strokeDash]; },
+                    opacity: function(d, i, pI){ return _config[pI].data.opacity; },
+                    display: function(d, i, pI){ return (typeof _config[pI].data.visible === 'undefined' || _config[pI].data.visible) ? 'block' : 'none'; }
                 };
-                var geometryGroup = d3.select(this).classed('stacked-area-chart', true);
-                var geometryLayer = geometryGroup.selectAll('g.layer')
+
+                var geometryLayer = d3.select(this).selectAll('g.layer')
                     .data(data);
                 geometryLayer.enter().append('g').classed('layer', true)
                 var geometry = geometryLayer.selectAll('path.mark')
                     .data(function(d, i){ return d; });
                     geometry.enter().append('path').attr({ 'class': 'mark' });
-                    geometry.attr({
-                        d: generator[geometryConfig.geometryType],
-                        transform: (geometryConfig.geometryType === 'dot')
-                            ? function (d, i) {
-                                var coord = convertToCartesian(getPolarCoordinates(d));
-                                return 'translate('+[coord.x, coord.y]+')';
-                            }
-                            : function (d, i){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0]))) + ')'; }
-                    })
+                    geometry
+                    .each(generator[geometryConfig.geometryType])
                     .style(markStyle);
 
                 function getPolarCoordinates(d, i){
@@ -90,14 +120,11 @@
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        var newConfig = _x;
-        if(Array.isArray(_x)){
-            newConfig = _x[0]; //TODO add dash, strokeColor, etc. or refactor to use array of configs directly
-            newConfig.data.y = _x.map(function(d, i){ return d.data.y[0]; });
-            newConfig.data.yStack = _x.map(function(d, i){ return d.data.yStack[0]; });
-            newConfig.geometryConfig.color = _x.map(function(d, i){ return d.geometryConfig.color; });
-        }
-        µ.util.deepExtend(config, newConfig);
+        _x.forEach(function(d, i){
+            if(!config[i]) config[i] = {};
+            µ.util.deepExtend(config[i], µ.PolyChart.defaultConfig());
+            µ.util.deepExtend(config[i], d);
+        });
         return this;
     };
 
@@ -109,29 +136,33 @@
     return exports;
 };
 
-µ.PolyChart.defaultConfig = function(){
-    var config = {
-        data: {name: 'geom1', x: [[1, 2, 3, 4]], y: [[1, 2, 3, 4]]},
-        geometryConfig: {
+    µ.PolyChart.defaultConfig = function(){
+        var config = {
+            data: {
+                name: 'geom1',
+                x: [[1, 2, 3, 4]],
+                y: [[1, 2, 3, 4]],
+                dotType: 'circle',
+                dotSize: 64,
+                barRadialOffset: null,
+                barWidth: 20,
+                color: '#ffa500',
+                strokeSize: 1,
+                strokeColor: 'silver',
+                strokeDash: 'solid',
+                opacity: 1,
+                index: 0,
+                visible: true,
+                visibleInLegend: true
+            },
+            geometryConfig: {
             geometry: 'LinePlot',
             geometryType: 'arc',
-            dotType: 'circle',
-            dotSize: 64,
-            barRadialOffset: null,
-            barWidth: 20,
-            color: '#ffa500',
-            strokeSize: 1,
-            strokeColor: 'silver',
-            dash: 'solid',
             direction: 'clockwise',
             orientation: 0,
             container: 'body',
-            opacity: 1,
             radialScale: null,
             angularScale: null,
-            index: 0,
-            visible: true,
-            visibleInLegend: true,
             colorScale: d3.scale.category20()
         }
     };

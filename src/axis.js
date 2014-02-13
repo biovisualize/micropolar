@@ -8,10 +8,9 @@ var µ = micropolar;
     var svg, dispatch = d3.dispatch('hover'),
     	radialScale, angularScale;
 
-    function exports(){
+    function exports(container){
         var data = config.data;
         var axisConfig = config.layout;
-        var container = axisConfig.container;
         if (typeof container == 'string' || container.nodeName) container = d3.select(container);
         container.datum(data)
             .each(function(_data, _index) {
@@ -27,7 +26,7 @@ var µ = micropolar;
                     var visible = d.visible;
                     return typeof visible === 'undefined' || visible === true;
                 });
-                liveConfig = {data: data, layout: axisConfig};
+                liveConfig = {data: µ.util.cloneJson(dataOriginal), layout:µ.util.cloneJson(axisConfig)};
 
                 // Stack
                 var isStacked = false;
@@ -76,7 +75,7 @@ var µ = micropolar;
                 else extent = d3.extent(µ.util.flattenArray(data.map(function(d, i){ return d.y; })));
 
                 radialScale = d3.scale.linear()
-                    .domain(axisConfig.radialAxis.domain || extent)
+                    .domain((axisConfig.radialAxis && axisConfig.radialAxis.domain) ? axisConfig.radialAxis.domain : extent)
                     .range([0, radius]);
                 liveConfig.layout.radialAxis.domain = radialScale.domain();
 
@@ -101,25 +100,26 @@ var µ = micropolar;
                 var angularExtent = d3.extent(angularDataMerged);
                	var angularDomain = (axisConfig.angularAxis.domain) ? axisConfig.angularAxis.domain.slice() : angularExtent;
                 var angularDomainStep = angularDataMerged[1] - angularDataMerged[0];
-                if(axisConfig.needsEndSpacing) angularDomain[1] += angularDomainStep;
+                var angularDomainWithPadding = angularDomain.slice();
+                if(axisConfig.needsEndSpacing) angularDomainWithPadding[1] += angularDomainStep;
 
                 // Reduce the number of ticks
 //                var tickCount = axisConfig.angularAxis.ticksCount || ((angularDomain[1] - angularDomain[0]) / (data[0].x[0][1] - data[0].x[0][0]));
                 var tickCount = axisConfig.angularAxis.ticksCount || 4;
                 if(tickCount > 8) tickCount = tickCount / (tickCount / 8) + tickCount%8;
                 if(axisConfig.angularAxis.ticksStep){
-                    tickCount = (angularDomain[1] - angularDomain[0]) / tickCount;
+                    tickCount = (angularDomainWithPadding[1] - angularDomainWithPadding[0]) / tickCount;
                 }
                 var angularTicksStep = axisConfig.angularAxis.ticksStep
-                    || ((angularDomain[1] - angularDomain[0]) / (tickCount * (axisConfig.minorTicks+1)));
-                if(!angularDomain[2]) angularDomain[2] = angularTicksStep;
+                    || ((angularDomainWithPadding[1] - angularDomainWithPadding[0]) / (tickCount * (axisConfig.minorTicks+1)));
+                if(!angularDomainWithPadding[2]) angularDomainWithPadding[2] = angularTicksStep;
 
-                var angularAxisRange = d3.range.apply(this, angularDomain);
+                var angularAxisRange = d3.range.apply(this, angularDomainWithPadding);
                 // Workaround for rounding errors
                 angularAxisRange = angularAxisRange.map(function(d, i){ return parseFloat(d.toPrecision(12)) });
 
                 angularScale = d3.scale.linear()
-                    .domain(angularDomain.slice(0, 2))
+                    .domain(angularDomainWithPadding.slice(0, 2))
                     .range((axisConfig.direction === 'clockwise') ? [0, 360] : [360, 0]);
                 liveConfig.layout.angularAxis.domain = angularScale.domain();
 
@@ -292,6 +292,7 @@ var µ = micropolar;
                     dataOriginal.forEach(function(d, i){
                         if(!d.color){
                             d.color = axisConfig.defaultColorRange[colorIndex];
+                            liveConfig.data[i].color = d.color;
                             colorIndex = (colorIndex+1) % axisConfig.defaultColorRange.length;
                         }
                     });
@@ -304,21 +305,22 @@ var µ = micropolar;
                         geometryContainer.enter().append('g')
                             .classed(groupClass, true);
 
-                        var geometryConfig = µ.util.deepExtend({}, d);
+                        var geometryConfig = {};
                         geometryConfig.radialScale = radialScale;
                         geometryConfig.angularScale = angularScale;
                         geometryConfig.container = geometryContainer;
+                        geometryConfig.geometry = d.geometry;
                         if(!geometryConfig.orientation) geometryConfig.orientation = axisConfig.orientation;
                         geometryConfig.direction = axisConfig.direction;
                         geometryConfig.index = i;
 
-                        geometryConfigs.push({data: data[i], geometryConfig: geometryConfig});
+                        geometryConfigs.push({data: d, geometryConfig: geometryConfig});
                     });
 
-                    var geometryConfigsGrouped =  d3.nest().key(function(d, i){ return d.geometryConfig.groupId || 'unstacked'; }).entries(geometryConfigs);
+                    var geometryConfigsGrouped =  d3.nest().key(function(d, i){ return (typeof d.data.groupId != 'undefined') || 'unstacked'; }).entries(geometryConfigs);
                     var geometryConfigsGrouped2 = [];
                     geometryConfigsGrouped.forEach(function(d, i){
-                        if (d.key === 'unstacked') geometryConfigsGrouped2 = geometryConfigsGrouped2.concat(d.values);
+                        if (d.key === 'unstacked') geometryConfigsGrouped2 = geometryConfigsGrouped2.concat(d.values.map(function(d, i){ return [d]; }));
                         else geometryConfigsGrouped2.push(d.values);
                     });
 
@@ -326,7 +328,8 @@ var µ = micropolar;
                         var geometry;
                         if(Array.isArray(d)) geometry = d[0].geometryConfig.geometry;
                         else geometry = d.geometryConfig.geometry;
-                        µ[geometry]().config(d)();
+                        var finalGeometryConfig = d.map(function(dB, iB){ return µ.util.deepExtend(µ[geometry].defaultConfig(), dB); });
+                        µ[geometry]().config(finalGeometryConfig)();
                     });
 
                 }
@@ -353,7 +356,7 @@ var µ = micropolar;
                     var legendConfigMixin1 = µ.util.deepExtend({}, µ.Legend.defaultConfig().legendConfig);
                     var legendConfigMixin2 = µ.util.deepExtend(legendConfigMixin1, {container: legendContainer, elements: elements});
                     var legendConfigMixin3 = {
-                        data:data.map(function(d, i){ return d.name || 'Element' + i; }),
+                        data: data.map(function(d, i){ return d.name || 'Element' + i; }),
                         legendConfig: legendConfigMixin2
                     };
                     µ.Legend().config(legendConfigMixin3)();
@@ -542,7 +545,6 @@ var µ = micropolar;
             tickLength: null,
             tickColor: 'silver',
             minorTickColor: '#eee',
-            container: 'body',
             backgroundColor: 'none',
             needsEndSpacing: true,
             showLegend: true,
