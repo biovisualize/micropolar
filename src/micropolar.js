@@ -5,7 +5,10 @@ var micropolar = {
 var µ = micropolar;
 
 µ.Axis = function module() {
-    var config = µ.Axis.defaultConfig(), inputConfig = {}, liveConfig = {};
+    var config = {
+        data: [],
+        layout: {}
+    }, inputConfig = {}, liveConfig = {};
     var svg, dispatch = d3.dispatch("hover"), radialScale, angularScale;
     function exports(container) {
         var data = config.data;
@@ -232,6 +235,9 @@ var µ = micropolar;
                     if (!d.color) {
                         d.color = axisConfig.defaultColorRange[colorIndex];
                         liveConfig.data[i].color = d.color;
+                        liveConfig.data[i].strokeColor = d.strokeColor;
+                        liveConfig.data[i].strokeDash = d.strokeDash;
+                        liveConfig.data[i].strokeSize = d.strokeSize;
                         colorIndex = (colorIndex + 1) % axisConfig.defaultColorRange.length;
                     }
                 });
@@ -431,14 +437,20 @@ var µ = micropolar;
                 });
             });
             var centerPosition = [ axisConfig.width / 2 - radius - axisConfig.margin.left, axisConfig.height / 2 - radius - axisConfig.margin.top ];
-            svg.select(".outer-group").attr("transform", "translate(" + centerPosition + ")");
+            svg.select(".outer-group");
         });
         return exports;
     }
     exports.config = function(_x) {
         if (!arguments.length) return config;
-        inputConfig = µ.util.deepExtend(inputConfig, _x);
-        µ.util.deepExtend(config, µ.util.cloneJson(_x));
+        var xClone = µ.util.cloneJson(_x);
+        xClone.data.forEach(function(d, i) {
+            if (!config.data[i]) config.data[i] = {};
+            µ.util.deepExtend(config.data[i], µ.Axis.defaultConfig().data[0]);
+            µ.util.deepExtend(config.data[i], d);
+        });
+        µ.util.deepExtend(config.layout, µ.Axis.defaultConfig().layout);
+        µ.util.deepExtend(config.layout, xClone.layout);
         return this;
     };
     exports.getLiveConfig = function() {
@@ -468,13 +480,11 @@ var µ = micropolar;
             name: "Line1",
             geometry: "LineChart",
             color: "limegreen",
+            strokeDash: "solid",
+            strokeColor: "silver",
+            strokeSize: "1",
             visibleInLegend: true,
             opacity: 1
-        }, {
-            x: [ 21, 22, 23, 24 ],
-            y: [ 30, 31, 32, 33 ],
-            name: "Line2",
-            geometry: "LineChart"
         } ],
         layout: {
             defaultColorRange: d3.scale.category10().range(),
