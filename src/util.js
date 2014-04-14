@@ -19,14 +19,14 @@
 
 µ.util.dataFromEquation = function(_equation, _step, _name){
     var step = _step || 6;
-    var x = [], y = [];
+    var t = [], r = [];
     d3.range(0, 360 + step, step).forEach(function(deg, index){
         var theta = deg * Math.PI / 180;
         var radius = _equation(theta);
-        x.push(deg);
-        y.push(radius);
+        t.push(deg);
+        r.push(radius);
     });
-    var result = {x: x, y: y};
+    var result = {t: t, r: r};
     if(_name) result.name = _name;
     return result;
 };

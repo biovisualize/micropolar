@@ -1,16 +1,17 @@
 µ.tooltipPanel = function(){
-    var tooltipEl, tooltipTextEl, backgroundEl, circleEl;
+    var tooltipEl, tooltipTextEl, backgroundEl;
     var config = {container: null, hasTick: false, fontSize: 12, color: 'white', padding: 5};
     var id = 'tooltip-' + µ.tooltipPanel.uid++;
+    var tickSize = 10;
     var exports = function(){
         tooltipEl = config.container.selectAll('g.' + id).data([0]);
         var tooltipEnter = tooltipEl.enter().append('g')
             .classed(id, true)
-            .style({'pointer-events': 'none'});
-        circleEl = tooltipEnter.append('circle').attr({cx: 5, r: 5}).style({fill: 'white', 'fill-opacity': 0.9});
-        backgroundEl = tooltipEnter.append('rect').style({fill: 'white', 'fill-opacity': 0.9});
+            .style({'pointer-events': 'none', display: 'none'});
+        backgroundEl = tooltipEnter.append('path').style({fill: 'white', 'fill-opacity': 0.9})
+            .attr({d: 'M0 0'});
         tooltipTextEl = tooltipEnter.append('text')
-            .attr({dy: -config.fontSize * 0.3, dx: config.padding + 5});
+            .attr({ dx: config.padding + tickSize, dy: +config.fontSize * 0.3});
         return exports;
     };
     exports.text = function(_text){
@@ -26,20 +27,24 @@
             .text(text);
         var padding = config.padding;
         var bbox = tooltipTextEl.node().getBBox();
+        var boxStyle = {
+            fill: config.color,
+            stroke: strokeColor,
+            'stroke-width': '2px'
+        };
+        var backGroundW = bbox.width + padding*2 + tickSize;
+        var backGroundH = bbox.height + padding*2;
         backgroundEl.attr({
-                x: 5,
-                y: -(bbox.height + padding),
-                width: bbox.width + padding*2,
-                height: bbox.height + padding*2,
-                rx: 0,
-                ry: 0
+               d: 'M' + [[tickSize, -backGroundH/2],
+                   [tickSize, -backGroundH/4], [config.hasTick ? 0 : tickSize, 0], [tickSize, backGroundH/4],
+                   [tickSize, backGroundH/2],
+                   [backGroundW, backGroundH/2],
+                   [backGroundW, -backGroundH/2]].join('L') + 'Z',
+//                transform: 'translate(' + [tickSize, -backGroundH/2 + padding*2] + ')'
             })
-            .style({
-                fill: config.color,
-                stroke: strokeColor,
-                'stroke-width': '2px'
-            });
-        circleEl.attr({cy: -(bbox.height / 2)}).style({display: config.hasTick? 'block' : 'none'});
+            .style(boxStyle);
+
+        tooltipEl.attr({transform: 'translate(' + [tickSize, -backGroundH/2 + padding*2] + ')'});
         tooltipEl.style({display: 'block'});
         return exports;
     };
@@ -47,7 +52,6 @@
         if(!tooltipEl) return;
         tooltipEl.attr({transform: 'translate(' + [_pos[0], _pos[1]] + ')'})
             .style({display: 'block'});
-
         return exports;
     };
     exports.hide = function(){

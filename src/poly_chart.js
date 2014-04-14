@@ -14,8 +14,8 @@
                 // Zip the data
                 var isStack = !!_config[0].data.yStack;
                 var data = _config.map(function(d, i){
-                    if(isStack) return d3.zip(d.data.x[0], d.data.y[0], d.data.yStack[0]);
-                    else return d3.zip(d.data.x[0], d.data.y[0]);
+                    if(isStack) return d3.zip(d.data.t[0], d.data.r[0], d.data.yStack[0]);
+                    else return d3.zip(d.data.t[0], d.data.r[0]);
                 });
 
                 // Scales
@@ -38,6 +38,7 @@
                     }
                     var w = dataConfig.barWidth;
                     d3.select(this).attr({
+                        class: 'mark bar',
                         d: 'M'+[[h+stackTop, -w/2], [h+stackTop, w/2], [stackTop, w/2], [stackTop, -w/2]].join('L')+'Z',
                         transform: function (d, i){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0]))) + ')'; }
                     });
@@ -45,11 +46,13 @@
 
                 // Dot
                 generator.dot = function (d, i, pI) {
+                    var stackedData = (d[2]) ? [d[0], d[1] + d[2]] : d;
                     var symbol = d3.svg.symbol().size(_config[pI].data.dotSize).type(_config[pI].data.dotType)(d, i);
                     d3.select(this).attr({
+                        class: 'mark dot',
                         d: symbol,
                         transform: function (d, i) {
-                            var coord = convertToCartesian(getPolarCoordinates(d));
+                            var coord = convertToCartesian(getPolarCoordinates(stackedData));
                             return 'translate('+[coord.x, coord.y]+')';
                         }
                     });
@@ -60,17 +63,35 @@
 //                    .interpolate(geometryConfig.lineInterpolation)
                     .radius(function(d) { return geometryConfig.radialScale(d[1]); })
                     .angle(function(d) { return geometryConfig.angularScale(d[0]) * Math.PI / 180; });
-                generator.line = function (d, i, pI) {
-                    if(i>0) return;
+                generator.line = function(d, i, pI) {
                     var lineData = (d[2]) ? data[pI].map(function(d, i){ return [d[0], d[1] + d[2]]; }) : data[pI];
-                    d3.select(this).attr({
-                        d: line(lineData),
-                        transform: function (d, i){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0])) + 90) + ')'; }
-                    });
+                    // Line dots
+                    d3.select(this).each(generator['dot'])
+                        .style({opacity: 0, fill:  markStyle.stroke(d, i, pI)})
+                        .attr({'class': 'mark dot'});
+                    if(i > 0) return;
+                    // Line
+                    var lineSelection = d3.select(this.parentNode).selectAll('path.line').data([0]);
+                    lineSelection.enter().insert('path')
+                    lineSelection.attr({
+                            class: 'line',
+                            d: line(lineData),
+                            transform: function (dB, iB){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0])) + 90) + ')'; },
+                            'pointer-events': 'none'
+                        })
+                        .style({
+                            fill: function(dB, iB){ return markStyle.fill(d, i, pI); },
+                            'fill-opacity': 0,
+                            stroke: function(dB, iB){ return markStyle.stroke(d, i, pI); },
+                            'stroke-width': function(dB, iB){ return markStyle['stroke-width'](d, i, pI); },
+                            'stroke-dasharray': function(dB, iB){ return markStyle['stroke-dasharray'](d, i, pI); },
+                            opacity: function(dB, iB){ return markStyle.opacity(d, i, pI); },
+                            display: function(dB, iB){ return markStyle.display(d, i, pI); }
+                        });
                 };
 
                 // Arc
-                var triangleAngle = (angularScale2(data[0][1][0]) * Math.PI / 180 / 2);
+                var triangleAngle = (angularScale2(data[0][1][0] - data[0][0][0]) * Math.PI / 180 / 2);
                 var arc = d3.svg.arc()
                     .startAngle(function(d){ return -triangleAngle + Math.PI/2; })
                     .endAngle(function(d){ return triangleAngle + Math.PI/2; })
@@ -78,16 +99,15 @@
                     .outerRadius(function(d){ return geometryConfig.radialScale(domainMin +  (d[2]||0)) + geometryConfig.radialScale(d[1]); });
                 generator.arc = function(d, i, pI){
                     d3.select(this).attr({
+                        class: 'mark arc',
                         d: arc,
                         transform: function (d, i){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0]))) + ')'; }
                     });
                 };
 
-//                colorScale = function(i){ return (isStack) ? geometryConfig.colorScale(i) : geometryConfig.color };
-//                colorScale = function(i, pI){ return [].concat(geometryConfig.color)[i]; };
                 var markStyle = {
                     fill: function(d, i, pI){ return _config[pI].data.color; },
-                    'stroke': function(d, i, pI){ return  _config[pI].data.strokeColor; },
+                    stroke: function(d, i, pI){ return  _config[pI].data.strokeColor; },
                     'stroke-width': function(d, i, pI){ return _config[pI].data.strokeSize + 'px'; },
                     'stroke-dasharray': function(d, i, pI){ return dashArray[_config[pI].data.strokeDash]; },
                     opacity: function(d, i, pI){ return _config[pI].data.opacity; },
@@ -96,23 +116,25 @@
 
                 var geometryLayer = d3.select(this).selectAll('g.layer')
                     .data(data);
-                geometryLayer.enter().append('g').classed('layer', true)
+                geometryLayer.enter().append('g').attr({'class': 'layer'});
                 var geometry = geometryLayer.selectAll('path.mark')
                     .data(function(d, i){ return d; });
-                    geometry.enter().append('path').attr({ 'class': 'mark' });
-                    geometry
-                    .each(generator[geometryConfig.geometryType])
-                    .style(markStyle);
+                geometry.enter().append('path').attr({'class': 'mark'});
+                geometry
+                    .style(markStyle)
+                    .each(generator[geometryConfig.geometryType]);
+                geometry.exit().remove();
+                geometryLayer.exit().remove();
 
                 function getPolarCoordinates(d, i){
                     var r = geometryConfig.radialScale(d[1]);
-                    var θ = (geometryConfig.angularScale(d[0]) + geometryConfig.orientation) * Math.PI / 180;
-                    return {r: r, θ: θ};
+                    var t = (geometryConfig.angularScale(d[0]) + geometryConfig.orientation) * Math.PI / 180;
+                    return {r: r, t: t};
                 }
 
                 function convertToCartesian(polarCoordinates){
-                    var x = polarCoordinates.r * Math.cos(polarCoordinates.θ);
-                    var y = polarCoordinates.r * Math.sin(polarCoordinates.θ);
+                    var x = polarCoordinates.r * Math.cos(polarCoordinates.t);
+                    var y = polarCoordinates.r * Math.sin(polarCoordinates.t);
                     return {x: x, y: y};
                 }
 
@@ -140,8 +162,8 @@
         var config = {
             data: {
                 name: 'geom1',
-                x: [[1, 2, 3, 4]],
-                y: [[1, 2, 3, 4]],
+                t: [[1, 2, 3, 4]],
+                r: [[1, 2, 3, 4]],
                 dotType: 'circle',
                 dotSize: 64,
                 barRadialOffset: null,

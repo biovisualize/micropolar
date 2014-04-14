@@ -19,7 +19,7 @@
                     [r, ['marker', 'barRadialOffset'], ['barRadialOffset']],
                     [r, ['marker', 'barWidth'], ['barWidth']],
                     [r, ['line', 'interpolation'], ['lineInterpolation']],
-                    [r, ['type'], ['geometry']]
+                    [r, ['showlegend'], ['visibleInLegend']]
                 ];
                 toTranslate.forEach(function(d, i){
                     µ.util.translator.apply(null, d.concat(reverse));
@@ -27,15 +27,39 @@
 
 
                 if(!reverse) delete r.marker;
+                if(reverse) delete r.groupId;
 
-                if(r.geometry && r.geometry.indexOf('Polar') != -1 && !reverse) r.geometry = r.geometry.substr('Polar'.length);
-                if(r.type && r.type.indexOf('Polar') == -1 && reverse) r.type = 'Polar' + r.type;
+                if(!reverse){
+                    if(r.type === 'scatter'){
+                       if(r.mode === 'lines') r.geometry = 'LinePlot';
+                       else if(r.mode === 'markers') r.geometry = 'DotPlot';
+                    }
+                    else if(r.type === 'area') r.geometry = 'AreaChart';
+                    else if(r.type === 'bar') r.geometry = 'BarChart';
+                    delete r.mode;
+                    delete r.type;
+                }
+                else{
+                    if(r.geometry === 'LinePlot'){
+                        r.type = 'scatter';
+                        r.mode = 'lines';
+                    }
+                    else if(r.geometry === 'DotPlot'){
+                        r.type = 'scatter';
+                        r.mode = 'markers';
+                    }
+                    else if(r.geometry === 'AreaChart') r.type = 'area';
+                    else if(r.geometry === 'BarChart') r.type = 'bar';
+                    delete r.geometry;
+                }
+
+//                if(r.type && r.type.indexOf('Polar') == -1 && reverse) r.type = 'Polar' + r.type;
 
                 return r;
             });
 
             //add groupId for stack
-            if(_inputConfig.layout && _inputConfig.layout.barmode === 'stack'){
+            if(!reverse && _inputConfig.layout && _inputConfig.layout.barmode === 'stack'){
                 var duplicates = µ.util.duplicates(outputConfig.data.map(function(d, i){ return d.geometry; }));
                 outputConfig.data.forEach(function(d, i){
                     var idx = duplicates.indexOf(d.geometry);
@@ -53,11 +77,19 @@
                 [r, ['showlegend'], ['showLegend']],
                 [r.angularAxis, ['showLine'], ['gridLinesVisible']],
                 [r.angularAxis, ['showticklabels'], ['labelsVisible']],
-                [r.angularAxis, ['nticks'], ['ticksCount']]
+                [r.angularAxis, ['nticks'], ['ticksCount']],
+                [r.legend, ['traceorder'], ['reverseOrder']]
             ];
             toTranslate.forEach(function(d, i){
                 µ.util.translator.apply(null, d.concat(reverse));
             });
+
+            if(r.legend && typeof r.legend.reverseOrder != "boolean"){
+                r.legend.reverseOrder = r.legend.reverseOrder != 'normal';
+            }
+            if(r.legend && typeof r.legend.traceorder == "boolean"){
+                r.legend.traceorder = r.legend.traceorder ? 'reversed' : 'normal';
+            }
 
             if(r.margin && typeof r.margin.t != 'undefined'){
                 var source = ['t', 'r', 'b', 'l', 'pad'];
@@ -68,6 +100,8 @@
                 });
                 r.margin = margin
             }
+
+            if(reverse) delete r.needsEndSpacing;
 
             outputConfig.layout = r;
         }

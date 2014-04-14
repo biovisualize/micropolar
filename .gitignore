@@ -12,3 +12,4 @@ offline/*
 src/makefile
 examples/test.csv
 examples.html
+codeStyleSettings.xml
