@@ -1,4 +1,4 @@
-var micropolar = {version: '0.2.1'};
+var micropolar = {version: '0.2.2'};
 var µ = micropolar;
 
 µ.Axis = function module() {
@@ -7,8 +7,8 @@ var µ = micropolar;
         liveConfig = {};
     var svg, container, dispatch = d3.dispatch('hover'),
     	radialScale, angularScale;
-
-    function exports(_container){
+    var exports = {};
+    function render(_container){
         container = _container || container;
         var data = config.data;
         var axisConfig = config.layout;
@@ -92,12 +92,10 @@ var µ = micropolar;
                     extent = [0, highestStackedValue];
                 }
                 else extent = d3.extent(µ.util.flattenArray(data.map(function(d, i){ return d.r; })));
-
-                var clampExtentMinToZero = true; //todo: hardcoded
-                if(clampExtentMinToZero) extent[0] = 0;
+                if(axisConfig.radialAxis.domain != µ.DATAEXTENT) extent[0] = 0;
 
                 radialScale = d3.scale.linear()
-                    .domain((axisConfig.radialAxis && axisConfig.radialAxis.domain) ? axisConfig.radialAxis.domain : extent)
+                    .domain((axisConfig.radialAxis.domain != µ.DATAEXTENT && axisConfig.radialAxis.domain) ? axisConfig.radialAxis.domain : extent)
                     .range([0, radius]);
                 liveConfig.layout.radialAxis.domain = radialScale.domain();
 
@@ -122,17 +120,21 @@ var µ = micropolar;
                 }
 
                 var hasOnlyLineOrDotPlot = data.filter(function(d, i){ return d.geometry === 'LinePlot' || d.geometry === 'DotPlot'; }).length === data.length;
-//                var needsEndSpacing = (axisConfig.needsEndSpacing === null)? isOrdinal && !hasOnlyLinePlot : axisConfig.needsEndSpacing;
                 var needsEndSpacing = (axisConfig.needsEndSpacing === null)? isOrdinal || !hasOnlyLineOrDotPlot : axisConfig.needsEndSpacing;
 
-                var angularExtent = d3.extent(angularDataMerged);
-               	var angularDomain = (axisConfig.angularAxis.domain) ? axisConfig.angularAxis.domain.slice() : angularExtent;
+
+               	var useProvidedDomain = (axisConfig.angularAxis.domain && axisConfig.angularAxis.domain != µ.DATAEXTENT && !isOrdinal && (axisConfig.angularAxis.domain[0] >= 0));
+               	var angularDomain = useProvidedDomain ? axisConfig.angularAxis.domain : d3.extent(angularDataMerged);
                 var angularDomainStep = Math.abs(angularDataMerged[1] - angularDataMerged[0]);
+
+                if(hasOnlyLineOrDotPlot && !isOrdinal) angularDomainStep = 0;
+
                 var angularDomainWithPadding = angularDomain.slice();
-                if(needsEndSpacing) angularDomainWithPadding[1] += angularDomainStep;
+                if(needsEndSpacing && isOrdinal) angularDomainWithPadding[1] += angularDomainStep;
+//                angularDomainWithPadding[1] += angularDomainStep;
+//                if(needsEndSpacing) angularDomainWithPadding[1] += 0;
 
                 // Reduce the number of ticks
-//                var tickCount = axisConfig.angularAxis.ticksCount || ((angularDomain[1] - angularDomain[0]) / (data[0].t[0][1] - data[0].t[0][0]));
                 var tickCount = axisConfig.angularAxis.ticksCount || 4;
                 if(tickCount > 8) tickCount = tickCount / (tickCount / 8) + tickCount%8;
                 if(axisConfig.angularAxis.ticksStep){
@@ -152,6 +154,7 @@ var µ = micropolar;
                     .range((axisConfig.direction === 'clockwise') ? [0, 360] : [360, 0]);
                 liveConfig.layout.angularAxis.domain = angularScale.domain();
                 liveConfig.layout.angularAxis.endPadding = needsEndSpacing ? angularDomainStep : 0;
+
 
                 // Chart skeleton
                 ////////////////////////////////////////////////////////////////////
@@ -452,7 +455,7 @@ var µ = micropolar;
                     });
 
                 svg.selectAll('.geometry-group .mark')
-                    .on('mouseenter.tooltip', function(d, i){
+                    .on('mouseover.tooltip', function(d, i){
                         var el = d3.select(this);
                         var color = el.style('fill');
                         var newColor = 'black';
@@ -483,6 +486,7 @@ var µ = micropolar;
                         }
                     })
                     .on('mousemove.tooltip', function(d, i){
+                        if(d3.event.which != 0) return false;
                         if(d3.select(this).attr('data-fill')) geometryTooltip.show();
                     })
                     .on('mouseout.tooltip', function(d, i){
@@ -490,11 +494,15 @@ var µ = micropolar;
                         var el = d3.select(this);
                         var fillColor = el.attr('data-fill');
                         if(fillColor)  el.style({fill: fillColor, opacity: el.attr('data-opacity')});
-                        else  el.style({stroke: el.attr('data-stroke'), opacity: el.attr('data-opacity')});
+                        else el.style({stroke: el.attr('data-stroke'), opacity: el.attr('data-opacity')});
                     });
             });
         return exports;
     }
+    exports.render = function(_container){
+        render(_container);
+        return this;
+    };
     exports.config = function(_x) {
         if (!arguments.length) return config;
         var xClone =  µ.util.cloneJson(_x);

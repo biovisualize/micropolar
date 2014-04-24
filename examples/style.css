@@ -12,11 +12,11 @@ circle.outside-circle{
 circle.mark, rect.mark, path.mark{
     fill-opacity: 0.7;
 }
-circle.mark:hover, rect.mark:hover, path.mark:hover{
-    fill: orangered !important;
-    stroke: orangered !important;
-    fill-opacity: 1;
-}
+/*circle.mark:hover, rect.mark:hover, path.mark:hover{*/
+    /*fill: orangered !important;*/
+    /*stroke: orangered !important;*/
+    /*fill-opacity: 1;*/
+/*}*/
 .line-plot path.mark:hover{
 	fill: none !important;
 }

@@ -20,8 +20,6 @@
 
                 // Scales
                 var angularScale = geometryConfig.angularScale;
-                var angularScaleReversed = geometryConfig.angularScale.copy().range(geometryConfig.angularScale.range().slice().reverse());
-                var angularScale2 = (geometryConfig.direction === 'clockwise') ? angularScale : angularScaleReversed;
                 var domainMin = geometryConfig.radialScale.domain()[0];
 
                 // Geometry generators
@@ -72,11 +70,12 @@
                     if(i > 0) return;
                     // Line
                     var lineSelection = d3.select(this.parentNode).selectAll('path.line').data([0]);
-                    lineSelection.enter().insert('path')
+                    lineSelection.enter().insert('path');
                     lineSelection.attr({
                             class: 'line',
                             d: line(lineData),
-                            transform: function (dB, iB){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0])) + 90) + ')'; },
+//                            transform: function (dB, iB){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0])) + 90) + ')'; },
+                            transform: function (dB, iB){ return 'rotate(' + (geometryConfig.orientation + 90) + ')'; },
                             'pointer-events': 'none'
                         })
                         .style({
@@ -91,17 +90,18 @@
                 };
 
                 // Arc
-                var triangleAngle = (angularScale2(data[0][1][0] - data[0][0][0]) * Math.PI / 180 / 2);
+                var angularRange = geometryConfig.angularScale.range();
+                var triangleAngle = (Math.abs(angularRange[1] - angularRange[0]) / data[0].length) * Math.PI / 180;
                 var arc = d3.svg.arc()
-                    .startAngle(function(d){ return -triangleAngle + Math.PI/2; })
-                    .endAngle(function(d){ return triangleAngle + Math.PI/2; })
+                    .startAngle(function(d){ return -triangleAngle / 2; })
+                    .endAngle(function(d){ return triangleAngle / 2; })
                     .innerRadius(function(d){ return geometryConfig.radialScale(domainMin +  (d[2]||0)); })
                     .outerRadius(function(d){ return geometryConfig.radialScale(domainMin +  (d[2]||0)) + geometryConfig.radialScale(d[1]); });
                 generator.arc = function(d, i, pI){
                     d3.select(this).attr({
                         class: 'mark arc',
                         d: arc,
-                        transform: function (d, i){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0]))) + ')'; }
+                        transform: function (d, i){ return 'rotate(' + (geometryConfig.orientation + (angularScale(d[0])) + 90) + ')'; }
                     });
                 };
 
