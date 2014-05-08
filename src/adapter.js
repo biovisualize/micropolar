@@ -14,7 +14,7 @@
                     [r, ['marker', 'line', 'color'], ['strokeColor']],
                     [r, ['marker', 'line', 'dash'], ['strokeDash']],
                     [r, ['marker', 'line', 'width'], ['strokeSize']],
-                    [r, ['marker', 'type'], ['dotType']],
+                    [r, ['marker', 'symbol'], ['dotType']],
                     [r, ['marker', 'size'], ['dotSize']],
                     [r, ['marker', 'barWidth'], ['barWidth']],
                     [r, ['line', 'interpolation'], ['lineInterpolation']],

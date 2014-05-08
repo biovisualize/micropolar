@@ -1270,7 +1270,7 @@ var µ = micropolar;
         if (_inputConfig.data) {
             outputConfig.data = _inputConfig.data.map(function(d, i) {
                 var r = µ.util.deepExtend({}, d);
-                var toTranslate = [ [ r, [ "marker", "color" ], [ "color" ] ], [ r, [ "marker", "opacity" ], [ "opacity" ] ], [ r, [ "marker", "line", "color" ], [ "strokeColor" ] ], [ r, [ "marker", "line", "dash" ], [ "strokeDash" ] ], [ r, [ "marker", "line", "width" ], [ "strokeSize" ] ], [ r, [ "marker", "type" ], [ "dotType" ] ], [ r, [ "marker", "size" ], [ "dotSize" ] ], [ r, [ "marker", "barWidth" ], [ "barWidth" ] ], [ r, [ "line", "interpolation" ], [ "lineInterpolation" ] ], [ r, [ "showlegend" ], [ "visibleInLegend" ] ] ];
+                var toTranslate = [ [ r, [ "marker", "color" ], [ "color" ] ], [ r, [ "marker", "opacity" ], [ "opacity" ] ], [ r, [ "marker", "line", "color" ], [ "strokeColor" ] ], [ r, [ "marker", "line", "dash" ], [ "strokeDash" ] ], [ r, [ "marker", "line", "width" ], [ "strokeSize" ] ], [ r, [ "marker", "symbol" ], [ "dotType" ] ], [ r, [ "marker", "size" ], [ "dotSize" ] ], [ r, [ "marker", "barWidth" ], [ "barWidth" ] ], [ r, [ "line", "interpolation" ], [ "lineInterpolation" ] ], [ r, [ "showlegend" ], [ "visibleInLegend" ] ] ];
                 toTranslate.forEach(function(d, i) {
                     µ.util.translator.apply(null, d.concat(reverse));
                 });
@@ -1313,6 +1313,9 @@ var µ = micropolar;
             if (!reverse) {
                 if (r.angularAxis && typeof r.angularAxis.ticklen !== "undefined") r.tickLength = r.angularAxis.ticklen;
                 if (r.angularAxis && typeof r.angularAxis.tickcolor !== "undefined") r.tickColor = r.angularAxis.tickcolor;
+            } else {
+                if (r.tickLength) r.angularaxis.ticklen = r.tickLength;
+                if (r.tickColor) r.angularaxis.tickcolor = r.tickColor;
             }
             if (r.legend && typeof r.legend.reverseOrder != "boolean") {
                 r.legend.reverseOrder = r.legend.reverseOrder != "normal";
