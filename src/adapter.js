@@ -16,7 +16,6 @@
                     [r, ['marker', 'line', 'width'], ['strokeSize']],
                     [r, ['marker', 'type'], ['dotType']],
                     [r, ['marker', 'size'], ['dotSize']],
-                    [r, ['marker', 'barRadialOffset'], ['barRadialOffset']],
                     [r, ['marker', 'barWidth'], ['barWidth']],
                     [r, ['line', 'interpolation'], ['lineInterpolation']],
                     [r, ['showlegend'], ['visibleInLegend']]
@@ -75,14 +74,33 @@
             var toTranslate = [
                 [r, ['plot_bgcolor'], ['backgroundColor']],
                 [r, ['showlegend'], ['showLegend']],
-                [r.angularAxis, ['showLine'], ['gridLinesVisible']],
-                [r.angularAxis, ['showticklabels'], ['labelsVisible']],
-                [r.angularAxis, ['nticks'], ['ticksCount']],
-                [r.legend, ['traceorder'], ['reverseOrder']]
+                [r, ['radialaxis'], ['radialAxis']],
+                [r, ['angularaxis'], ['angularAxis']],
+                [r.angularaxis, ['showline'], ['gridLinesVisible']],
+                [r.angularaxis, ['showticklabels'], ['labelsVisible']],
+                [r.angularaxis, ['nticks'], ['ticksCount']],
+                [r.angularaxis, ['tickorientation'], ['tickOrientation']],
+                [r.angularaxis, ['tickssuffix'], ['ticksSuffix']],
+                [r.radialaxis, ['showline'], ['gridLinesVisible']],
+                [r.radialaxis, ['tickorientation'], ['tickOrientation']],
+                [r.radialaxis, ['tickssuffix'], ['ticksSuffix']],
+                [r.font, ['outlinecolor'], ['outlineColor']],
+                [r.legend, ['traceorder'], ['reverseOrder']],
+                [r, ['labeloffset'], ['labelOffset']],
+                [r, ['defaultcolorrange'], ['defaultColorRange']]
             ];
             toTranslate.forEach(function(d, i){
                 µ.util.translator.apply(null, d.concat(reverse));
             });
+
+            if(!reverse){
+                if(r.angularAxis && typeof r.angularAxis.ticklen !== 'undefined') r.tickLength = r.angularAxis.ticklen;
+                if(r.angularAxis && typeof r.angularAxis.tickcolor !== 'undefined') r.tickColor = r.angularAxis.tickcolor;
+            }
+            else{
+                if(r.tickLength) r.angularaxis.ticklen = r.tickLength;
+                if(r.tickColor) r.angularaxis.tickcolor = r.tickColor;
+            }
 
             if(r.legend && typeof r.legend.reverseOrder != "boolean"){
                 r.legend.reverseOrder = r.legend.reverseOrder != 'normal';

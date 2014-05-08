@@ -142,7 +142,7 @@ var µ = micropolar;
                 }
                 var angularTicksStep = axisConfig.angularAxis.ticksStep
                     || ((angularDomainWithPadding[1] - angularDomainWithPadding[0]) / (tickCount * (axisConfig.minorTicks+1)));
-                if(ticks) angularTicksStep = Math.round(angularTicksStep);
+                if(ticks) angularTicksStep = Math.max(Math.round(angularTicksStep), 1);
                 if(!angularDomainWithPadding[2]) angularDomainWithPadding[2] = angularTicksStep;
 
                 var angularAxisRange = d3.range.apply(this, angularDomainWithPadding);
@@ -389,7 +389,8 @@ var µ = micropolar;
                         geometryConfig.angularScale = angularScale;
                         geometryConfig.container = geometryContainer.filter(function(dB, iB){ return iB == i; });
                         geometryConfig.geometry = d.geometry;
-                        if(!geometryConfig.orientation) geometryConfig.orientation = axisConfig.orientation;
+//                        if(!geometryConfig.orientation) geometryConfig.orientation = axisConfig.orientation;
+                        geometryConfig.orientation = axisConfig.orientation;
                         geometryConfig.direction = axisConfig.direction;
                         geometryConfig.index = i;
                         geometryConfigs.push({data: d, geometryConfig: geometryConfig});
@@ -589,7 +590,7 @@ var µ = micropolar;
                 ticksStep: null
             },
             minorTicks: 0,
-//            tickLength: null,
+            tickLength: null,
             tickColor: 'silver',
             minorTickColor: '#eee',
             backgroundColor: 'none',

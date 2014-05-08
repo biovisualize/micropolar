@@ -28,12 +28,8 @@
                 // Bar
                 generator.bar = function(d, i, pI){
                     var dataConfig = _config[pI].data;
-                    var h = geometryConfig.radialScale(d[1]);
-                    var stackTop = geometryConfig.radialScale(domainMin + (d[2]||0));
-                    if(dataConfig.barRadialOffset){
-                        stackTop = dataConfig.barRadialOffset;
-                        h -= stackTop;
-                    }
+                    var h = geometryConfig.radialScale(d[1]) - geometryConfig.radialScale(0);
+                    var stackTop = geometryConfig.radialScale((d[2]||0));
                     var w = dataConfig.barWidth;
                     d3.select(this).attr({
                         class: 'mark bar',
@@ -58,7 +54,7 @@
 
                 // Line
                 var line = d3.svg.line.radial()
-//                    .interpolate(geometryConfig.lineInterpolation)
+                    .interpolate(_config[0].data.lineInterpolation)
                     .radius(function(d) { return geometryConfig.radialScale(d[1]); })
                     .angle(function(d) { return geometryConfig.angularScale(d[0]) * Math.PI / 180; });
                 generator.line = function(d, i, pI) {
@@ -166,7 +162,6 @@
                 r: [[1, 2, 3, 4]],
                 dotType: 'circle',
                 dotSize: 64,
-                barRadialOffset: null,
                 barWidth: 20,
                 color: '#ffa500',
                 strokeSize: 1,
@@ -178,15 +173,15 @@
                 visibleInLegend: true
             },
             geometryConfig: {
-            geometry: 'LinePlot',
-            geometryType: 'arc',
-            direction: 'clockwise',
-            orientation: 0,
-            container: 'body',
-            radialScale: null,
-            angularScale: null,
-            colorScale: d3.scale.category20()
-        }
+              geometry: 'LinePlot',
+              geometryType: 'arc',
+              direction: 'clockwise',
+              orientation: 0,
+              container: 'body',
+              radialScale: null,
+              angularScale: null,
+              colorScale: d3.scale.category20()
+          }
     };
     return config;
 };

@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title></title> 
+    <script type='text/javascript' src="../lib/d3.js"></script>
+    <!--<script type='text/javascript' src="../micropolar.js"></script>-->
+    <script type='text/javascript' src="../src/axis.js"></script>
+    <script type='text/javascript' src="../src/util.js"></script>
+    <script type='text/javascript' src="../src/poly_chart.js"></script>
+    <script type='text/javascript' src="../src/bar_chart.js"></script>
+    <script type='text/javascript' src="../src/area_chart.js"></script>
+    <script type='text/javascript' src="../src/dot_plot.js"></script>
+    <script type='text/javascript' src="../src/line_plot.js"></script>
+    <script type='text/javascript' src="../src/adapter.js"></script>
+    <script type='text/javascript' src="../src/legend.js"></script>
+    <script type='text/javascript' src="../src/tooltip.js"></script>
+    <!--<link rel="stylesheet" type="text/css" href="./style.css">-->
+    <style>
+        svg{
+            border: 1px solid;
+        }
+    </style>
+</head>
+<body>
+
+<div id="container1" style="position:absolute; left:100px;top:50px"></div>
+<div id="container2"></div>
+
+<script>
+
+//superformulaMicropolar()
+//windMicropolar3()
+//micMicropolar()
+//lineMarker()
+//windMicropolar2_polar()
+//windMicropolar2()
+//test()
+//test2()
+//legend()
+//test3()
+//test4()
+test5()
+
+function test5(){
+
+    var dataCount = 5;
+    var config = {
+        "data": [
+            {
+                "r": d3.range(dataCount).map(function(d, i){ return 10+i; }),
+                "t": d3.range(dataCount).map(function(d, i){ return i; }),
+                "name": "Layer1", "color": "skyblue", "opacity": 0.8, "strokeColor": "aliceblue", "strokeSize": 1, "geometry": "DotPlot"}
+        ],
+        "layout": {
+            "title": "Symetrized Dot Pattern", "height": 500, "width": 500,
+            "font": {"size": 12, "color": "black", "outlineColor": "white", "family": "Arial"},
+            "labelOffset": 10,
+            "radialAxis": {"domain": null, "tickOrientation": "horizontal", "orientation": 0},
+            "angularAxis": {"domain": null, "tickOrientation": "horizontal"},
+            needsEndSpacing: true
+        }
+    };
+
+    var polarAxis = micropolar.Axis().config(config)('body');
+}
+
+function windMicropolar2_polar(){
+
+    var dataCount = 2;
+    var dataset = d3.range(dataCount).map(function(d, i){
+        return ~~(Math.random()*100);
+    });
+
+    var datasetRepeated = d3.merge([dataset, dataset.reverse(), dataset, dataset.reverse(), dataset]);
+    var divisor = 360/(dataCount*5);
+    var angularData = d3.range(dataCount*5).map(function(d, i){ return d*divisor; });
+    console.log(JSON.stringify(datasetRepeated));
+    console.log(JSON.stringify(angularData));
+
+    var config = {
+        "data": [
+//            {"t": dataset.t, "r": dataset.r, "name": "Layer1", "color": "skyblue", "opacity": 0.8, "strokeColor": "aliceblue", "strokeSize": 1, "geometry": "DotPlot"}
+            {"t": angularData, "r": datasetRepeated, "name": "Layer1", "color": "skyblue", "opacity": 0.8, "strokeColor": "aliceblue", "strokeSize": 1, "geometry": "DotPlot"}
+        ],
+        "layout": {
+            "title": "Symetrized Dot Pattern", "height": 500, "width": 500,
+            "font": {"size": 12, "color": "black", "outlineColor": "white", "family": "Arial"},
+            "labelOffset": 10,
+            "radialAxis": {"domain": null, "tickOrientation": "horizontal", "orientation": 0},
+            "angularAxis": {"domain": [0, 360], "tickOrientation": "horizontal"},
+            "minorTicks": 2, "minorTickColor": "grey", "tickColor": "red",
+            "margin": {"top": 60, "right": 10, "bottom": 30, "left": 30, "pad": 0},
+            "backgroundColor": "#333",
+            needsEndSpacing: true
+        }
+    };
+
+    var polarAxis = micropolar.Axis().config(config)('body');
+}
+
+function test4(){
+    var data = [{
+        "t": [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180, 186, 192, 198, 204, 210, 216, 222, 228, 234, 240, 246, 252, 258, 264, 270, 276, 282, 288, 294, 300, 306, 312, 318, 324, 330, 336, 342, 348, 354, 360],
+        "r": [1, 0.995, 0.978, 0.951, 0.914, 0.866, 0.809, 0.743, 0.669, 0.588, 0.5, 0.407, 0.309, 0.208, 0.105, 0, 0.105, 0.208, 0.309, 0.407, 0.5, 0.588, 0.669, 0.743, 0.809, 0.866, 0.914, 0.951, 0.978, 0.995, 1, 0.995, 0.978, 0.951, 0.914, 0.866, 0.809, 0.743, 0.669, 0.588, 0.5, 0.407, 0.309, 0.208, 0.105, 0, 0.105, 0.208, 0.309, 0.407, 0.5, 0.588, 0.669, 0.743, 0.809, 0.866, 0.914, 0.951, 0.978, 0.995, 1],
+        "name": "Figure8",
+        "mode": "lines",
+        "visible": true,
+        "marker": {
+            "color": "rgb(255, 242, 204)",
+            "opacity": 1,
+            "line": {
+                "color": "rgb(255, 0, 0)",
+                "dash": "solid",
+                "width": "1"
+            }
+        },
+        "type": "scatter",
+        "showlegend": true
+    },
+        {
+            "t": [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180, 186, 192, 198, 204, 210, 216, 222, 228, 234, 240, 246, 252, 258, 264, 270, 276, 282, 288, 294, 300, 306, 312, 318, 324, 330, 336, 342, 348, 354, 360],
+            "r": [1, 0.997, 0.989, 0.976, 0.957, 0.933, 0.905, 0.872, 0.835, 0.794, 0.75, 0.703, 0.655, 0.604, 0.552, 0.5, 0.448, 0.396, 0.345, 0.297, 0.25, 0.206, 0.165, 0.128, 0.095, 0.067, 0.043, 0.024, 0.011, 0.003, 0, 0.003, 0.011, 0.024, 0.043, 0.067, 0.095, 0.128, 0.165, 0.206, 0.25, 0.297, 0.345, 0.396, 0.448, 0.5, 0.552, 0.604, 0.655, 0.703, 0.75, 0.794, 0.835, 0.872, 0.905, 0.933, 0.957, 0.976, 0.989, 0.997, 1],
+            "name": "Cardioid",
+            "mode": "lines",
+            "visible": true,
+            "marker": {
+                "color": "none",
+                "opacity": 1,
+                "line": {
+                    "color": "darkviolet",
+                    "dash": "solid",
+                    "width": "1"
+                }
+            },
+            "type": "scatter",
+            "showlegend": true
+        }];
+    var layout = {
+        "defaultColorRange": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"],
+        "title": "Mic Patterns",
+        "height": 400,
+        "width": 500,
+        "margin": {
+            "top": 40,
+            "right": 40,
+            "bottom": 20,
+            "left": 40,
+            "pad": 0
+        },
+        "font": {
+            "size": 12,
+            "color": "#000",
+            "outlineColor": "white",
+            "family": "Open Sans, sans-serif"
+        },
+        "direction": "clockwise",
+        "orientation": -90,
+        "labelOffset": 10,
+        "radialAxis": {
+            "domain": null,
+            "orientation": -45,
+            "ticksSuffix": "",
+            "visible": true,
+            "gridLinesVisible": true,
+            "tickOrientation": "horizontal",
+            "rewriteTicks": null,
+            "title": "dB"
+        },
+        "angularAxis": {
+            "domain": null,
+            "ticksSuffix": "",
+            "visible": true,
+            "tickOrientation": "horizontal",
+            "rewriteTicks": null,
+            "ticksStep": null,
+            "title": "angle",
+            "endPadding": 0,
+            "showLine": true,
+            "showticklabels": true,
+            "nticks": null
+        },
+        "minorTicks": 0,
+        "tickColor": "silver",
+        "minorTickColor": "#eee",
+        "legend": {
+            "traceorder": "normal",
+            "reverseOrder": true
+        },
+        "opacity": 1,
+        "paper_bgcolor": "#fff",
+        "plot_bgcolor": "#fff",
+        "showlegend": true
+    };
+    var translatedConfig = micropolar.adapter.plotly().convert({data: data, layout: layout});
+    var polarAxis = micropolar.Axis().config(translatedConfig)('body');
+
+    data[0].visible = false;
+    translatedConfig = micropolar.adapter.plotly().convert({data: data, layout: layout});
+    polarAxis = micropolar.Axis().config(translatedConfig)('body');
+}
+
+function test3(){
+    var data = [{
+        "t": ["North", "N-E", "East", "S-E", "South", "S-W", "West", "N-W"],
+        "r": [67, 78, 30, 24, 48, 42, 73, 15],
+        "name": "Layer0_r",
+        "mode": "lines",
+        "groupId": 0,
+        "marker": {
+            "opacity": 1,
+            "line": {
+                "color": "#15537d",
+                "dash": "solid",
+                "width": "1"
+            }
+        },
+        "type": "scatter",
+        "showlegend": true
+    }, {
+        "t": ["North", "N-E", "East", "S-E", "South", "S-W", "West", "N-W"],
+        "r": [29, 71, 33, 98, 36, 66, 79, 27],
+        "name": "Layer1_r",
+        "mode": "lines",
+        "groupId": 0,
+        "marker": {
+            "opacity": 1,
+            "line": {
+                "color": "red",
+                "dash": "solid",
+                "width": "1"
+            }
+        },
+        "type": "scatter",
+        "showlegend": true
+    }, {
+        "t": ["North", "N-E", "East", "S-E", "South", "S-W", "West", "N-W"],
+        "r": [12, 22, 30, 33, 90, 66, 43, 24],
+        "name": "Layer2_r",
+        "mode": "lines",
+        "groupId": 0,
+        "marker": {
+            "opacity": 1,
+            "line": {
+                "color": "#1e701e",
+                "dash": "solid",
+                "width": "1"
+            }
+        },
+        "type": "scatter",
+        "showlegend": true
+    }];
+    var layout = {
+        "defaultColorRange": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"],
+        "title": 'title',
+        "height": 500,
+        "width": 500,
+        "margin": {
+            "top": 0,
+            "right": 0,
+            "bottom": 600,
+            "left": 0
+        },
+        "font": {
+            "size": 12,
+            "color": "gray",
+            "outlineColor": "white",
+            "family": "Tahoma, sans-serif"
+        },
+        "direction": "clockwise",
+        "orientation": 0,
+        "labelOffset": 10,
+        "radialAxis": {
+            "domain": [0, 195],
+            "orientation": -45,
+            "ticksSuffix": "",
+            "visible": true,
+            "gridLinesVisible": true,
+            "tickOrientation": "horizontal",
+            "rewriteTicks": null
+        },
+        "angularAxis": {
+            "domain": null,
+            "ticksSuffix": "",
+            "visible": true,
+            "tickOrientation": "horizontal",
+            "rewriteTicks": null,
+            "ticksStep": null,
+            "endPadding": 1,
+            "showLine": true,
+            "showticklabels": true,
+            "nticks": null
+        },
+        "minorTicks": 0,
+        "tickColor": "silver",
+        "minorTickColor": "#eee",
+        "legend": {
+            "traceorder": "normal",
+            "reverseOrder": true
+        },
+        "opacity": 1,
+        "barmode": "stack",
+        "plot_bgcolor": "none",
+        "showlegend": false
+    };
+    var translatedConfig = micropolar.adapter.plotly().convert({data: data, layout: layout});
+    var polarAxis = micropolar.Axis().config(translatedConfig)('body');
+}
+
+function lineMarker(){
+    var config = {
+        data: [{
+            "name": "Figure8",
+            "t": [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180, 186, 192, 198, 204, 210, 216, 222, 228, 234, 240, 246, 252, 258, 264, 270, 276, 282, 288, 294, 300, 306, 312, 318, 324, 330, 336, 342, 348, 354, 360],
+            "r": [1, 0.995, 0.978, 0.951, 0.914, 0.866, 0.809, 0.743, 0.669, 0.588, 0.5, 0.407, 0.309, 0.208, 0.105, 0, 0.105, 0.208, 0.309, 0.407, 0.5, 0.588, 0.669, 0.743, 0.809, 0.866, 0.914, 0.951, 0.978, 0.995, 1, 0.995, 0.978, 0.951, 0.914, 0.866, 0.809, 0.743, 0.669, 0.588, 0.5, 0.407, 0.309, 0.208, 0.105, 0, 0.105, 0.208, 0.309, 0.407, 0.5, 0.588, 0.669, 0.743, 0.809, 0.866, 0.914, 0.951, 0.978, 0.995, 1],
+//            "marker": {
+//                "color": "none",
+//                "line": {
+//                    "color": "peru"
+//                }
+//            },
+            mode: 'lines',
+            type: 'scatter'
+        }],
+        layout: {
+            "title": "Mic Patterns",
+//            "autosize": "initial",
+            "width": 500,
+            "height": 400,
+            "orientation": -90,
+            "angularAxis": {
+                "type": "linear",
+                "title": "angle"
+            },
+            "radialAxis": {
+                "type": "linear",
+                "title": "dB"
+            },
+            "margin": {
+                "l": 40,
+                "r": 60,
+                "t": 60,
+                "b": 20,
+                "pad": 0
+            },
+            "paper_bgcolor": "#fff",
+            "plot_bgcolor": "#fff",
+            "font": {
+                "family": "Arial, sans-serif;",
+                "size": 12,
+                "color": "#000"
+            },
+            "showlegend": true,
+            "needsEndSpacing": false
+        }
+    }
+
+    var translatedConfig = micropolar.adapter.plotly().convert(config);
+    var polarAxis = micropolar.Axis().config(translatedConfig)('body');
+
+}
+
+function legend(){
+    var config = {
+        data: [
+            {
+                t: [0, 90, 180, 270],
+                r: [1, 2, 3, 4],
+                type: 'LinePlot',
+                name: '1234567893456780',
+                marker: {
+                    color: "none",
+                    line: {color: 'rgb(0, 150, 255)'}
+                },
+                line:{color: 'rgba(0, 150, 255, 0.5)'}
+            },
+            {
+                t: [0, 90, 180, 270],
+                r: [3, 2, 1, 4],
+                type: 'LinePlot',
+                name: '0',
+                marker: {
+                    color: "none",
+                    line: {color: 'rgb(255, 150, 0)'}
+                }
+            }
+        ],
+        layout:  {
+            title: 'aaa',
+            angularAxis: {domain: null},
+            margin: {t: 60, r: 20, b: 20, l: 20},
+            width: 500,
+            height: 500,
+            showlegend: true,
+            needsEndSpacing: true
+        }
+    };
+
+    var translatedConfig = micropolar.adapter.plotly().convert(config);
+    var polarAxis = micropolar.Axis().config(translatedConfig)('body');
+}
+
+function test2(){
+    var config = {
+        data: [
+            {
+                t: ['N', 'E', 'S', 'W'],
+//                t: [90, 0, -90, -180], //todo: negative values
+//                t: [0, 90, 180, 270],
+                r: [1, 2, 3, 4],
+                type: 'area'
+            }
+        ],
+        layout:  {
+            angularAxis: {domain: null},
+//            angularAxis: {domain: [-180, 180]},
+            width: 500,
+            height: 500,
+            showlegend: true,
+            needsEndSpacing: true
+        }
+    };
+
+    var translatedConfig = micropolar.adapter.plotly().convert(config);
+    var polarAxis = micropolar.Axis().config(translatedConfig)('body');
+}
+
+function test(){
+    var config = {
+        data: [
+            {name: 'm:12, n1:.3, n2:0, n3:10',
+                t: [1, 2, 3],
+                r: [20, 10, 30],
+                mode: 'markers',
+                type: 'scatter'
+            }
+        ],
+        layout:  {
+            width: 500,
+            height: 500,
+            showlegend: true,
+            needsEndSpacing: false
+        }
+    };
+
+    var translatedConfig = micropolar.adapter.plotly().convert(config);
+    var polarAxis = micropolar.Axis().config(translatedConfig)('body');
+}
+
+
+function micMicropolar(){
+    var config = {
+        data: [{
+            "name": "Figure8",
+            "t": [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180, 186, 192, 198, 204, 210, 216, 222, 228, 234, 240, 246, 252, 258, 264, 270, 276, 282, 288, 294, 300, 306, 312, 318, 324, 330, 336, 342, 348, 354, 360],
+            "r": [1, 0.995, 0.978, 0.951, 0.914, 0.866, 0.809, 0.743, 0.669, 0.588, 0.5, 0.407, 0.309, 0.208, 0.105, 0, 0.105, 0.208, 0.309, 0.407, 0.5, 0.588, 0.669, 0.743, 0.809, 0.866, 0.914, 0.951, 0.978, 0.995, 1, 0.995, 0.978, 0.951, 0.914, 0.866, 0.809, 0.743, 0.669, 0.588, 0.5, 0.407, 0.309, 0.208, 0.105, 0, 0.105, 0.208, 0.309, 0.407, 0.5, 0.588, 0.669, 0.743, 0.809, 0.866, 0.914, 0.951, 0.978, 0.995, 1],
+            "marker": {
+                "color": "none",
+                "line": {
+                    "color": "peru"
+                }
+            },
+            mode: 'lines',
+            type: 'scatter'
+        }, {
+            "name": "Cardioid",
+            "t": [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180, 186, 192, 198, 204, 210, 216, 222, 228, 234, 240, 246, 252, 258, 264, 270, 276, 282, 288, 294, 300, 306, 312, 318, 324, 330, 336, 342, 348, 354, 360],
+            "r": [1, 0.997, 0.989, 0.976, 0.957, 0.933, 0.905, 0.872, 0.835, 0.794, 0.75, 0.703, 0.655, 0.604, 0.552, 0.5, 0.448, 0.396, 0.345, 0.297, 0.25, 0.206, 0.165, 0.128, 0.095, 0.067, 0.043, 0.024, 0.011, 0.003, 0, 0.003, 0.011, 0.024, 0.043, 0.067, 0.095, 0.128, 0.165, 0.206, 0.25, 0.297, 0.345, 0.396, 0.448, 0.5, 0.552, 0.604, 0.655, 0.703, 0.75, 0.794, 0.835, 0.872, 0.905, 0.933, 0.957, 0.976, 0.989, 0.997, 1],
+            "marker": {
+                "color": "none",
+                "line": {
+                    "color": "darkviolet"
+                }
+            },
+            mode: 'lines',
+            type: 'scatter'
+        }, {
+            "name": "Hypercardioid",
+            "t": [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180, 186, 192, 198, 204, 210, 216, 222, 228, 234, 240, 246, 252, 258, 264, 270, 276, 282, 288, 294, 300, 306, 312, 318, 324, 330, 336, 342, 348, 354, 360],
+            "r": [1, 0.996, 0.984, 0.963, 0.935, 0.9, 0.857, 0.807, 0.752, 0.691, 0.625, 0.555, 0.482, 0.406, 0.328, 0.25, 0.172, 0.094, 0.018, 0.055, 0.125, 0.191, 0.252, 0.307, 0.357, 0.4, 0.435, 0.463, 0.484, 0.496, 0.5, 0.496, 0.484, 0.463, 0.435, 0.4, 0.357, 0.307, 0.252, 0.191, 0.125, 0.055, 0.018, 0.094, 0.172, 0.25, 0.328, 0.406, 0.482, 0.555, 0.625, 0.691, 0.752, 0.807, 0.857, 0.9, 0.935, 0.963, 0.984, 0.996, 1],
+            "marker": {
+                "color": "none",
+                "line": {
+                    "color": "deepskyblue"
+                }
+            },
+            mode: 'lines',
+            type: 'scatter'
+        }, {
+            "name": "Subcardioid",
+            "t": [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180, 186, 192, 198, 204, 210, 216, 222, 228, 234, 240, 246, 252, 258, 264, 270, 276, 282, 288, 294, 300, 306, 312, 318, 324, 330, 336, 342, 348, 354, 360],
+            "r": [1, 0.998, 0.993, 0.985, 0.974, 0.96, 0.943, 0.923, 0.901, 0.876, 0.85, 0.822, 0.793, 0.762, 0.731, 0.7, 0.669, 0.638, 0.607, 0.578, 0.55, 0.524, 0.499, 0.477, 0.457, 0.44, 0.426, 0.415, 0.407, 0.402, 0.4, 0.402, 0.407, 0.415, 0.426, 0.44, 0.457, 0.477, 0.499, 0.524, 0.55, 0.578, 0.607, 0.638, 0.669, 0.7, 0.731, 0.762, 0.793, 0.822, 0.85, 0.876, 0.901, 0.923, 0.943, 0.96, 0.974, 0.985, 0.993, 0.998, 1],
+            "marker": {
+                "color": "none",
+                "line": {
+                    "color": "orangered"
+                }
+            },
+            mode: 'lines',
+            type: 'scatter'
+        }, {
+            "name": "Supercardioid",
+            "t": [0, 6, 12, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180, 186, 192, 198, 204, 210, 216, 222, 228, 234, 240, 246, 252, 258, 264, 270, 276, 282, 288, 294, 300, 306, 312, 318, 324, 330, 336, 342, 348, 354, 360],
+            "r": [1, 0.997, 0.986, 0.969, 0.946, 0.916, 0.88, 0.838, 0.792, 0.74, 0.685, 0.626, 0.565, 0.501, 0.436, 0.37, 0.304, 0.239, 0.175, 0.114, 0.055, 0, 0.052, 0.098, 0.14, 0.176, 0.206, 0.229, 0.246, 0.257, 0.26, 0.257, 0.246, 0.229, 0.206, 0.176, 0.14, 0.098, 0.052, 0, 0.055, 0.114, 0.175, 0.239, 0.304, 0.37, 0.436, 0.501, 0.565, 0.626, 0.685, 0.74, 0.792, 0.838, 0.88, 0.916, 0.946, 0.969, 0.986, 0.997, 1],
+            "marker": {
+                "color": "none",
+                "line": {
+                    "color": "green"
+                }
+            },
+            mode: 'lines',
+            type: 'scatter'
+        }],
+        layout: {
+            "title": "Mic Patterns",
+//            "autosize": "initial",
+            "width": 500,
+            "height": 400,
+            "orientation": -90,
+            "angularAxis": {
+                "type": "linear",
+                "title": "angle"
+            },
+            "radialAxis": {
+                "type": "linear",
+                "title": "dB"
+            },
+            "margin": {
+                "l": 40,
+                "r": 60,
+                "t": 0,
+                "b": 20,
+                "pad": 0
+            },
+            "paper_bgcolor": "#fff",
+            "plot_bgcolor": "#fff",
+            "font": {
+                "family": "Arial, sans-serif;",
+                "size": 12,
+                "color": "#000"
+            },
+            "showlegend": true,
+            "needsEndSpacing": false
+        }
+    }
+
+    var translatedConfig = micropolar.adapter.plotly().convert(config);
+    var polarAxis = micropolar.Axis().config(translatedConfig)('body');
+}
+
+function superformulaMicropolar(){
+    var config = {
+        data: [
+            {name: 'm:12, n1:.3, n2:0, n3:10',
+                t: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200],
+                r: [1,1,1,1,1,1,0.99,0.98,0.93,0.84,0.69,0.52,0.36,0.24,0.17,0.12,0.1,0.1,0.11,0.14,0.2,0.3,0.44,0.61,0.77,0.89,0.96,0.99,1,1,1,1,1,1,1,1,1,1,1,1,0.99,0.96,0.89,0.77,0.61,0.44,0.3,0.2,0.14,0.11,0.1,0.1,0.12,0.17,0.24,0.36,0.52,0.69,0.84,0.93,0.98,0.99,1,1,1,1,1,1,1,1,1,1,1,0.99,0.98,0.93,0.84,0.69,0.52,0.36,0.24,0.17,0.12,0.1,0.1,0.11,0.14,0.2,0.3,0.44,0.61,0.77,0.89,0.96,0.99,1,1,1,1,1,1,1,1,1,1,1,1,0.99,0.96,0.89,0.77,0.61,0.44,0.3,0.2,0.14,0.11,0.1,0.1,0.12,0.17,0.24,0.36,0.52,0.69,0.84,0.93,0.98,0.99,1,1,1,1,1,1,1,1,1,1,1,0.99,0.98,0.93,0.84,0.69,0.52,0.36,0.24,0.17,0.12,0.1,0.1,0.11,0.14,0.2,0.3,0.44,0.61,0.77,0.89,0.96,0.99,1,1,1,1,1,1,1,1,1,1,1,1,0.99,0.96,0.89,0.77,0.61,0.44,0.3,0.2,0.14,0.11,0.1,0.1,0.12,0.17,0.24,0.36,0.52,0.69,0.84,0.93,0.98,0.99,1,1,1,1,1] ,
+                mode: 'markers',
+                type: 'scatter',
+                marker: {size: 16, type: 'triangle-down', color: 'orange'}},
+            {name: 'm:19, n1:100, n2:50, n3:50',
+                t: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200],
+                r: [0.75,0.99,0.65,0.47,0.38,0.35,0.36,0.41,0.53,0.78,0.92,0.66,0.51,0.43,0.38,0.36,0.35,0.36,0.39,0.45,0.54,0.71,0.99,0.69,0.49,0.39,0.35,0.36,0.4,0.51,0.73,0.97,0.69,0.53,0.44,0.39,0.36,0.35,0.36,0.38,0.44,0.53,0.68,0.95,0.74,0.51,0.4,0.36,0.35,0.39,0.48,0.68,1,0.72,0.55,0.45,0.39,0.36,0.35,0.36,0.38,0.43,0.51,0.65,0.9,0.8,0.54,0.42,0.36,0.35,0.38,0.46,0.64,0.98,0.76,0.57,0.46,0.4,0.37,0.35,0.35,0.37,0.42,0.49,0.62,0.85,0.86,0.57,0.43,0.37,0.35,0.37,0.45,0.6,0.92,0.8,0.6,0.48,0.41,0.37,0.35,0.35,0.37,0.41,0.48,0.6,0.8,0.92,0.6,0.45,0.37,0.35,0.37,0.43,0.57,0.86,0.85,0.62,0.49,0.42,0.37,0.35,0.35,0.37,0.4,0.46,0.57,0.76,0.98,0.64,0.46,0.38,0.35,0.36,0.42,0.54,0.8,0.9,0.65,0.51,0.43,0.38,0.36,0.35,0.36,0.39,0.45,0.55,0.72,1,0.68,0.48,0.39,0.35,0.36,0.4,0.51,0.74,0.95,0.68,0.53,0.44,0.38,0.36,0.35,0.36,0.39,0.44,0.53,0.69,0.97,0.73,0.51,0.4,0.36,0.35,0.39,0.49,0.69,0.99,0.71,0.54,0.45,0.39,0.36,0.35,0.36,0.38,0.43,0.51,0.66,0.92,0.78,0.53,0.41,0.36,0.35,0.38,0.47,0.65,0.99],
+                mode: 'markers',
+                type: 'scatter',
+                opacity: 0.5,
+                marker: {type: 'cross', line: {color: 'none'}, color: 'skyblue'}},
+            {name: 'm:5, n1:2, n2:7, n3:7',
+                t: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200],
+                r: [1,0.99,0.95,0.9,0.84,0.78,0.72,0.67,0.63,0.59,0.56,0.53,0.5,0.48,0.46,0.45,0.44,0.43,0.43,0.42,0.42,0.42,0.42,0.43,0.44,0.45,0.46,0.48,0.5,0.52,0.55,0.58,0.62,0.66,0.71,0.77,0.83,0.89,0.94,0.98,1,0.99,0.96,0.91,0.85,0.79,0.74,0.68,0.64,0.6,0.56,0.53,0.51,0.49,0.47,0.45,0.44,0.43,0.43,0.42,0.42,0.42,0.42,0.43,0.44,0.45,0.46,0.47,0.49,0.52,0.54,0.58,0.61,0.65,0.7,0.76,0.82,0.88,0.93,0.97,1,1,0.97,0.92,0.86,0.8,0.75,0.69,0.65,0.6,0.57,0.54,0.51,0.49,0.47,0.46,0.44,0.43,0.43,0.42,0.42,0.42,0.42,0.43,0.43,0.44,0.46,0.47,0.49,0.51,0.54,0.57,0.6,0.65,0.69,0.75,0.8,0.86,0.92,0.97,1,1,0.97,0.93,0.88,0.82,0.76,0.7,0.65,0.61,0.58,0.54,0.52,0.49,0.47,0.46,0.45,0.44,0.43,0.42,0.42,0.42,0.42,0.43,0.43,0.44,0.45,0.47,0.49,0.51,0.53,0.56,0.6,0.64,0.68,0.74,0.79,0.85,0.91,0.96,0.99,1,0.98,0.94,0.89,0.83,0.77,0.71,0.66,0.62,0.58,0.55,0.52,0.5,0.48,0.46,0.45,0.44,0.43,0.42,0.42,0.42,0.42,0.43,0.43,0.44,0.45,0.46,0.48,0.5,0.53,0.56,0.59,0.63,0.67,0.72,0.78,0.84,0.9,0.95,0.99],
+                mode: 'markers',
+                type: 'scatter',
+                opacity: 0.8,
+                marker: {type: 'circle', color: 'lime'}}
+        ],
+        layout:  {
+            title: 'Superformula',
+            width: 500,
+            height: 500,
+            orientation: -90,
+            margin: { l: 30, r: 10, t: 20, b: 20, pad: 0 },
+            plot_bgcolor: 'ghostwhite',
+            radialAxis: {orientation: -36},
+            angularAxis: {
+                domain: null
+            },
+            font: {
+                family: 'Arial, sans-serif',
+                size: 12,
+                color: 'grey'
+            },
+            showlegend: true,
+            needsEndSpacing: false
+        }
+    };
+
+    var translatedConfig = micropolar.adapter.plotly().convert(config);
+    var polarAxis = micropolar.Axis().config(translatedConfig)('body');
+}
+
+//deprecated
+function wind4(){
+    var radii = d3.range(5).map(function(d, i){ return d3.range(8).map(function(d, i){ return ~~(Math.random()*100); }); })
+    var data = radii.map(function(d, i){
+        var datum = {
+            'x':['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+            'y': radii[i],
+            'name':"Line"+i
+        }
+        return datum;
+    });
+    var geometryConfig = [
+        {geometry: 'AreaChart', groupId: 1, visible: true},
+        {geometry: 'AreaChart', groupId: 1, visible: false},
+        {geometry: 'AreaChart', groupId: 1, visible: false},
+        {geometry: 'AreaChart', groupId: 1, visible: false},
+        {geometry: 'AreaChart', groupId: 1, visible: false}
+    ];
+    var axisConfig = {
+        height: 400,
+        width: 500,
+        margin: {top: 60, right: 160, bottom: 20, left: 20},
+        title: 'Wind Rose',
+        radialAxisTheta: -36
+    };
+    var legendConfig = {showLegend: false};
+    var config = {data: data, axisConfig: axisConfig, geometryConfig: geometryConfig, legendConfig: legendConfig};
+    var polarAxis = µ.Axis().config(config)();
+}
+
+//deprecated
+function wind3(){
+    var radii = d3.range(5).map(function(d, i){ return d3.range(8).map(function(d, i){ return ~~(Math.random()*100); }); })
+    var data = radii.map(function(d, i){
+        var datum = {
+            'x':['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+            'y': radii[i],
+            'name':"Layer"+i,
+            type: 'PolarAreaChart',
+            visibleInLegend: !!Math.round(Math.random())
+        }
+        return datum;
+    });
+    var layout = {
+        'title': 'Polar area chart',
+        'width': 400,
+        'height': 400,
+//        'margin': { 'l': 20, 'r': 160, 't': 60, 'b': 20, 'pad': 0 },
+        'margin': { 'l': 50, 'r': 50, 't': 50, 'b': 20, 'pad': 0 },
+//        'margin': { 'l': 0, 'r': 0, 't': 0, 'b': 0, 'pad': 0 },
+        'plot_bgcolor': 'ghostwhite',
+        'font': {
+            'family': 'Arial, sans-serif',
+            'size': 12,
+            'color': 'grey'
+        },
+        'showlegend': true,
+        direction: 'clockwise',
+        barmode: 'stack'
+    };
+    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+}
+
+function wind2(){
+    var data = [
+        {
+            x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+            y: [15.83668754901737,2.1010489435866475,7.8467207960784435,81.19459215085953,41.9380952604115,54.38047884963453,20.199460233561695,59.443859197199345],
+            name:"Layer1",
+            type: 'PolarAreaChart',
+//            visible: false
+        },
+        {
+            x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+            y: [48.80641344934702,32.99135200213641,98.8086799159646,2.2953783627599478,58.103623730130494,72.4586796015501,61.26491364557296,6.148641416803002],
+            name:"Layer2",
+            type: 'PolarAreaChart',
+//            visible: false
+        }
+//        ,
+//        {
+//            x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+//            y: [51.338174007833004, 53.39005527785048, 52.755726710893214, 54.25396660575643, 62.46180285234004, 92.23175569204614, 64.47394534479827, 75.36046170862392],
+//            name:"Layer3",
+//            type: 'PolarLinePlot'
+//        }
+    ];
+    var layout = {
+            'title': 'Polar area chart',
+            'width': 600,
+            'height': 600,
+            'margin': { 'l': 20, 'r': 160, 't': 60, 'b': 20, 'pad': 0 },
+            'plot_bgcolor': 'ghostwhite',
+            'font': {
+                'family': 'Arial, sans-serif',
+                'size': 12,
+                'color': 'grey'
+            },
+            'showlegend': false,
+            direction: 'clockwise',
+            barmode: 'stack'
+        }
+
+    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+    debugger
+}
+
+function cars(){
+//    d3.text('test.csv', function(error, data){
+//    console.log(JSON.stringify(d3.csv.parseRows(data).map(function(d, i){ return parseFloat(d[2]); })));
+//    })
+
+    var data = [
+        {
+            x: [38,21,22,30,23,24,25,15,15,16,16,15,26,26,16,28,29,21,28,16,26,22,17,17,18,18,19,21,21,21,20,20,19,19,26,26,15,18,11,17,11,13,27,35,26,26,26,23,24,26,23,26,30,23,21,19,19,23,23,23,19,19,19,22,22,19,19,15,28,26,25,19,19,16,16,16,16,27,26,21,24,26,20,15,26,10,18,26,29,24,24,23,22,16,21,12,10,18,20,17,22,18,21,30,31,17,16,10,13,13,29,16,24,17,13,33,33,30,30,34,119,13,13,19,37,24,22,16,17,14,24,21,17,16,17,19,32,26,15,14,21,14,14,15,13,13,30,30,27,116,43,10,11,11,10,24,25,11,23,14,17,13,13,32,37,29,18,31,105,23,23,28,43,47,23,23,26,15,25,18,16,13,13,13,17,13,12,13,47,46,25,34,25,118,42,22,20,17,31,23,32,28,27,31,18,21,21,18,20,21,25,38,37,23,27,22,30,28,22,19,20,20,31,20,26,18,16,23,22,18,23,15,19,14,19,14,18,17,24,23,22,24,24,15,24,18,18,22,29,24,29,25,24,38,37,31,31,20,21,26,27,21,13,12,16,16,20,16,19,24,14,14,19,11,42,40,24,21,31,17,23,24,21,22,18,18,18,20,14,20,29,20,18,23,19,25,45,11,20,18,16,15,16,18,30,33,24,29,29,28,18,24,25,16,17,22,15,18,14,18,14,30,26,21,20,19,18,19,18,34,32,18,17,17,21,17,26,21,20,20,19,17,19,17,13,13,22,16,15,14,28,22,21,20,15,23,16,15,20,19,18,20,19,17,26,24,22,15,14,15,15,15,32,31,31,31,31,31,31,30,30,30,27,27,30,30,30,30,30,27,27,20,19,27,40,26,26,21,20,31,11,28,19,19,27,114,22,20,19,21,26,21,28,24,33,34,10,30,17,23,23,22,22,21,23,22,22,17,22,21,20,20,20,20,26,24,21,23,17,18,17,16,26,24,22,21,21,20,19,21,18,18,18,18,13,21,15,15,15,14,14,14,14,15,13,11,18,25,37,26,24,29,107,36,107,15,25,25,30,30,27,26,18,31,18,24,40,28,41,40,31,34,18,22,15,50,50,50,42,25,76,25,14,10,19,19,17,11,22,32,27,27,25,20,25,27,34,30,45,33,28,14,21,23,21,23,21,20,20,18],
+            y: [228,416,399,298,383,370,358,588,588,551,551,588,343,343,377,320,349,420,360,392,337,464,538,538,480,486,466,413,413,428,441,441,475,475,346,346,404,488,589,517,589,688,322,288,337,343,343,390,375,337,390,343,340,379,418,466,470,382,382,382,470,470,470,400,396,470,470,586,314,346,350,470,470,554,554,554,554,332,343,423,370,383,448,606,337,847,494,348,308,369,369,387,404,558,421,539,596,482,447,521,397,386,424,293,291,375,571,606,675,677,304,379,371,538,478,271,271,298,298,264,0,492,492,476,81,369,406,392,521,434,369,421,521,392,521,323,275,346,415,434,419,622,622,576,679,697,295,295,328,0,110,623,588,801,645,367,354,584,389,450,523,488,680,274,240,301,484,289,0,277,277,323,110,190,383,389,344,428,361,485,571,675,677,479,375,492,539,492,188,130,354,261,354,0,210,402,446,506,285,391,281,319,324,286,502,411,425,495,444,426,358,237,239,393,330,410,296,317,409,464,440,445,285,447,342,482,566,389,403,487,387,417,468,442,471,452,508,515,376,383,410,372,429,595,372,482,505,404,311,367,304,350,369,237,242,286,281,456,423,332,334,421,692,742,562,564,450,552,466,369,469,469,471,561,211,223,362,413,283,518,389,359,413,400,475,487,487,432,623,445,309,446,484,382,460,354,198,584,433,488,574,579,548,493,292,269,369,301,302,321,480,368,353,377,361,398,578,498,638,506,617,294,345,425,438,469,496,469,496,299,314,364,375,375,416,384,336,431,439,442,475,507,475,507,686,696,469,569,587,615,367,413,426,440,431,445,552,611,444,462,499,441,468,539,339,368,401,592,627,592,592,592,273,291,291,291,291,291,291,301,301,301,325,325,301,301,301,301,301,325,325,437,470,322,222,340,339,430,444,285,593,313,460,472,326,0,410,444,468,417,342,420,323,369,269,260,615,296,532,384,389,397,407,418,384,399,406,529,407,423,448,448,448,448,349,370,413,442,523,493,517,572,349,370,411,421,429,436,480,429,483,488,483,488,476,425,427,580,580,638,638,637,637,577,657,808,488,357,238,339,367,301,0,243,0,607,360,357,296,296,326,339,491,289,478,362,223,317,215,224,287,260,495,398,596,179,133,178,211,354,0,360,615,588,466,453,507,591,388,273,319,326,349,446,338,333,297,303,200,310,317,449,417,442,413,375,425,434,434,473],
+            name:"All",
+            type: 'PolarDotPlot',
+            opacity: 0.5,
+            marker: {type: 'cross', color: 'red', line: {color: 'none'}, barRadialOffset: 180, barWidth: 10}
+        }
+    ];
+//    console.log(JSON.stringify(data[0].x.forEach(function(d, i){ if(d === 119) console.log(d, data[0].y[i]); })));
+
+    var layout = {
+        'title': 'Green Car',
+        'width': 600,
+        'height': 600,
+        'margin': { 'l': 60, 'r': 160, 't': 60, 'b': 20, 'pad': 0 },
+//        'plot_bgcolor': 'rgb(0, 100, 0)',
+        'yaxis': {
+//            range: [4, 0],
+            labelOffset: 20
+        },
+        'xaxis': {
+            range: [0, 0.345],
+//            rewriteTicks: function(d, i){ return ~~(+d*10)/10; },
+            minorTickCount: 2
+        },
+        'font': {
+            'family': 'Arial, sans-serif',
+            'size': 12,
+            'color': 'grey'
+        },
+        'showlegend': true,
+        direction: 'clockwise',
+        orientation: -90,
+        needsEndSpacing: false,
+        tickColor: '#444'
+    };
+
+    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+//    console.log(plotlyConfig);
+    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+//    console.log(micropolarConfig);
+    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+}
+
+
+function titanic2(){
+    var data = [
+        {
+            x: [0.3333, 2, 2, 4, 5, 6, 6, 6, 9, 9, 9, 9, 9, 10, 11, 11, 13, 13, 14, 14, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 29, 29, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 31, 31, 31, 31, 31, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 34, 34, 34, 34, 34, 34, 34, 35, 35, 35, 35, 35, 35, 35, 35, 36, 36, 36, 36, 36, 36, 36, 37, 37, 37, 37, 38, 38, 38, 38, 38, 38, 38, 39, 39, 39, 39, 39, 39, 40, 40, 40, 40, 40, 40, 40, 40, 41, 41, 41, 41, 41, 42, 42, 42, 42, 42, 42, 43, 43, 43, 43, 44, 44, 44, 44, 45, 45, 45, 45, 45, 45, 45, 45, 46, 46, 46, 46, 46, 46, 46, 47, 47, 47, 47, 47, 48, 48, 48, 48, 49, 49, 49, 50, 50, 50, 50, 50, 51, 51, 52, 52, 52, 54, 54, 54, 54, 55, 55, 55, 56, 56, 57, 57, 57, 57, 58, 58, 59, 59, 60, 61, 61, 61, 62, 63, 64, 64, 64, 64, 64, 65, 65, 67, 70, 71, 71, 71],
+            y: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            name:"Died",
+            type: 'PolarBarChart',
+            opacity: 0.5,
+            marker: {type: 'cross', color: 'red', line: {color: 'none'}, barRadialOffset: 180, barWidth: 10}
+        },
+        {
+            x: [0.1667, 0.8333, 0.8333, 0.8333, 0.9167, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 8, 8, 8, 8, 9, 9, 11, 12, 12, 13, 13, 14, 15, 15, 15, 16, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 30, 30, 30, 30, 30, 30, 30, 30, 31, 31, 31, 31, 31, 31, 31, 32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 34, 34, 34, 34, 35, 35, 35, 35, 35, 35, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 37, 37, 38, 38, 38, 39, 39, 39, 39, 39, 40, 40, 40, 40, 40, 41, 41, 42, 42, 42, 43, 43, 44, 44, 44, 45, 45, 45, 45, 45, 45, 45, 45, 45, 46, 47, 47, 47, 48, 48, 48, 48, 48, 48, 48, 49, 49, 49, 49, 49, 49, 50, 50, 50, 50, 50, 50, 51, 52, 52, 52, 53, 53, 53, 54, 54, 54, 55, 55, 55, 56, 56, 58, 58, 58, 58, 59, 60, 60, 60, 60, 62, 63, 64, 69],
+            y: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            name:"Survived",
+            type: 'PolarBarChart',
+            opacity: 0.2,
+            marker: {type: 'cross', color: 'yellow', line: {color: 'none'}, barRadialOffset: 180, barWidth: 10}
+        },
+        {
+            x: [0.1667, 0.8333, 0.8333, 0.8333, 0.9167, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 8, 8, 8, 8, 9, 9, 11, 12, 12, 13, 13, 14, 15, 15, 15, 16, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 30, 30, 30, 30, 30, 30, 30, 30, 31, 31, 31, 31, 31, 31, 31, 32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 34, 34, 34, 34, 35, 35, 35, 35, 35, 35, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 37, 37, 38, 38, 38, 39, 39, 39, 39, 39, 40, 40, 40, 40, 40, 41, 41, 42, 42, 42, 43, 43, 44, 44, 44, 45, 45, 45, 45, 45, 45, 45, 45, 45, 46, 47, 47, 47, 48, 48, 48, 48, 48, 48, 48, 49, 49, 49, 49, 49, 49, 50, 50, 50, 50, 50, 50, 51, 52, 52, 52, 53, 53, 53, 54, 54, 54, 55, 55, 55, 56, 56, 58, 58, 58, 58, 59, 60, 60, 60, 60, 62, 63, 64, 69],
+            y:[3,3,2,2,1,2,3,2,2,2,2,2,2,3,3,3,2,2,2,2,1,2,3,3,2,1,2,2,2,2,2,3,3,1,2,2,2,1,1,3,2,1,3,3,3,1,1,3,3,1,2,1,1,3,3,3,3,2,2,1,2,1,1,1,2,2,1,3,3,3,1,2,2,1,3,2,2,2,1,3,1,2,1,2,1,1,1,3,2,3,1,1,2,1,2,3,3,1,1,1,2,2,1,1,2,2,3,3,1,2,1,2,2,1,3,1,1,2,2,1,2,2,1,2,1,1,1,1,1,2,2,1,2,1,2,1,2,1,3,2,2,1,3,3,3,2,2,2,2,2,1,2,1,1,1,1,2,2,3,2,2,1,2,2,3,3,1,2,1,2,2,2,2,1,3,1,1,1,1,2,2,2,2,1,1,1,3,1,3,3,1,2,1,1,2,1,1,1,3,1,1,1,1,1,1,1,2,1,1,1,2,2,2,2,1,2,1,1,1,1,1,3,1,3,1,1,2,2,1,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,2,2,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            name:"Survived",
+            type: 'PolarDotPlot',
+            opacity: 0.3,
+            marker: {type: 'circle', color: 'yellow', size: 512, line: {color: 'orange'}}
+        },
+        {
+            x: [0.3333, 2, 2, 4, 5, 6, 6, 6, 9, 9, 9, 9, 9, 10, 11, 11, 13, 13, 14, 14, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 29, 29, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 31, 31, 31, 31, 31, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 34, 34, 34, 34, 34, 34, 34, 35, 35, 35, 35, 35, 35, 35, 35, 36, 36, 36, 36, 36, 36, 36, 37, 37, 37, 37, 38, 38, 38, 38, 38, 38, 38, 39, 39, 39, 39, 39, 39, 40, 40, 40, 40, 40, 40, 40, 40, 41, 41, 41, 41, 41, 42, 42, 42, 42, 42, 42, 43, 43, 43, 43, 44, 44, 44, 44, 45, 45, 45, 45, 45, 45, 45, 45, 46, 46, 46, 46, 46, 46, 46, 47, 47, 47, 47, 47, 48, 48, 48, 48, 49, 49, 49, 50, 50, 50, 50, 50, 51, 51, 52, 52, 52, 54, 54, 54, 54, 55, 55, 55, 56, 56, 57, 57, 57, 57, 58, 58, 59, 59, 60, 61, 61, 61, 62, 63, 64, 64, 64, 64, 64, 65, 65, 67, 70, 71, 71, 71],
+            y:[3,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,3,3,3,2,3,3,3,3,3,2,3,2,3,3,3,3,3,2,2,3,3,2,1,2,3,3,2,3,3,3,2,1,3,2,3,3,3,3,3,3,3,3,2,3,2,2,3,3,3,3,3,2,3,2,3,2,2,2,2,1,3,3,3,3,2,3,3,2,3,2,1,2,2,2,3,3,3,2,2,3,3,2,2,2,2,3,3,1,3,3,3,3,3,3,2,2,1,3,1,3,1,2,2,3,3,2,3,2,2,2,3,3,3,3,3,3,2,3,3,3,3,2,2,2,2,3,3,2,1,2,3,3,2,2,1,2,2,3,3,3,2,3,2,1,1,2,2,3,3,2,2,1,2,2,3,2,1,3,2,2,3,2,3,1,2,2,2,1,1,2,2,2,2,3,3,1,2,1,3,3,3,3,3,3,2,1,2,2,1,3,3,3,2,1,2,3,2,2,2,2,2,3,3,3,2,3,2,2,2,1,1,3,1,1,2,2,3,1,1,3,3,3,2,2,2,3,1,3,3,1,1,1,2,3,3,3,3,3,3,1,2,3,1,3,1,2,3,3,2,2,1,1,3,3,3,2,2,3,2,1,3,1,2,1,3,2,1,2,1,1,1,1,2,1,1,1,3,1,1,1,1,3,2,2,1,2,1,1,2,1,1,1,2,1,2,2,1,2,1,2,1,1,1,1,1,1,2,2,1,1,1,1,3,2,1,1,1,1,1,1,1,2,1,1,1,3,1,1,1,1,1,2],
+            name:"Died",
+            type: 'PolarDotPlot',
+            opacity: 0.3,
+            marker: {type: 'cross', color: 'red', size: 64, line: {color: 'none'}}
+        }
+    ];
+
+    var layout = {
+        'title': 'Titanic passengers by age',
+        'width': 600,
+        'height': 600,
+        'margin': { 'l': 30, 'r': 160, 't': 60, 'b': 20, 'pad': 0 },
+        'plot_bgcolor': 'rgb(0, 100, 0)',
+        'yaxis': {
+            range: [4, 0],
+            labelOffset: 20
+        },
+        'xaxis': {
+            range: [0, 71],
+            rewriteTicks: function(d, i){ return Math.round(parseFloat(d)*10)/10 + 'yrs'; },
+            minorTickCount: 0
+        },
+        'font': {
+            'family': 'Arial, sans-serif',
+            'size': 12,
+            'color': 'grey'
+        },
+        'showlegend': true,
+        direction: 'clockwise',
+        orientation: -90,
+        needsEndSpacing: false,
+        tickColor: '#444'
+    };
+
+    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+    console.log(plotlyConfig);
+    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+    console.log(micropolarConfig);
+    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+}
+
+
+function titanic(){
+    var data = [
+        {
+            x: [0.3333, 2, 2, 4, 5, 6, 6, 6, 9, 9, 9, 9, 9, 10, 11, 11, 13, 13, 14, 14, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 29, 29, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 31, 31, 31, 31, 31, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 34, 34, 34, 34, 34, 34, 34, 35, 35, 35, 35, 35, 35, 35, 35, 36, 36, 36, 36, 36, 36, 36, 37, 37, 37, 37, 38, 38, 38, 38, 38, 38, 38, 39, 39, 39, 39, 39, 39, 40, 40, 40, 40, 40, 40, 40, 40, 41, 41, 41, 41, 41, 42, 42, 42, 42, 42, 42, 43, 43, 43, 43, 44, 44, 44, 44, 45, 45, 45, 45, 45, 45, 45, 45, 46, 46, 46, 46, 46, 46, 46, 47, 47, 47, 47, 47, 48, 48, 48, 48, 49, 49, 49, 50, 50, 50, 50, 50, 51, 51, 52, 52, 52, 54, 54, 54, 54, 55, 55, 55, 56, 56, 57, 57, 57, 57, 58, 58, 59, 59, 60, 61, 61, 61, 62, 63, 64, 64, 64, 64, 64, 65, 65, 67, 70, 71, 71, 71],
+            y: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            name:"Died",
+            type: 'PolarBarChart',
+            opacity: 0.5,
+            marker: {type: 'cross', color: 'red', line: {color: 'none'}, barRadialOffset: 180, barWidth: 10}
+        },
+        {
+            x: [0.1667, 0.8333, 0.8333, 0.8333, 0.9167, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 8, 8, 8, 8, 9, 9, 11, 12, 12, 13, 13, 14, 15, 15, 15, 16, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 30, 30, 30, 30, 30, 30, 30, 30, 31, 31, 31, 31, 31, 31, 31, 32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 34, 34, 34, 34, 35, 35, 35, 35, 35, 35, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 37, 37, 38, 38, 38, 39, 39, 39, 39, 39, 40, 40, 40, 40, 40, 41, 41, 42, 42, 42, 43, 43, 44, 44, 44, 45, 45, 45, 45, 45, 45, 45, 45, 45, 46, 47, 47, 47, 48, 48, 48, 48, 48, 48, 48, 49, 49, 49, 49, 49, 49, 50, 50, 50, 50, 50, 50, 51, 52, 52, 52, 53, 53, 53, 54, 54, 54, 55, 55, 55, 56, 56, 58, 58, 58, 58, 59, 60, 60, 60, 60, 62, 63, 64, 69],
+            y: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            name:"Survived",
+            type: 'PolarBarChart',
+            opacity: 0.2,
+            marker: {type: 'cross', color: 'yellow', line: {color: 'none'}, barRadialOffset: 180, barWidth: 10}
+        },
+        {
+            x: [0.1667, 0.8333, 0.8333, 0.8333, 0.9167, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 8, 8, 8, 8, 9, 9, 11, 12, 12, 13, 13, 14, 15, 15, 15, 16, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 30, 30, 30, 30, 30, 30, 30, 30, 31, 31, 31, 31, 31, 31, 31, 32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 34, 34, 34, 34, 35, 35, 35, 35, 35, 35, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 37, 37, 38, 38, 38, 39, 39, 39, 39, 39, 40, 40, 40, 40, 40, 41, 41, 42, 42, 42, 43, 43, 44, 44, 44, 45, 45, 45, 45, 45, 45, 45, 45, 45, 46, 47, 47, 47, 48, 48, 48, 48, 48, 48, 48, 49, 49, 49, 49, 49, 49, 50, 50, 50, 50, 50, 50, 51, 52, 52, 52, 53, 53, 53, 54, 54, 54, 55, 55, 55, 56, 56, 58, 58, 58, 58, 59, 60, 60, 60, 60, 62, 63, 64, 69],
+            y:[3,3,2,2,1,2,3,2,2,2,2,2,2,3,3,3,2,2,2,2,1,2,3,3,2,1,2,2,2,2,2,3,3,1,2,2,2,1,1,3,2,1,3,3,3,1,1,3,3,1,2,1,1,3,3,3,3,2,2,1,2,1,1,1,2,2,1,3,3,3,1,2,2,1,3,2,2,2,1,3,1,2,1,2,1,1,1,3,2,3,1,1,2,1,2,3,3,1,1,1,2,2,1,1,2,2,3,3,1,2,1,2,2,1,3,1,1,2,2,1,2,2,1,2,1,1,1,1,1,2,2,1,2,1,2,1,2,1,3,2,2,1,3,3,3,2,2,2,2,2,1,2,1,1,1,1,2,2,3,2,2,1,2,2,3,3,1,2,1,2,2,2,2,1,3,1,1,1,1,2,2,2,2,1,1,1,3,1,3,3,1,2,1,1,2,1,1,1,3,1,1,1,1,1,1,1,2,1,1,1,2,2,2,2,1,2,1,1,1,1,1,3,1,3,1,1,2,2,1,1,1,1,1,1,1,1,1,1,2,1,1,2,1,1,1,1,1,1,1,2,2,2,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            name:"Survived",
+            type: 'PolarDotPlot',
+            opacity: 0.3,
+            marker: {type: 'circle', color: 'yellow', size: 512, line: {color: 'orange'}}
+        },
+        {
+            x: [0.3333, 2, 2, 4, 5, 6, 6, 6, 9, 9, 9, 9, 9, 10, 11, 11, 13, 13, 14, 14, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 29, 29, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 31, 31, 31, 31, 31, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 34, 34, 34, 34, 34, 34, 34, 35, 35, 35, 35, 35, 35, 35, 35, 36, 36, 36, 36, 36, 36, 36, 37, 37, 37, 37, 38, 38, 38, 38, 38, 38, 38, 39, 39, 39, 39, 39, 39, 40, 40, 40, 40, 40, 40, 40, 40, 41, 41, 41, 41, 41, 42, 42, 42, 42, 42, 42, 43, 43, 43, 43, 44, 44, 44, 44, 45, 45, 45, 45, 45, 45, 45, 45, 46, 46, 46, 46, 46, 46, 46, 47, 47, 47, 47, 47, 48, 48, 48, 48, 49, 49, 49, 50, 50, 50, 50, 50, 51, 51, 52, 52, 52, 54, 54, 54, 54, 55, 55, 55, 56, 56, 57, 57, 57, 57, 58, 58, 59, 59, 60, 61, 61, 61, 62, 63, 64, 64, 64, 64, 64, 65, 65, 67, 70, 71, 71, 71],
+            y:[3,1,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,2,3,3,3,2,3,3,3,3,3,2,3,2,3,3,3,3,3,2,2,3,3,2,1,2,3,3,2,3,3,3,2,1,3,2,3,3,3,3,3,3,3,3,2,3,2,2,3,3,3,3,3,2,3,2,3,2,2,2,2,1,3,3,3,3,2,3,3,2,3,2,1,2,2,2,3,3,3,2,2,3,3,2,2,2,2,3,3,1,3,3,3,3,3,3,2,2,1,3,1,3,1,2,2,3,3,2,3,2,2,2,3,3,3,3,3,3,2,3,3,3,3,2,2,2,2,3,3,2,1,2,3,3,2,2,1,2,2,3,3,3,2,3,2,1,1,2,2,3,3,2,2,1,2,2,3,2,1,3,2,2,3,2,3,1,2,2,2,1,1,2,2,2,2,3,3,1,2,1,3,3,3,3,3,3,2,1,2,2,1,3,3,3,2,1,2,3,2,2,2,2,2,3,3,3,2,3,2,2,2,1,1,3,1,1,2,2,3,1,1,3,3,3,2,2,2,3,1,3,3,1,1,1,2,3,3,3,3,3,3,1,2,3,1,3,1,2,3,3,2,2,1,1,3,3,3,2,2,3,2,1,3,1,2,1,3,2,1,2,1,1,1,1,2,1,1,1,3,1,1,1,1,3,2,2,1,2,1,1,2,1,1,1,2,1,2,2,1,2,1,2,1,1,1,1,1,1,2,2,1,1,1,1,3,2,1,1,1,1,1,1,1,2,1,1,1,3,1,1,1,1,1,2],
+            name:"Died",
+            type: 'PolarDotPlot',
+            opacity: 0.3,
+            marker: {type: 'cross', color: 'red', size: 64, line: {color: 'none'}}
+        }
+    ];
+
+    console.log(JSON.stringify(d3.range(352).map(function(d, i){ return 0; })));
+
+
+    var layout = {
+        'title': 'Titanic passengers by age',
+        'width': 600,
+        'height': 600,
+        'margin': { 'l': 30, 'r': 160, 't': 60, 'b': 20, 'pad': 0 },
+        'plot_bgcolor': 'rgb(0, 100, 0)',
+        'yaxis': {
+            range: [4, 0],
+            labelOffset: 20,
+            orientation: 180
+        },
+        'xaxis': {
+            range: [0, 71],
+            rewriteTicks: function(d, i){ return Math.round(parseFloat(d)*10)/10 + 'yrs'; },
+            minorTickCount: 0
+        },
+        'font': {
+            'family': 'Arial, sans-serif',
+            'size': 12,
+            'color': 'grey'
+        },
+        'showlegend': true,
+        direction: 'clockwise',
+        orientation: -90,
+        needsEndSpacing: false,
+        tickColor: '#444'
+    };
+
+    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+    console.log(10, micropolarConfig);
+    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+}
+
+
+    // Mic patterns example
+    ////////////////////////////////////////
+function mic(){
+    var data = [
+        µ.util.dataFromEquation(function(theta){ return Math.abs(Math.cos(theta)); }, 6, 'Cardioid'),
+        µ.util.dataFromEquation(function(theta){ return Math.abs(0.5 + 0.5 * Math.cos(theta)); }, 6, 'Figure8'),
+        µ.util.dataFromEquation(function(theta){ return Math.abs(0.25 + 0.75 * Math.cos(theta)); }, 6, 'Hypercardioid'),
+        µ.util.dataFromEquation(function(theta){ return Math.abs(0.7 + 0.3 * Math.cos(theta)); }, 6, 'Subcardioid'),
+        µ.util.dataFromEquation(function(theta){ return Math.abs(0.37 + 0.63 * Math.cos(theta)); }, 6, 'Supercardioid')
+    ];
+    var geometryConfig = [
+        {geometry: 'LinePlot', color: 'orange'},
+        {geometry: 'LinePlot', color: 'skyblue'},
+        {geometry: 'LinePlot', color: 'red'},
+        {geometry: 'LinePlot', color: 'limegreen'},
+        {geometry: 'LinePlot', color: 'violet'}
+    ];
+    var axisConfig = {
+        height: 500,
+        width: 500,
+        margin: {top: 60, right: 120, bottom: 20, left: 20},
+        container: '#container1',
+        originTheta: -90,
+        title: 'Microphone Patterns',
+        needsEndSpacing: false
+    };
+    var legendConfig = {
+        showLegend: true
+    };
+    var config = {data: data, axisConfig: axisConfig, geometryConfig: geometryConfig, legendConfig: legendConfig};
+    var polarAxis = µ.Axis().config(config)();
+}
+
+//    var y = [[10, 20, 30, 40]];
+//    var y = [[10, 20, 30, 40], [15, 25, 35, 45], [2, 7, 8, 12]];
+//    var y = [[10], [20], [30]];
+//    var yStack = [[0], [10], [30]]
+//    var yStack = [[0, 0, 0, 0, 0], [10, 20, 30, 40, 50], [25, 45, 65, 85, 105]];
+
+//    var yStack = d3.transpose(d3.transpose(y).map(function(d, i){
+//        var runningSum = 0;
+//        var stackedValues = [];
+//        d.forEach(function(dB, iB){
+//            stackedValues.push(runningSum);
+//            runningSum += dB;
+//        });
+//        return stackedValues;
+//    }));
+
+//    console.log(JSON.stringify(y));
+//    console.log(JSON.stringify(yStack));
+//    console.log(JSON.stringify(yStack2));
+
+//    var yStack = y.map(function(d, i){
+//        var runningSum = 0;
+//        var stackedValues = [];
+//        d.forEach(function(dB, iB){
+//            stackedValues.push(runningSum);
+//            runningSum += dB;
+//        });
+//        return stackedValues;
+//    })
+//    var zipped = d3.zip.apply(this, y);
+//    var yStack = zipped.map(function(d, i){
+//        var runningSum = 0;
+//        var stackedValues = [];
+//        d.forEach(function(dB, iB){
+//            stackedValues.push(runningSum);
+//            runningSum += dB;
+//        });
+//        return stackedValues;
+//    });
+//    console.log(JSON.stringify(zipped));
+
+//    var data = [{'name': 'Bar',
+//        'x': [0, 1, 2, 3],
+////        'x': ['North', 'East', 'South', 'West'],
+////        'x': ['A', 'B', 'C', 'D', 'E'],
+////        'y': [[10, 20, 30, 40], [15, 25, 35, 45], [2, 7, 8, 12]],
+//        'y': y,
+////        'yStack': yStack,
+////        'y': [10, 20, 30, 40, 50],
+////        'x': theta,
+////        'y': radii,
+////        'line': {color: 'red', interpolation: 'basis'},
+////        'type': 'PolarStackedAreaChart'}];
+////        'type': 'PolarBarChart'}];
+////        'type': 'PolarAreaChart'}];
+//        'type': 'PolarAreaChart'},
+////        'type': 'PolarTriangleChart'}];
+////        'type': 'PolarDotPlot'}];
+////        'type': 'PolarLinePlot'}];
+//    {'name': 'Bar2',
+//            'x': [0, 1, 2, 3],
+//            'y': [10, 20, 30, 40],
+////        'type': 'PolarBarChart'}];
+////        'type': 'PolarDotPlot'}];
+//        'type': 'PolarLinePlot'}];
+
+
+function windMicropolar3(){
+    var config = {
+            data: d3.range(5).map(function(d, i){
+                    return d3.range(8).map(function(d, i){ return ~~(Math.random()*100); });
+                })
+                .map(function(d, i){
+                    return {
+                        t:['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+//                        t:[1, 2, 3, 4, 5, 6, 7, 8],
+                        r: d,
+                        name:"Layer"+i,
+                        type: 'area'
+                    };
+                }),
+            layout: {
+                title: 'Polar area chart',
+                width: 400,
+                height: 400,
+                margin: { 'l': 30, 'r': 10, 't': 0, 'b': 0, 'pad': 0 },
+                plot_bgcolor: 'ghostwhite',
+                angularAxis: {domain: null},
+                font: {
+                    family: 'Arial, sans-serif',
+                    size: 12,
+                    color: 'grey'
+                },
+                showlegend: true,
+                direction: 'clockwise',
+                barmode: 'stack'
+            }
+        };
+
+    var translatedConfig = micropolar.adapter.plotly().convert(config);
+    var polarAxis = micropolar.Axis().config(translatedConfig)('body');
+
+    config.data[0].visible = false
+    config.data[1].visible = false
+    config.data[2].visible = false
+//    config.data[3].visible = false
+    config.data[4].visible = false
+    var translatedConfig = micropolar.adapter.plotly().convert(config);
+    var polarAxis = micropolar.Axis().config(translatedConfig)('body');
+
+}
+
+function windMicropolar2(){
+//    var config = {
+//        data: [
+//            {x: ['a', 'b', 'c', 'd'], y: [10, 11, 12, 13], name: 'Layer1', geometry: "AreaChart", groupId: 1, color: 'limegreen'},
+//            {x: ['a', 'b', 'c', 'd'], y: [30, 31, 32, 33], name: 'Layer2', geometry: "AreaChart", groupId: 1, color: 'skyblue'}
+//        ],
+//        layout: {
+//            title: 'Title',
+//            height: 450,
+//            width: 500,
+//            margin: {
+//                top: 40,
+//                right: 40,
+//                bottom: 40,
+//                left: 40
+//            },
+//            font: {
+//                size: 31,
+//                color: 'red',
+//                outlineColor: 'white',
+//                family: 'Tahoma, sans-serif'
+//            },
+//            flip: false,
+//            originTheta: 0,
+//            labelOffset: 10,
+//            radialAxis: {
+//                domain: null,
+//                orientation: -45,
+//                ticksSuffix: '',
+//                visible: true,
+//                gridLinesVisible: true,
+//                tickOrientation: 'horizontal', // 'angular', 'horizontal'
+//                rewriteTicks: null //TODO
+//            },
+//            angularAxis: {
+//                domain: null,
+//                ticksSuffix: '',
+//                visible: true, //TODO don't offset legend when hidden
+//                gridLinesVisible: true,
+//                labelsVisible: true,
+//                tickOrientation: 'horizontal', // 'radial', 'angular', 'horizontal'
+//                rewriteTicks: null
+//            },
+//            minorTicks: 1,
+//            tickLength: null,
+//            tickColor: 'silver',
+//            minorTickColor: '#eee',
+//            container: 'body',
+//            backgroundColor: 'none',
+//            needsEndSpacing: true,
+//            showLegend: true,
+//            defaultColorRange: d3.scale.category10().range(),
+//            angularTicksStep: null,
+//            angularTicksCount: null
+//        }
+//    };
+
+    var config2 = {
+        data: [
+            {
+                t: ['a', 'b', 'c', 'd'], //identical
+                r: [5, 10, 15, 20], //identical
+                name: 'Layer1', //identical
+                type: "area", //geometry: "AreaChart",
+                // groupId: 1,  //upolar only instead of layout.barmode
+                marker: { //identical, note: abusing marker where plotly uses marker+line
+                    color: 'lime', //data.color
+                    line: {
+                        color: 'red',  //data.strokeColor
+                        dash: 'dash', //data.dash
+                        width: 5 //data.strokeSize
+                    },
+                    opacity: 0.8 //data.opacity
+                },
+                visibleInLegend: true, //showlegend
+                visible: true //identical
+            },
+//            {x: ['a', 'b', 'c', 'd'], y: [10, 20, 30, 40], name: 'Layer2', geometry: "PolarAreaChart", color: 'skyblue'},
+            {t: ['a', 'b', 'c', 'd'], r: [10, 20, 30, 40], name: 'Layer3', type: "bar", color: 'orange'},
+            {t: ['a', 'b', 'c', 'd'], r: [15, 25, 35, 45], name: 'Layer4', type: "scatter", mode: "markers", color: 'red'},
+            {t: ['a', 'b', 'c', 'd'], r: [10, 20, 30, 40], name: 'Layer5', type: "scatter", mode: "lines", color: 'none', marker: {line: {color: 'red'}}},
+            {t: ['a', 'b', 'c', 'd'], r: [10, 20, 30, 40], name: 'Layer6', type: "scatter", mode: "lines", color: 'none', marker: {line: {color: 'green'}}}
+        ],
+        layout: {
+            title: 'Title', //identical
+            height: 500, //identical
+            width: 500, //identical
+            font: { //identical
+                size: 31, //identical
+                color: 'orange', //identical
+                outlineColor: 'white', //upolar only
+//                family: 'Tahoma, sans-serif' //identical
+                family: 'Courier' //identical
+            },
+            direction: 'counterclockwise', //upolar only
+            orientation: 10, //identical
+            labelOffset: 10, //upolar only
+            radialAxis: { //identical
+                domain: null, //identical
+//                orientation: -45, //upolar only
+                rewriteTicks: null, //TODO expose
+                ticksSuffix: '', //TODO expose
+                visible: true, //upolar only
+                gridLinesVisible: true, //showLine
+                tickOrientation: 'horizontal' //upolar only, != tickangle
+            },
+            angularAxis: { //identical
+                domain: null, //identical
+                ticksSuffix: '', //TODO expose
+                rewriteTicks: null, //TODO expose
+                visible: true, //TODO don't offset legend when hidden
+                showLine: true, //gridLinesVisible
+                showticklabels: true, //labelsVisible
+                tickOrientation: 'horizontal', //upolar only, != tickangle
+                ticksCount: null, //nticks
+                ticksStep: null //upolar only
+            },
+            minorTicks: 2, //upolar only
+            minorTickColor: 'lime', //upolar only
+            tickLength: null, // TODO move to *Axis.ticklen
+            tickColor: 'violet', // TODO move to *Axis.tickcolor
+//            container: 'body', //note: this is inject by handler
+//            needsEndSpacing: true, //upolar only
+            defaultColorRange: d3.scale.category10().range(), //upolar only
+            opacity: 1, //upolar only
+            showlegend: true, //showLegend
+            legend: {
+                traceorder: 'normal' // reverseOrder
+            },
+            plot_bgcolor: 'ghostwhite', //backgroundColor
+            margin: {
+                t: 60, //top
+                r: 10, //right
+                b: 30, // bottom
+                l: 30, //left
+                pad: 0 //identical
+            },
+            barmode: 'stack' //plotly only (groupId)
+        }
+    };
+
+    var translatedConfig = micropolar.adapter.plotly().convert(config2);
+
+    console.log('translated to upolar\n', translatedConfig);
+    var polarAxis = micropolar.Axis().config(translatedConfig)('body');
+//    console.log('retranslated to plotly\n',  micropolar.adapter.plotly().convert(config2, true));
+//    console.log('live config upolar\n',  polarAxis.getLiveConfig());
+//    console.log('live config plotly\n',  micropolar.adapter.plotly().convert(polarAxis.getLiveConfig(), true));
+
+//    console.log(3, polarAxis.getLiveConfig());
+//    console.log(4, polarAxis.getinputConfig());
+
+//    translatedConfig.data[0].visible = false;
+//    polarAxis.config(translatedConfig)('body');
+
+//    translatedConfig.data[0].visible = true;
+//    polarAxis.config(translatedConfig)('body');
+}
+
+function windMicropolar(){
+    var config = {
+        "data": [
+            {
+                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+                y: [15.83668754901737,2.1010489435866475,7.8467207960784435,81.19459215085953,41.9380952604115,54.38047884963453,20.199460233561695,59.443859197199345],
+                name:"Layer1",
+                "geometry": "AreaChart", groupId: 1, color: 'limegreen'
+//                , visible: false
+            },
+            {
+                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+                y: [48.80641344934702,32.99135200213641,98.8086799159646,2.2953783627599478,58.103623730130494,72.4586796015501,61.26491364557296,6.148641416803002],
+                name:"Layer2",
+                "geometry": "AreaChart", groupId: 1
+//                , visible: false
+            },
+//            {
+//                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+//                y: [48.80641344934702,32.99135200213641,98.8086799159646,2.2953783627599478,58.103623730130494,72.4586796015501,61.26491364557296,6.148641416803002],
+//                name:"Layer3",
+//                "geometry": "LinePlot"
+//            },
+//            {
+//                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+//                y: [14.159315126016736, 13.361019408330321, 72.41068501025438, 42.61081567965448, 96.85742459259927, 71.28593639936298, 37.491535185836256, 53.55413290672004],
+//                name:"Layer4",
+//                "geometry": "LinePlot"
+//            }
+        ],
+        "layout": {
+            "title": "Polar area chart",
+            "width": 600,
+            "height": 600,
+            "margin": {
+                "left": 20,
+                "right": 160,
+                "top": 60,
+                "bottom": 20,
+                "pad": 0
+            },
+            "backgroundColor": "ghostwhite",
+//            "fontSize": 32,
+//            "fontColor": "grey",
+//            "fontFamily": "Arial, sans-serif",
+//            "angularDomain": [0, 7],
+            "flip": true,
+            radialAxis: {
+                orientation: -90,
+                ticksSuffix: 'aaaa',
+                visible: true
+            },
+//            "radialAxisTheta": -90,
+            "needsEndSpacing": true,
+            "container": "#container1",
+            "showLegend": true
+        },
+        container: '#container1'
+    };
+
+
+    var micropolarConfig = micropolar.adapter.plotly().convert(config);
+    console.log(config);
+//    console.log(micropolarConfig);
+//    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+    var polarAxis = micropolar.Axis().config(config)();
+}
+
+
+function windPlotly(){
+    var config = {
+        "data": [
+            {
+                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+                y: [15.83668754901737,2.1010489435866475,7.8467207960784435,81.19459215085953,41.9380952604115,54.38047884963453,20.199460233561695,59.443859197199345],
+                name:"Layer1",
+                "geometry": "AreaChart", groupId: 1, color: 'limegreen'
+//                , visible: false
+            },
+            {
+                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+                y: [48.80641344934702,32.99135200213641,98.8086799159646,2.2953783627599478,58.103623730130494,72.4586796015501,61.26491364557296,6.148641416803002],
+                name:"Layer2",
+                "geometry": "AreaChart", groupId: 1
+//                , visible: false
+            },
+//            {
+//                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+//                y: [48.80641344934702,32.99135200213641,98.8086799159646,2.2953783627599478,58.103623730130494,72.4586796015501,61.26491364557296,6.148641416803002],
+//                name:"Layer3",
+//                "geometry": "LinePlot"
+//            },
+//            {
+//                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+//                y: [14.159315126016736, 13.361019408330321, 72.41068501025438, 42.61081567965448, 96.85742459259927, 71.28593639936298, 37.491535185836256, 53.55413290672004],
+//                name:"Layer4",
+//                "geometry": "LinePlot"
+//            }
+        ],
+        "layout": {
+            "title": "Polar area chart",
+            "width": 600,
+            "height": 600,
+            "margin": {
+                "left": 20,
+                "right": 160,
+                "top": 60,
+                "bottom": 20,
+                "pad": 0
+            },
+            "backgroundColor": "ghostwhite",
+            "fontSize": 12,
+            "fontColor": "grey",
+            "fontFamily": "Arial, sans-serif",
+//            "angularDomain": [0, 7],
+            "direction": true, // flip
+            "radialAxisTheta": -90,
+            "needsEndSpacing": true,
+            "container": "#container1",
+            "showLegend": true
+        },
+        container: '#container1'
+    };
+
+
+    var micropolarConfig = micropolar.adapter.plotly().convert(config);
+//    console.log(config);
+    console.log(micropolarConfig.layout);
+    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+//    var polarAxis = micropolar.Axis().config(config)();
+}
+
+function wind(d, i){
+    var config = {
+        "data": [
+            {
+                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+                y: [15.83668754901737,2.1010489435866475,7.8467207960784435,81.19459215085953,41.9380952604115,54.38047884963453,20.199460233561695,59.443859197199345],
+                name:"Layer1"
+            },
+            {
+                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+                y: [48.80641344934702,32.99135200213641,98.8086799159646,2.2953783627599478,58.103623730130494,72.4586796015501,61.26491364557296,6.148641416803002],
+                name:"Layer2"
+            },
+            {
+                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+                y: [48.80641344934702,32.99135200213641,98.8086799159646,2.2953783627599478,58.103623730130494,72.4586796015501,61.26491364557296,6.148641416803002],
+                name:"Layer3"
+            },
+            {
+                x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+                y: [14.159315126016736, 13.361019408330321, 72.41068501025438, 42.61081567965448, 96.85742459259927, 71.28593639936298, 37.491535185836256, 53.55413290672004],
+                name:"Layer4"
+            }
+        ],
+        "geometryConfig": [
+                {"geometry": "AreaChart", groupId: 1},
+                {"geometry": "AreaChart", groupId: 1},
+                {"geometry": "LinePlot"},
+                {"geometry": "LinePlot"}
+            ],
+        "legendConfig": {
+                "showLegend": true
+            },
+        "axisConfig": {
+            "title": "Polar area chart",
+            "width": 600,
+            "height": 600,
+            "margin": {
+                "left": 20,
+                "right": 160,
+                "top": 60,
+                "bottom": 20,
+                "pad": 0
+            },
+            "backgroundColor": "ghostwhite",
+            "fontSize": 12,
+            "fontColor": "grey",
+            "fontFamily": "Arial, sans-serif",
+            "angularDomain": [0, 7],
+            "flip": true,
+            "radialAxisTheta": -90,
+            "needsEndSpacing": true,
+            "container": "#container1"
+        }
+    };
+
+
+    var polarAxis = micropolar.Axis().config(config)();
+}
+
+
+function wind3(d, i){
+    var config = {
+        "data": [
+            {
+//                x: ['North', 'East', 'South', 'West'],
+                x: [90, 0, -90, -180],
+//                x: [0, 90, 180, 360],
+                y: [1, 2, 3, 4],
+                name:"Layer1"
+            }
+        ],
+        "geometryConfig": [
+            {"geometry": "AreaChart", groupId: 1}
+        ],
+        "legendConfig": {
+            "showLegend": true
+        },
+        "axisConfig": {
+            "title": "Polar area chart",
+            "width": 600,
+            "height": 600,
+            "margin": {
+                "left": 20,
+                "right": 160,
+                "top": 60,
+                "bottom": 20,
+                "pad": 0
+            },
+            "backgroundColor": "ghostwhite",
+            "fontSize": 12,
+            "fontColor": "grey",
+            "fontFamily": "Arial, sans-serif",
+//            "angularDomain": [0, 7],
+//            "angularDomain": [0, 360],
+            "angularDomain": [-180, 180],
+            "radialDomain": [0, 4],
+            "flip": true,
+            "radialAxisTheta": -90,
+            "needsEndSpacing": true,
+//            "needsEndSpacing": false,
+            "container": "#container1"
+        }
+    };
+
+
+    var polarAxis = micropolar.Axis().config(config)();
+}
+
+function wind8(d, i){
+    var config = {
+        "data": [
+            {
+//                x: ['North', 'East', 'South', 'West'],
+                x: [90, 0, -90, -180],
+//                x: [0, 90, 180, 360],
+                y: [1, 2, 3, 4],
+                name:"Layer1"
+            }
+        ],
+        "geometryConfig": [
+            {"geometry": "AreaChart", groupId: 1}
+        ],
+        "legendConfig": {
+            "showLegend": true
+        },
+        "axisConfig": {
+            "title": "Polar area chart",
+            "width": 600,
+            "height": 600,
+            "margin": {
+                "left": 20,
+                "right": 160,
+                "top": 60,
+                "bottom": 20,
+                "pad": 0
+            },
+            "backgroundColor": "ghostwhite",
+            "fontSize": 12,
+            "fontColor": "grey",
+            "fontFamily": "Arial, sans-serif",
+//            "angularDomain": [0, 7],
+//            "angularDomain": [0, 360],
+            "angularDomain": [-180, 180],
+            "radialDomain": [0, 4],
+            "flip": true,
+            "radialAxisTheta": -90,
+            "needsEndSpacing": true,
+//            "needsEndSpacing": false,
+            "container": "#container1"
+        }
+    };
+
+
+    var polarAxis = micropolar.Axis().config(config)();
+}
+
+
+function bar(){
+    var config = {
+        "data": [
+            {
+//                x: ['North', 'East', 'South', 'West'],
+                x: [-10, 0, 10],
+//                x: [90, 0, -90, -180],
+//                x: [0, 90, 180, 360],
+                y: [30, 10, 20],
+                name:"Layer1"
+            }
+        ],
+        "geometryConfig": [
+            {"geometry": "BarChart", groupId: 1}
+        ],
+        "legendConfig": {
+            "showLegend": true
+        },
+        "axisConfig": {
+            "title": "Polar area chart",
+            "width": 600,
+            "height": 600,
+            "margin": {
+                "left": 20,
+                "right": 160,
+                "top": 60,
+                "bottom": 20,
+                "pad": 0
+            },
+            "backgroundColor": "ghostwhite",
+            "fontSize": 12,
+            "fontColor": "grey",
+            "fontFamily": "Arial, sans-serif",
+//            "angularDomain": [0, 7],
+//            "angularDomain": [0, 360],
+//            "angularDomain": [-180, 180],
+//            "radialDomain": [0, 4],
+            "flip": true,
+            "radialAxisTheta": -90,
+            "needsEndSpacing": true,
+//            "needsEndSpacing": false,
+            "container": "#container1"
+        }
+    };
+
+
+    var polarAxis = micropolar.Axis().config(config)();
+}
+
+
+function bar2(){
+    var data = [
+        {
+            x: [2, 5, 10],
+            y: [30, 10, 20],
+            name:"Layer1",
+            type: 'PolarBarChart'
+        }
+    ];
+
+    var layout = {
+//        'title': 'Polar area chart',
+//        'width': 600,
+//        'height': 600,
+//        'margin': { 'l': 20, 'r': 160, 't': 60, 'b': 20, 'pad': 0 },
+//        'plot_bgcolor': 'ghostwhite',
+//        'font': {
+//            'family': 'Arial, sans-serif',
+//            'size': 12,
+//            'color': 'grey'
+//        },
+        yaxis: {range: [0, 30]},
+//        'showlegend': true,
+//        direction: 'clockwise',
+////        orientation: 180,
+//        yaxis: {orientation: -90},
+////        barmode: 'stack',
+//        needsEndSpacing: true
+    };
+
+    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+    console.log(micropolarConfig);
+    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+}
+
+
+function windP(){
+    var data = [
+        {
+            x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+            y: [15.83668754901737,2.1010489435866475,7.8467207960784435,81.19459215085953,41.9380952604115,54.38047884963453,20.199460233561695,59.443859197199345],
+            name:"Layer1",
+            type: 'PolarAreaChart'
+        },
+        {
+            x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+            y: [48.80641344934702,32.99135200213641,98.8086799159646,2.2953783627599478,58.103623730130494,72.4586796015501,61.26491364557296,6.148641416803002],
+            name:"Layer2",
+            type: 'PolarAreaChart'
+        },
+        {
+            x: ['North', 'N-E', 'East', 'S-E', 'South', 'S-W', 'West', 'N-W'],
+            y: [48.80641344934702,32.99135200213641,98.8086799159646,2.2953783627599478,58.103623730130494,72.4586796015501,61.26491364557296,6.148641416803002],
+            name:"Layer3",
+            type: 'PolarLinePlot'
+        }
+    ];
+
+    var layout = {
+        'title': 'Polar area chart',
+        'width': 600,
+        'height': 600,
+        'margin': { 'l': 20, 'r': 160, 't': 60, 'b': 20, 'pad': 0 },
+        'plot_bgcolor': 'ghostwhite',
+        'font': {
+            'family': 'Arial, sans-serif',
+            'size': 12,
+            'color': 'grey'
+        },
+        xaxis: {range: [0, 7]},
+        'showlegend': true,
+        direction: 'clockwise',
+//        orientation: 180,
+        yaxis: {orientation: -90},
+//        barmode: 'stack',
+        needsEndSpacing: true
+    };
+
+    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+    console.log(micropolarConfig);
+    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+
+//    layout.needsEndSpacing = true;
+//    layout.xaxis = {range: null}
+//    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+//    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+//    polarAxis.config(micropolarConfig)();
+//
+//    layout.needsEndSpacing = true;
+//    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+//    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+//    polarAxis.config(micropolarConfig)();
+}
+
+
+function all(){
+    var N = 20;
+    var theta = d3.range(0, 360, 360/N);
+//    var radii = d3.range(N).map(function(d, i){ return 10 * Math.random(); });
+    var radii = d3.range(N).map(function(d, i){ return i/2; });
+    var width = Math.PI / 4 * Math.random(N);
+
+    var data = [{'name': 'Bar',
+//        'x': [0, 1, 2, 3, 4],
+//        'x': [1, 2, 3, 4, 5],
+        'x': ['A', 'B', 'C', 'D', 'E'],
+        'y': [10, 20, 30, 40, 50],
+//        'x': theta,
+//        'y': radii,
+//        'line': {color: 'red', interpolation: 'basis'},
+//        'type': 'PolarStackedAreaChart'}];
+//        'type': 'PolarBarChart'}];
+//        'type': 'PolarAreaChart'}];
+//        'type': 'PolarDotPlot'}];
+        'type': 'PolarLinePlot'}];
+
+    var layout = {
+        'title': 'Polar area chart',
+        'width': 400,
+        'height': 400,
+        'margin': { 'l': 20, 'r': 160, 't': 60, 'b': 20, 'pad': 0 },
+//        'yaxis': {'range': [0, 10], 'orientation': -30},
+//        'xaxis': {'range': [0, 360], 'minorTickCount': 0, 'tickStep': 45, flip: true},
+//        'xaxis': {'range': [0, 360], 'minorTickCount': 0, 'tickCount': 8},
+        'plot_bgcolor': 'ghostwhite',
+        'font': {
+            'family': 'Arial, sans-serif',
+            'size': 12,
+            'color': 'grey'
+        },
+        'showlegend': true
+    };
+
+    var plotlyConfig = {container: '#container1', data: data, layout: layout};
+    var micropolarConfig = micropolar.adapter.plotly().convert(plotlyConfig);
+//    micropolarConfig.axisConfig.needsEndSpacing = true;
+    var polarAxis = micropolar.Axis().config(micropolarConfig)();
+}
+
+
+//    var testConfig = JSON.parse('{"data":[{"x":[0,90,180,270],"y":[1,2,3,4],"name":"Bar"}],"geometryConfig":[{"geometry":"StackedAreaChart","color":"skyblue"}],"legendConfig":{"showLegend":true},"axisConfig":{"title":"Wind","width":500,"height":500,"margin":{"left":20,"right":160,"top":60,"bottom":20,"pad":0},"backgroundColor":"ghostwhite","radialDomain":[0,5],"fontSize":12,"fontColor":"grey","fontFamily":"Arial, sans-serif","container":"#container1","needsEndSpacing":true}}');
+////    console.log(testConfig);
+//    var dataSize = 20;
+//    var data = [
+////        {name: 'Data1', x: [[0, 1, 2, 3], [4, 5, 6, 7]], y: [[10, 20, 30, 40], [50, 60, 70, 80]]},
+////        {name: 'Data1', x: [0, 1, 2, 3, 4], y: [10, 20, 30, 40, 50]},
+////        {name: 'Data8', x: [0, 1, 2, 3, 4], y: [10, 20, 30, 40, 50]},
+////        {name: 'Data3', x: [0, 1, 2, 3], y: [10, 20, 30, 40]},
+////        {name: 'Data5', x: [0, 1, 2, 3], y: [10, 20, 30, 40]},
+////        {name: 'Data5', x: d3.range(dataSize).map(function(d, i){ return i; }), y: d3.range(dataSize).map(function(d, i){ return i * 10; })},
+//        {name: 'Data5', x: [1, 2, 3, 4], y: [10, 20, 30, 40]},
+////        {name: 'Data5', x: [0, 1, 2, 3, 4, 5, 6], y: [10, 20, 30, 40, 50, 60, 70]},
+////        {name: 'Data5', x: [0, 1, 2, 3, 4, 5, 6], y: [10, 20, 30, 40, 50, 60, 70]},
+////        {name: 'Data4', x: [0, 1, 2, 3], y: [10, 20, 30, 40]}
+////        {name: 'Line4', x: [3, 4, 5, 6], y: [50, 60, 70, 80]},
+////        {name: 'Line2', x: [4, 5, 6, 7], y: [50, 60, 70, 80]},
+////        {name: 'Line2', x: [5, 6, 7, 8], y: [50, 60, 70, 80]},
+////        {name: 'Line3', x: [9, 10, 11, 12], y: [50, 60, 70, 80]}
+//    ];
+//
+//    var geometryConfig = [
+////        {geometry: 'LinePlot', color: 'violet', opacity: 0.8, visibleInLegend: true, dash: 'dash'},
+////        {geometry: 'LinePlot', visibleInLegend: true},
+////        {geometry: 'LinePlot'}
+////        {geometry: 'DotPlot'},
+//        {geometry: 'DotPlot'},
+////        {geometry: 'StackedAreaChart'},
+////        {geometry: 'LinePlot'},
+////        {geometry: 'BarChart'},
+////        {geometry: 'BarChart'},
+////        {geometry: 'BarChart'}
+//    ];
+//    var axisConfig = {
+//        height: 500,
+//        width: 500,
+//        margin: {top: 60, right: 120, bottom: 20, left: 20},
+//        container: '#container1',
+//        title: 'Title',
+//        flip: true,
+////        radialDomain: [-50, 80],
+//        radialAxisTheta: 0,
+////        angularTicksCount: 3,
+//        minorTicks: 2,
+//        originTheta: 0,
+//        needsEndSpacing: true
+//    };
+//    var legendConfig = {
+//        showLegend: true,
+//        reverseOrder: true
+//    };
+////    var config = {data: data, axisConfig: axisConfig, geometryConfig: geometryConfig, legendConfig: legendConfig};
+//    var config = {data: testConfig.data, axisConfig: testConfig.axisConfig, geometryConfig: testConfig.geometryConfig, legendConfig: legendConfig};
+//    var polarAxis = µ.Axis().config(config)();
+
+//    polarAxis.config({axisConfig: {width: 400}})();
+
+    // Nightingale example
+    ////////////////////////////////////////
+
+//    var data = [
+//            [ "Apr 1854", 1.4, "Disease"],
+//            [ "May 1854", 6.2, "Disease"],
+//            [ "Jun 1854", 4.7, "Disease"],
+//            [ "Jul 1854", 150, "Disease"],
+//            [ "Aug 1854", 328.5, "Disease"],
+//            [ "Sep 1854", 312.2, "Disease"],
+//            [ "Oct 1854", 197, "Disease"],
+//            [ "Nov 1854", 340.6, "Disease"],
+//            [ "Dec 1854", 631.5, "Disease"],
+//            [ "Jan 1855", 1022.8, "Disease"],
+//            [ "Feb 1855", 822.8, "Disease"],
+//            [ "Mar 1855", 480.3, "Disease"],
+//            [ "Apr 1854", 0, "Wounds"],
+//            [ "May 1854", 0, "Wounds"],
+//            [ "Jun 1854", 0, "Wounds"],
+//            [ "Jul 1854", 0, "Wounds"],
+//            [ "Aug 1854", 0.4, "Wounds"],
+//            [ "Sep 1854", 32.1, "Wounds"],
+//            [ "Oct 1854", 51.7, "Wounds"],
+//            [ "Nov 1854", 115.8, "Wounds"],
+//            [ "Dec 1854", 41.7, "Wounds"],
+//            [ "Jan 1855", 30.7, "Wounds"],
+//            [ "Feb 1855", 16.3, "Wounds"],
+//            [ "Mar 1855", 12.8, "Wounds"],
+//            [ "Apr 1854", 7, "Other"],
+//            [ "May 1854", 4.6, "Other"],
+//            [ "Jun 1854", 2.5, "Other"],
+//            [ "Jul 1854", 9.6, "Other"],
+//            [ "Aug 1854", 11.9, "Other"],
+//            [ "Sep 1854", 27.7, "Other"],
+//            [ "Oct 1854", 50.1, "Other"],
+//            [ "Nov 1854", 42.8, "Other"],
+//            [ "Dec 1854", 48, "Other"],
+//            [ "Jan 1855", 120, "Other"],
+//            [ "Feb 1855", 140.1, "Other"],
+//            [ "Mar 1855", 68.6, "Other"]
+//        ];
+//
+//    var polarPlot = µ.StackedAreaChart();
+//
+//    var config = {
+//        data: data.map(function(d, i){ return [i%12, d[1], d[2]]; }),
+//        geometry: polarPlot,
+//        containerSelector: '#container2',
+//        width: 300,
+//        height: 300,
+//        flip: true,
+//        originTheta: -90,
+//        radialAxisTheta: -30,
+//        radialDomain: [0, 1174],
+//        margin: 35
+//    };
+//
+//    var polarAxis = µ.Axis().config(config);
+//    polarAxis();
+
+
+</script>
+
+</body>
+</html>

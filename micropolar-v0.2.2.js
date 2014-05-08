@@ -114,7 +114,7 @@ var µ = micropolar;
                 tickCount = (angularDomainWithPadding[1] - angularDomainWithPadding[0]) / tickCount;
             }
             var angularTicksStep = axisConfig.angularAxis.ticksStep || (angularDomainWithPadding[1] - angularDomainWithPadding[0]) / (tickCount * (axisConfig.minorTicks + 1));
-            if (ticks) angularTicksStep = Math.round(angularTicksStep);
+            if (ticks) angularTicksStep = Math.max(Math.round(angularTicksStep), 1);
             if (!angularDomainWithPadding[2]) angularDomainWithPadding[2] = angularTicksStep;
             var angularAxisRange = d3.range.apply(this, angularDomainWithPadding);
             angularAxisRange = angularAxisRange.map(function(d, i) {
@@ -325,7 +325,7 @@ var µ = micropolar;
                         return iB == i;
                     });
                     geometryConfig.geometry = d.geometry;
-                    if (!geometryConfig.orientation) geometryConfig.orientation = axisConfig.orientation;
+                    geometryConfig.orientation = axisConfig.orientation;
                     geometryConfig.direction = axisConfig.direction;
                     geometryConfig.index = i;
                     geometryConfigs.push({
@@ -564,6 +564,7 @@ var µ = micropolar;
                 ticksStep: null
             },
             minorTicks: 0,
+            tickLength: null,
             tickColor: "silver",
             minorTickColor: "#eee",
             backgroundColor: "none",
@@ -787,12 +788,8 @@ var µ = micropolar;
             var generator = {};
             generator.bar = function(d, i, pI) {
                 var dataConfig = _config[pI].data;
-                var h = geometryConfig.radialScale(d[1]);
-                var stackTop = geometryConfig.radialScale(domainMin + (d[2] || 0));
-                if (dataConfig.barRadialOffset) {
-                    stackTop = dataConfig.barRadialOffset;
-                    h -= stackTop;
-                }
+                var h = geometryConfig.radialScale(d[1]) - geometryConfig.radialScale(0);
+                var stackTop = geometryConfig.radialScale(d[2] || 0);
                 var w = dataConfig.barWidth;
                 d3.select(this).attr({
                     "class": "mark bar",
@@ -814,7 +811,7 @@ var µ = micropolar;
                     }
                 });
             };
-            var line = d3.svg.line.radial().radius(function(d) {
+            var line = d3.svg.line.radial().interpolate(_config[0].data.lineInterpolation).radius(function(d) {
                 return geometryConfig.radialScale(d[1]);
             }).angle(function(d) {
                 return geometryConfig.angularScale(d[0]) * Math.PI / 180;
@@ -956,7 +953,6 @@ var µ = micropolar;
             r: [ [ 1, 2, 3, 4 ] ],
             dotType: "circle",
             dotSize: 64,
-            barRadialOffset: null,
             barWidth: 20,
             color: "#ffa500",
             strokeSize: 1,
@@ -1274,7 +1270,7 @@ var µ = micropolar;
         if (_inputConfig.data) {
             outputConfig.data = _inputConfig.data.map(function(d, i) {
                 var r = µ.util.deepExtend({}, d);
-                var toTranslate = [ [ r, [ "marker", "color" ], [ "color" ] ], [ r, [ "marker", "opacity" ], [ "opacity" ] ], [ r, [ "marker", "line", "color" ], [ "strokeColor" ] ], [ r, [ "marker", "line", "dash" ], [ "strokeDash" ] ], [ r, [ "marker", "line", "width" ], [ "strokeSize" ] ], [ r, [ "marker", "type" ], [ "dotType" ] ], [ r, [ "marker", "size" ], [ "dotSize" ] ], [ r, [ "marker", "barRadialOffset" ], [ "barRadialOffset" ] ], [ r, [ "marker", "barWidth" ], [ "barWidth" ] ], [ r, [ "line", "interpolation" ], [ "lineInterpolation" ] ], [ r, [ "showlegend" ], [ "visibleInLegend" ] ] ];
+                var toTranslate = [ [ r, [ "marker", "color" ], [ "color" ] ], [ r, [ "marker", "opacity" ], [ "opacity" ] ], [ r, [ "marker", "line", "color" ], [ "strokeColor" ] ], [ r, [ "marker", "line", "dash" ], [ "strokeDash" ] ], [ r, [ "marker", "line", "width" ], [ "strokeSize" ] ], [ r, [ "marker", "type" ], [ "dotType" ] ], [ r, [ "marker", "size" ], [ "dotSize" ] ], [ r, [ "marker", "barWidth" ], [ "barWidth" ] ], [ r, [ "line", "interpolation" ], [ "lineInterpolation" ] ], [ r, [ "showlegend" ], [ "visibleInLegend" ] ] ];
                 toTranslate.forEach(function(d, i) {
                     µ.util.translator.apply(null, d.concat(reverse));
                 });
@@ -1310,10 +1306,14 @@ var µ = micropolar;
         }
         if (_inputConfig.layout) {
             var r = µ.util.deepExtend({}, _inputConfig.layout);
-            var toTranslate = [ [ r, [ "plot_bgcolor" ], [ "backgroundColor" ] ], [ r, [ "showlegend" ], [ "showLegend" ] ], [ r.angularAxis, [ "showLine" ], [ "gridLinesVisible" ] ], [ r.angularAxis, [ "showticklabels" ], [ "labelsVisible" ] ], [ r.angularAxis, [ "nticks" ], [ "ticksCount" ] ], [ r.legend, [ "traceorder" ], [ "reverseOrder" ] ] ];
+            var toTranslate = [ [ r, [ "plot_bgcolor" ], [ "backgroundColor" ] ], [ r, [ "showlegend" ], [ "showLegend" ] ], [ r, [ "radialaxis" ], [ "radialAxis" ] ], [ r, [ "angularaxis" ], [ "angularAxis" ] ], [ r.angularaxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.angularaxis, [ "showticklabels" ], [ "labelsVisible" ] ], [ r.angularaxis, [ "nticks" ], [ "ticksCount" ] ], [ r.angularaxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.angularaxis, [ "tickssuffix" ], [ "ticksSuffix" ] ], [ r.radialaxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.radialaxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.radialaxis, [ "tickssuffix" ], [ "ticksSuffix" ] ], [ r.font, [ "outlinecolor" ], [ "outlineColor" ] ], [ r.legend, [ "traceorder" ], [ "reverseOrder" ] ], [ r, [ "labeloffset" ], [ "labelOffset" ] ], [ r, [ "defaultcolorrange" ], [ "defaultColorRange" ] ] ];
             toTranslate.forEach(function(d, i) {
                 µ.util.translator.apply(null, d.concat(reverse));
             });
+            if (!reverse) {
+                if (r.angularAxis && typeof r.angularAxis.ticklen !== "undefined") r.tickLength = r.angularAxis.ticklen;
+                if (r.angularAxis && typeof r.angularAxis.tickcolor !== "undefined") r.tickColor = r.angularAxis.tickcolor;
+            }
             if (r.legend && typeof r.legend.reverseOrder != "boolean") {
                 r.legend.reverseOrder = r.legend.reverseOrder != "normal";
             }
