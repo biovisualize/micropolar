@@ -84,7 +84,7 @@
                 [r.angularaxis, ['showticklabels'], ['labelsVisible']],
                 [r.angularaxis, ['nticks'], ['ticksCount']],
                 [r.angularaxis, ['tickorientation'], ['tickOrientation']],
-                [r.angularaxis, ['tickssuffix'], ['ticksSuffix']],
+                [r.angularaxis, ['ticksuffix'], ['ticksSuffix']],
                 [r.radialaxis, ['showline'], ['gridLinesVisible']],
                 [r.radialaxis, ['tickorientation'], ['tickOrientation']],
                 [r.radialaxis, ['ticksuffix'], ['ticksSuffix']],
