@@ -61,7 +61,10 @@
                     var lineData = (d[2]) ? data[pI].map(function(d, i){ return [d[0], d[1] + d[2]]; }) : data[pI];
                     // Line dots
                     d3.select(this).each(generator['dot'])
-                        .style({opacity: 0, fill:  markStyle.stroke(d, i, pI)})
+                        .style({
+                            opacity: function(dB, iB){ return +_config[pI].data.dotVisible; },
+                            fill: markStyle.stroke(d, i, pI)
+                        })
                         .attr({'class': 'mark dot'});
                     if(i > 0) return;
                     // Line
@@ -103,7 +106,7 @@
 
                 var markStyle = {
                     fill: function(d, i, pI){ return _config[pI].data.color; },
-                    stroke: function(d, i, pI){ return  _config[pI].data.strokeColor; },
+                    stroke: function(d, i, pI){ return _config[pI].data.strokeColor; },
                     'stroke-width': function(d, i, pI){ return _config[pI].data.strokeSize + 'px'; },
                     'stroke-dasharray': function(d, i, pI){ return dashArray[_config[pI].data.strokeDash]; },
                     opacity: function(d, i, pI){ return _config[pI].data.opacity; },
@@ -162,6 +165,7 @@
                 r: [[1, 2, 3, 4]],
                 dotType: 'circle',
                 dotSize: 64,
+                dotVisible: false,
                 barWidth: 20,
                 color: '#ffa500',
                 strokeSize: 1,

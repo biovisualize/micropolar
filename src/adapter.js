@@ -24,14 +24,17 @@
                     µ.util.translator.apply(null, d.concat(reverse));
                 });
 
-
                 if(!reverse) delete r.marker;
                 if(reverse) delete r.groupId;
 
                 if(!reverse){
                     if(r.type === 'scatter'){
-                       if(r.mode === 'lines') r.geometry = 'LinePlot';
-                       else if(r.mode === 'markers') r.geometry = 'DotPlot';
+                        if(r.mode === 'lines') r.geometry = 'LinePlot';
+                        else if(r.mode === 'markers') r.geometry = 'DotPlot';
+                        else if(r.mode === 'lines+markers'){
+                            r.geometry = 'LinePlot';
+                            r.dotVisible = true;
+                        }
                     }
                     else if(r.type === 'area') r.geometry = 'AreaChart';
                     else if(r.type === 'bar') r.geometry = 'BarChart';
@@ -41,7 +44,8 @@
                 else{
                     if(r.geometry === 'LinePlot'){
                         r.type = 'scatter';
-                        r.mode = 'lines';
+                        if(r.dotVisible === true) r.mode = 'lines+markers';
+                        else r.mode = 'lines';
                     }
                     else if(r.geometry === 'DotPlot'){
                         r.type = 'scatter';
@@ -83,7 +87,7 @@
                 [r.angularaxis, ['tickssuffix'], ['ticksSuffix']],
                 [r.radialaxis, ['showline'], ['gridLinesVisible']],
                 [r.radialaxis, ['tickorientation'], ['tickOrientation']],
-                [r.radialaxis, ['tickssuffix'], ['ticksSuffix']],
+                [r.radialaxis, ['ticksuffix'], ['ticksSuffix']],
                 [r.font, ['outlinecolor'], ['outlineColor']],
                 [r.legend, ['traceorder'], ['reverseOrder']],
                 [r, ['labeloffset'], ['labelOffset']],

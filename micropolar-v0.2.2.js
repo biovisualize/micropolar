@@ -821,7 +821,9 @@ var µ = micropolar;
                     return [ d[0], d[1] + d[2] ];
                 }) : data[pI];
                 d3.select(this).each(generator["dot"]).style({
-                    opacity: 0,
+                    opacity: function(dB, iB) {
+                        return +_config[pI].data.dotVisible;
+                    },
                     fill: markStyle.stroke(d, i, pI)
                 }).attr({
                     "class": "mark dot"
@@ -953,6 +955,7 @@ var µ = micropolar;
             r: [ [ 1, 2, 3, 4 ] ],
             dotType: "circle",
             dotSize: 64,
+            dotVisible: false,
             barWidth: 20,
             color: "#ffa500",
             strokeSize: 1,
@@ -1278,14 +1281,17 @@ var µ = micropolar;
                 if (reverse) delete r.groupId;
                 if (!reverse) {
                     if (r.type === "scatter") {
-                        if (r.mode === "lines") r.geometry = "LinePlot"; else if (r.mode === "markers") r.geometry = "DotPlot";
+                        if (r.mode === "lines") r.geometry = "LinePlot"; else if (r.mode === "markers") r.geometry = "DotPlot"; else if (r.mode === "lines+markers") {
+                            r.geometry = "LinePlot";
+                            r.dotVisible = true;
+                        }
                     } else if (r.type === "area") r.geometry = "AreaChart"; else if (r.type === "bar") r.geometry = "BarChart";
                     delete r.mode;
                     delete r.type;
                 } else {
                     if (r.geometry === "LinePlot") {
                         r.type = "scatter";
-                        r.mode = "lines";
+                        if (r.dotVisible === true) r.mode = "lines+markers"; else r.mode = "lines";
                     } else if (r.geometry === "DotPlot") {
                         r.type = "scatter";
                         r.mode = "markers";
@@ -1306,7 +1312,7 @@ var µ = micropolar;
         }
         if (_inputConfig.layout) {
             var r = µ.util.deepExtend({}, _inputConfig.layout);
-            var toTranslate = [ [ r, [ "plot_bgcolor" ], [ "backgroundColor" ] ], [ r, [ "showlegend" ], [ "showLegend" ] ], [ r, [ "radialaxis" ], [ "radialAxis" ] ], [ r, [ "angularaxis" ], [ "angularAxis" ] ], [ r.angularaxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.angularaxis, [ "showticklabels" ], [ "labelsVisible" ] ], [ r.angularaxis, [ "nticks" ], [ "ticksCount" ] ], [ r.angularaxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.angularaxis, [ "tickssuffix" ], [ "ticksSuffix" ] ], [ r.radialaxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.radialaxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.radialaxis, [ "tickssuffix" ], [ "ticksSuffix" ] ], [ r.font, [ "outlinecolor" ], [ "outlineColor" ] ], [ r.legend, [ "traceorder" ], [ "reverseOrder" ] ], [ r, [ "labeloffset" ], [ "labelOffset" ] ], [ r, [ "defaultcolorrange" ], [ "defaultColorRange" ] ] ];
+            var toTranslate = [ [ r, [ "plot_bgcolor" ], [ "backgroundColor" ] ], [ r, [ "showlegend" ], [ "showLegend" ] ], [ r, [ "radialaxis" ], [ "radialAxis" ] ], [ r, [ "angularaxis" ], [ "angularAxis" ] ], [ r.angularaxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.angularaxis, [ "showticklabels" ], [ "labelsVisible" ] ], [ r.angularaxis, [ "nticks" ], [ "ticksCount" ] ], [ r.angularaxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.angularaxis, [ "tickssuffix" ], [ "ticksSuffix" ] ], [ r.radialaxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.radialaxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.radialaxis, [ "ticksuffix" ], [ "ticksSuffix" ] ], [ r.font, [ "outlinecolor" ], [ "outlineColor" ] ], [ r.legend, [ "traceorder" ], [ "reverseOrder" ] ], [ r, [ "labeloffset" ], [ "labelOffset" ] ], [ r, [ "defaultcolorrange" ], [ "defaultColorRange" ] ] ];
             toTranslate.forEach(function(d, i) {
                 µ.util.translator.apply(null, d.concat(reverse));
             });

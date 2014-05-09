@@ -44,7 +44,7 @@ var configs = [
     {data: [{t: ['A', 'B', 'C', 'D'], r: [10, 20, 30, 40], geometry: µ.DOT}], layout: {title: "['A', 'B', 'C', 'D']"}},
     {data: [{t: ['A', 'B', 'C', 'D'], r: [10, 20, 30, 40], geometry: µ.AREA}], layout: {title: "['A', 'B', 'C', 'D']"}},
     {data: [{t: ['A', 'B', 'C', 'D'], r: [10, 20, 30, 40], geometry: µ.BAR}], layout: {title: "['A', 'B', 'C', 'D']"}},
-    {data: [{t: ['A', 'B', 'C', 'D'], r: [10, 20, 30, 40], geometry: µ.LINE}], layout: {title: "['A', 'B', 'C', 'D']"}},
+    {data: [{t: ['A', 'B', 'C', 'D'], r: [10, 20, 30, 40], geometry: µ.LINE, dotVisible: true}], layout: {title: "['A', 'B', 'C', 'D']"}},
     {data: [{t: [0, 90, 180, 270], r: [10, 20, 30, 40], geometry: µ.BAR}], layout: {title: "[0, 90, 180, 270]"}},
     {data: [{t: [0, 90, 180, 270], r: [10, 20, 30, 40], geometry: µ.LINE}], layout: {title: "[0, 90, 180, 270]"}},
     {data: [
@@ -312,12 +312,12 @@ var config = {
         {t: ['a', 'b', 'c', 'd'], r: [10, 20, 30, 40], name: 'Layer3', type: "bar", color: 'orange'},
         {t: ['a', 'b', 'c', 'd'], r: [10, 20, 30, 40], name: 'Layer4', type: "scatter", mode: "markers", color: 'red', marker: {symbol: 'triangle-down'}},
         {t: ['a', 'b', 'c', 'd'], r: [10, 20, 30, 40], name: 'Layer5', type: "scatter", mode: "lines", color: 'none', marker: {line: {color: 'red'}}},
-        {t: ['a', 'b', 'c', 'd'], r: [10, 20, 30, 40], name: 'Layer6', type: "scatter", mode: "lines", color: 'none', marker: {line: {color: 'green'}}}
+        {t: ['a', 'b', 'c', 'd'], r: [10, 20, 30, 40], name: 'Layer6', type: "scatter", mode: "lines+markers", color: 'none', marker: {line: {color: 'green'}}}
     ],
     layout: {
         title: 'Title', //identical
-        height: 500, //identical
-        width: 500, //identical
+        height: 400, //identical
+        width: 400, //identical
         font: { //identical
             size: 31, //identical
             color: 'orange', //identical
@@ -331,14 +331,14 @@ var config = {
             domain: null, //identical
             orientation: -45, //upolar only
 //            rewriteTicks: null, //TODO expose
-            tickssuffix: '$', //upolar only, ticksSuffix, to be exposed
+            ticksuffix: '$', //upolar only, ticksSuffix, to be exposed
             visible: true, //upolar only
             showline: true, //gridLinesVisible
             tickorientation: 'vertical' //upolar only, tickOrientation, != tickangle
         },
         angularaxis: { //identical
             domain: null, //identical
-            tickssuffix: '%', //upolar only, ticksSuffix, to be exposed
+            ticksuffix: '%', //upolar only, ticksSuffix, to be exposed
 //            rewriteTicks: null, //TODO expose
             visible: true,
             showline: true, //gridLinesVisible
