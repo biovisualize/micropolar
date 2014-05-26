@@ -152,12 +152,10 @@ var µ = micropolar;
                     return " " + d + " 0 " + axisConfig.font.outlineColor;
                 }).join(",")
             };
+            var legendContainer;
             if (axisConfig.showLegend) {
-                var rightmostTickEndX = d3.max(chartGroup.selectAll(".angular-tick text")[0].map(function(d, i) {
-                    return d.getCTM().e + d.getBBox().width;
-                }));
-                var legendContainer = svg.select(".legend-group").attr({
-                    transform: "translate(" + [ radius + rightmostTickEndX, axisConfig.margin.top ] + ")"
+                legendContainer = svg.select(".legend-group").attr({
+                    transform: "translate(" + [ radius, axisConfig.margin.top ] + ")"
                 }).style({
                     display: "block"
                 });
@@ -189,7 +187,7 @@ var µ = micropolar;
                 liveConfig.layout.radialAxis.domain = radialScale.domain();
                 legendContainer.attr("transform", "translate(" + [ chartCenter[0] + radius, chartCenter[1] - radius ] + ")");
             } else {
-                svg.select(".legend-group").style({
+                legendContainer = svg.select(".legend-group").style({
                     display: "none"
                 });
             }
@@ -306,6 +304,12 @@ var µ = micropolar;
             if (axisConfig.angularAxis.rewriteTicks) ticksText.text(function(d, i) {
                 if (i % (axisConfig.minorTicks + 1) != 0) return "";
                 return axisConfig.angularAxis.rewriteTicks(this.textContent, i);
+            });
+            var rightmostTickEndX = d3.max(chartGroup.selectAll(".angular-tick text")[0].map(function(d, i) {
+                return d.getCTM().e + d.getBBox().width;
+            }));
+            legendContainer.attr({
+                transform: "translate(" + [ radius + rightmostTickEndX, axisConfig.margin.top ] + ")"
             });
             var hasGeometry = svg.select("g.geometry-group").selectAll("g").size() > 0;
             var geometryContainer = svg.select("g.geometry-group").selectAll("g.geometry").data(data);
@@ -1291,7 +1295,10 @@ var µ = micropolar;
                 } else {
                     if (r.geometry === "LinePlot") {
                         r.type = "scatter";
-                        if (r.dotVisible === true) r.mode = "lines+markers"; else r.mode = "lines";
+                        if (r.dotVisible === true) {
+                            delete r.dotVisible;
+                            r.mode = "lines+markers";
+                        } else r.mode = "lines";
                     } else if (r.geometry === "DotPlot") {
                         r.type = "scatter";
                         r.mode = "markers";
@@ -1312,7 +1319,7 @@ var µ = micropolar;
         }
         if (_inputConfig.layout) {
             var r = µ.util.deepExtend({}, _inputConfig.layout);
-            var toTranslate = [ [ r, [ "plot_bgcolor" ], [ "backgroundColor" ] ], [ r, [ "showlegend" ], [ "showLegend" ] ], [ r, [ "radialaxis" ], [ "radialAxis" ] ], [ r, [ "angularaxis" ], [ "angularAxis" ] ], [ r.angularaxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.angularaxis, [ "showticklabels" ], [ "labelsVisible" ] ], [ r.angularaxis, [ "nticks" ], [ "ticksCount" ] ], [ r.angularaxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.angularaxis, [ "ticksuffix" ], [ "ticksSuffix" ] ], [ r.radialaxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.radialaxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.radialaxis, [ "ticksuffix" ], [ "ticksSuffix" ] ], [ r.font, [ "outlinecolor" ], [ "outlineColor" ] ], [ r.legend, [ "traceorder" ], [ "reverseOrder" ] ], [ r, [ "labeloffset" ], [ "labelOffset" ] ], [ r, [ "defaultcolorrange" ], [ "defaultColorRange" ] ] ];
+            var toTranslate = [ [ r, [ "plot_bgcolor" ], [ "backgroundColor" ] ], [ r, [ "showlegend" ], [ "showLegend" ] ], [ r, [ "radialaxis" ], [ "radialAxis" ] ], [ r, [ "angularaxis" ], [ "angularAxis" ] ], [ r.angularaxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.angularaxis, [ "showticklabels" ], [ "labelsVisible" ] ], [ r.angularaxis, [ "nticks" ], [ "ticksCount" ] ], [ r.angularaxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.angularaxis, [ "ticksuffix" ], [ "ticksSuffix" ] ], [ r.angularaxis, [ "range" ], [ "domain" ] ], [ r.radialaxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.radialaxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.radialaxis, [ "ticksuffix" ], [ "ticksSuffix" ] ], [ r.radialaxis, [ "range" ], [ "domain" ] ], [ r.angularAxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.angularAxis, [ "showticklabels" ], [ "labelsVisible" ] ], [ r.angularAxis, [ "nticks" ], [ "ticksCount" ] ], [ r.angularAxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.angularAxis, [ "ticksuffix" ], [ "ticksSuffix" ] ], [ r.angularAxis, [ "range" ], [ "domain" ] ], [ r.radialAxis, [ "showline" ], [ "gridLinesVisible" ] ], [ r.radialAxis, [ "tickorientation" ], [ "tickOrientation" ] ], [ r.radialAxis, [ "ticksuffix" ], [ "ticksSuffix" ] ], [ r.radialAxis, [ "radial" ], [ "domain" ] ], [ r.font, [ "outlinecolor" ], [ "outlineColor" ] ], [ r.legend, [ "traceorder" ], [ "reverseOrder" ] ], [ r, [ "labeloffset" ], [ "labelOffset" ] ], [ r, [ "defaultcolorrange" ], [ "defaultColorRange" ] ] ];
             toTranslate.forEach(function(d, i) {
                 µ.util.translator.apply(null, d.concat(reverse));
             });
@@ -1320,14 +1327,21 @@ var µ = micropolar;
                 if (r.angularAxis && typeof r.angularAxis.ticklen !== "undefined") r.tickLength = r.angularAxis.ticklen;
                 if (r.angularAxis && typeof r.angularAxis.tickcolor !== "undefined") r.tickColor = r.angularAxis.tickcolor;
             } else {
-                if (r.tickLength) r.angularaxis.ticklen = r.tickLength;
-                if (r.tickColor) r.angularaxis.tickcolor = r.tickColor;
+                if (typeof r.tickLength !== "undefined") {
+                    r.angularaxis.ticklen = r.tickLength;
+                    delete r.tickLength;
+                }
+                if (r.tickColor) {
+                    r.angularaxis.tickcolor = r.tickColor;
+                    delete r.tickColor;
+                }
             }
             if (r.legend && typeof r.legend.reverseOrder != "boolean") {
                 r.legend.reverseOrder = r.legend.reverseOrder != "normal";
             }
             if (r.legend && typeof r.legend.traceorder == "boolean") {
                 r.legend.traceorder = r.legend.traceorder ? "reversed" : "normal";
+                delete r.legend.reverseOrder;
             }
             if (r.margin && typeof r.margin.t != "undefined") {
                 var source = [ "t", "r", "b", "l", "pad" ];
@@ -1338,7 +1352,23 @@ var µ = micropolar;
                 });
                 r.margin = margin;
             }
-            if (reverse) delete r.needsEndSpacing;
+            if (reverse) {
+                delete r.needsEndSpacing;
+                delete r.minorTickColor;
+                delete r.minorTicks;
+                delete r.angularaxis.ticksCount;
+                delete r.angularaxis.ticksCount;
+                delete r.angularaxis.ticksStep;
+                delete r.angularaxis.endPadding;
+                delete r.angularaxis.rewriteTicks;
+                delete r.angularaxis.nticks;
+                delete r.radialaxis.ticksCount;
+                delete r.radialaxis.ticksCount;
+                delete r.radialaxis.ticksStep;
+                delete r.radialaxis.endPadding;
+                delete r.radialaxis.rewriteTicks;
+                delete r.radialaxis.nticks;
+            }
             outputConfig.layout = r;
         }
         return outputConfig;

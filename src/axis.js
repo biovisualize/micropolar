@@ -201,13 +201,11 @@ var µ = micropolar;
                 // Legend and title
                 ////////////////////////////////////////////////////////////////////
 
+                var legendContainer;
                 if(axisConfig.showLegend){
                     // Offset for labels
-                    var rightmostTickEndX = d3.max(chartGroup.selectAll('.angular-tick text')[0].map(function(d, i){
-                        return d.getCTM().e + d.getBBox().width;
-                    }));
-                    var legendContainer = svg.select('.legend-group')
-                        .attr({transform: 'translate(' + [radius + rightmostTickEndX, axisConfig.margin.top] + ')'})
+                    legendContainer = svg.select('.legend-group')
+                        .attr({transform: 'translate(' + [radius, axisConfig.margin.top] + ')'})
                         .style({display: 'block'});
                     var elements = data.map(function(d, i){
                         var datumClone = µ.util.cloneJson(d);
@@ -236,7 +234,7 @@ var µ = micropolar;
                     legendContainer.attr('transform', 'translate(' + [chartCenter[0] + radius, chartCenter[1] - radius] + ')');
                 }
                 else{
-                    svg.select('.legend-group').style({display: 'none'});
+                    legendContainer = svg.select('.legend-group').style({display: 'none'});
                 }
 
                 // Reposition and resize for legend and centering
@@ -367,6 +365,11 @@ var µ = micropolar;
                         if(i % (axisConfig.minorTicks + 1) != 0) return '';
                         return axisConfig.angularAxis.rewriteTicks(this.textContent, i);
                     });
+
+                var rightmostTickEndX = d3.max(chartGroup.selectAll('.angular-tick text')[0].map(function(d, i){
+                    return d.getCTM().e + d.getBBox().width;
+                }));
+                legendContainer.attr({transform: 'translate(' + [radius + rightmostTickEndX, axisConfig.margin.top] + ')'});
 
                 // Geometry
                 ////////////////////////////////////////////////////////////////////

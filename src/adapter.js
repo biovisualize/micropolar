@@ -44,7 +44,10 @@
                 else{
                     if(r.geometry === 'LinePlot'){
                         r.type = 'scatter';
-                        if(r.dotVisible === true) r.mode = 'lines+markers';
+                        if(r.dotVisible === true){
+                          delete r.dotVisible;
+                          r.mode = 'lines+markers';
+                        }
                         else r.mode = 'lines';
                     }
                     else if(r.geometry === 'DotPlot'){
@@ -85,9 +88,21 @@
                 [r.angularaxis, ['nticks'], ['ticksCount']],
                 [r.angularaxis, ['tickorientation'], ['tickOrientation']],
                 [r.angularaxis, ['ticksuffix'], ['ticksSuffix']],
+                [r.angularaxis, ['range'], ['domain']],
                 [r.radialaxis, ['showline'], ['gridLinesVisible']],
                 [r.radialaxis, ['tickorientation'], ['tickOrientation']],
                 [r.radialaxis, ['ticksuffix'], ['ticksSuffix']],
+                [r.radialaxis, ['range'], ['domain']],
+                [r.angularAxis, ['showline'], ['gridLinesVisible']],
+                [r.angularAxis, ['showticklabels'], ['labelsVisible']],
+                [r.angularAxis, ['nticks'], ['ticksCount']],
+                [r.angularAxis, ['tickorientation'], ['tickOrientation']],
+                [r.angularAxis, ['ticksuffix'], ['ticksSuffix']],
+                [r.angularAxis, ['range'], ['domain']],
+                [r.radialAxis, ['showline'], ['gridLinesVisible']],
+                [r.radialAxis, ['tickorientation'], ['tickOrientation']],
+                [r.radialAxis, ['ticksuffix'], ['ticksSuffix']],
+                [r.radialAxis, ['radial'], ['domain']],
                 [r.font, ['outlinecolor'], ['outlineColor']],
                 [r.legend, ['traceorder'], ['reverseOrder']],
                 [r, ['labeloffset'], ['labelOffset']],
@@ -102,8 +117,14 @@
                 if(r.angularAxis && typeof r.angularAxis.tickcolor !== 'undefined') r.tickColor = r.angularAxis.tickcolor;
             }
             else{
-                if(r.tickLength) r.angularaxis.ticklen = r.tickLength;
-                if(r.tickColor) r.angularaxis.tickcolor = r.tickColor;
+                if(typeof r.tickLength !== 'undefined'){
+                    r.angularaxis.ticklen = r.tickLength;
+                    delete r.tickLength;
+                }
+                if(r.tickColor){
+                    r.angularaxis.tickcolor = r.tickColor;
+                    delete r.tickColor;
+                }
             }
 
             if(r.legend && typeof r.legend.reverseOrder != "boolean"){
@@ -111,6 +132,7 @@
             }
             if(r.legend && typeof r.legend.traceorder == "boolean"){
                 r.legend.traceorder = r.legend.traceorder ? 'reversed' : 'normal';
+                delete r.legend.reverseOrder;
             }
 
             if(r.margin && typeof r.margin.t != 'undefined'){
@@ -123,7 +145,23 @@
                 r.margin = margin
             }
 
-            if(reverse) delete r.needsEndSpacing;
+            if(reverse){
+                delete r.needsEndSpacing;
+                delete r.minorTickColor;
+                delete r.minorTicks;
+                delete r.angularaxis.ticksCount;
+                delete r.angularaxis.ticksCount;
+                delete r.angularaxis.ticksStep;
+                delete r.angularaxis.endPadding;
+                delete r.angularaxis.rewriteTicks;
+                delete r.angularaxis.nticks;
+                delete r.radialaxis.ticksCount;
+                delete r.radialaxis.ticksCount;
+                delete r.radialaxis.ticksStep;
+                delete r.radialaxis.endPadding;
+                delete r.radialaxis.rewriteTicks;
+                delete r.radialaxis.nticks;
+            }
 
             outputConfig.layout = r;
         }
