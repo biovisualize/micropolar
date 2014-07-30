@@ -89,6 +89,7 @@
                 [r.angularaxis, ['tickorientation'], ['tickOrientation']],
                 [r.angularaxis, ['ticksuffix'], ['ticksSuffix']],
                 [r.angularaxis, ['range'], ['domain']],
+                [r.angularaxis, ['endpadding'], ['endPadding']],
                 [r.radialaxis, ['showline'], ['gridLinesVisible']],
                 [r.radialaxis, ['tickorientation'], ['tickOrientation']],
                 [r.radialaxis, ['ticksuffix'], ['ticksSuffix']],
@@ -99,10 +100,11 @@
                 [r.angularAxis, ['tickorientation'], ['tickOrientation']],
                 [r.angularAxis, ['ticksuffix'], ['ticksSuffix']],
                 [r.angularAxis, ['range'], ['domain']],
+                [r.angularAxis, ['endpadding'], ['endPadding']],
                 [r.radialAxis, ['showline'], ['gridLinesVisible']],
                 [r.radialAxis, ['tickorientation'], ['tickOrientation']],
                 [r.radialAxis, ['ticksuffix'], ['ticksSuffix']],
-                [r.radialAxis, ['radial'], ['domain']],
+                [r.radialAxis, ['range'], ['domain']],
                 [r.font, ['outlinecolor'], ['outlineColor']],
                 [r.legend, ['traceorder'], ['reverseOrder']],
                 [r, ['labeloffset'], ['labelOffset']],
@@ -152,13 +154,11 @@
                 delete r.angularaxis.ticksCount;
                 delete r.angularaxis.ticksCount;
                 delete r.angularaxis.ticksStep;
-                delete r.angularaxis.endPadding;
                 delete r.angularaxis.rewriteTicks;
                 delete r.angularaxis.nticks;
                 delete r.radialaxis.ticksCount;
                 delete r.radialaxis.ticksCount;
                 delete r.radialaxis.ticksStep;
-                delete r.radialaxis.endPadding;
                 delete r.radialaxis.rewriteTicks;
                 delete r.radialaxis.nticks;
             }

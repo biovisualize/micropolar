@@ -31,6 +31,9 @@ changes:
 
 // General test suite
 var configs = [
+    {data: [{t: d3.range(100).map(function(d, i){ return d*10; }), r: d3.range(100), geometry: µ.LINE}], layout: {title: 'Spiral'}},
+    {data: [{t: d3.range(30).map(function(d, i){ return Math.random()*360; }), r: d3.range(30).map(function(d, i){ return Math.random()*100; }), geometry: µ.DOT, name: 'dots1'},
+        {t: d3.range(30).map(function(d, i){ return Math.random()*360; }), r: d3.range(30).map(function(d, i){ return Math.random()*100; }), geometry: µ.DOT, name: 'dots2'}], layout: {title: 'Dot Plot'}},
     {data: [{t: [1, 2, 3, 4], r: [1, 2, 3, 4], geometry: µ.LINE}]},
     {data: [{t: [0, 90, 180, 270], r: [10, 20, 30, 40], geometry: µ.DOT}], layout: {title: '[0, 90, 180, 270]'}},
     {data: [{t: [0, 90, 180, 270], r: [10, 20, 30, 40], geometry: µ.AREA}], layout: {title: '[0, 90, 180, 270]'}},
