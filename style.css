@@ -4,6 +4,10 @@ div{
 .example-container{
     display:inline-block;
 }
+.advanced-example-container{
+    display: block;
+    height: 1300px;
+}
 .example-container>div{
     float: left;
     padding: 0px;
