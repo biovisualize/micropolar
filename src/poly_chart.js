@@ -7,15 +7,15 @@
     function exports() {
         var geometryConfig = config[0].geometryConfig;
         var container = geometryConfig.container;
-        if (typeof container == 'string') container = d3.select(container);
+        if (typeof container === 'string'){container = d3.select(container);}
         container.datum(config)
             .each(function (_config, _index) {
 
                 // Zip the data
                 var isStack = !!_config[0].data.yStack;
                 var data = _config.map(function(d, i){
-                    if(isStack) return d3.zip(d.data.t[0], d.data.r[0], d.data.yStack[0]);
-                    else return d3.zip(d.data.t[0], d.data.r[0]);
+                    if(isStack){return d3.zip(d.data.t[0], d.data.r[0], d.data.yStack[0]);}
+                    else{return d3.zip(d.data.t[0], d.data.r[0]);}
                 });
 
                 // Scales
@@ -60,13 +60,13 @@
                 generator.line = function(d, i, pI) {
                     var lineData = (d[2]) ? data[pI].map(function(d, i){ return [d[0], d[1] + d[2]]; }) : data[pI];
                     // Line dots
-                    d3.select(this).each(generator['dot'])
+                    d3.select(this).each(generator.dot)
                         .style({
                             opacity: function(dB, iB){ return +_config[pI].data.dotVisible; },
                             fill: markStyle.stroke(d, i, pI)
                         })
                         .attr({'class': 'mark dot'});
-                    if(i > 0) return;
+                    if(i > 0){return;}
                     // Line
                     var lineSelection = d3.select(this.parentNode).selectAll('path.line').data([0]);
                     lineSelection.enter().insert('path');
@@ -140,9 +140,9 @@
             });
     }
     exports.config = function(_x) {
-        if (!arguments.length) return config;
+        if (!arguments.length){return config;}
         _x.forEach(function(d, i){
-            if(!config[i]) config[i] = {};
+            if(!config[i]){config[i] = {};}
             µ.util.deepExtend(config[i], µ.PolyChart.defaultConfig());
             µ.util.deepExtend(config[i], d);
         });

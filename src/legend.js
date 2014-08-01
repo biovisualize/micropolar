@@ -17,16 +17,16 @@
 
         // filter invisible
         data = data.filter(function(d, i){
-            return (legendConfig.elements[i] && (legendConfig.elements[i].visibleInLegend
-                || typeof legendConfig.elements[i].visibleInLegend === 'undefined'));
+            return (legendConfig.elements[i] && (legendConfig.elements[i].visibleInLegend ||
+                typeof legendConfig.elements[i].visibleInLegend === 'undefined'));
         });
 
-        if(legendConfig.reverseOrder) data = data.reverse();
+        if(legendConfig.reverseOrder){data = data.reverse();}
         var container = legendConfig.container;
-        if (typeof container == 'string' || container.nodeName) container = d3.select(container);
+        if (typeof container === 'string' || container.nodeName){container = d3.select(container);}
         var colors = data.map(function(d, i){ return d.color; });
         var lineHeight = legendConfig.fontSize;
-        var isContinuous = (legendConfig.isContinuous == null) ? typeof data[0] === 'number' : legendConfig.isContinuous;
+        var isContinuous = (legendConfig.isContinuous === null) ? typeof data[0] === 'number' : legendConfig.isContinuous;
         var height = isContinuous ? legendConfig.height : (lineHeight) * data.length;
 
         var legendContainerGroup = container.classed('legend-group', true);
@@ -54,8 +54,8 @@
                 return 'M' + [ [-_size / 2, -_size / 12], [_size / 2, -_size / 12],
                     [_size / 2, _size / 12], [-_size / 2, _size / 12]] + 'Z';
             }
-            else if(d3.svg.symbolTypes.indexOf(_type) != -1) return d3.svg.symbol().type(_type).size(squareSize)();
-            else return d3.svg.symbol().type('square').size(squareSize)();
+            else if(d3.svg.symbolTypes.indexOf(_type) !== -1){return d3.svg.symbol().type(_type).size(squareSize)();}
+            else{return d3.svg.symbol().type('square').size(squareSize)();}
         };
 
         if(isContinuous){
@@ -101,7 +101,7 @@
         return exports;
     }
     exports.config = function(_x) {
-        if (!arguments.length) return config;
+        if (!arguments.length){return config;}
         µ.util.deepExtend(config, _x);
         return this;
     };

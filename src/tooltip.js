@@ -39,7 +39,7 @@
                    [tickSize, -backGroundH/4], [config.hasTick ? 0 : tickSize, 0], [tickSize, backGroundH/4],
                    [tickSize, backGroundH/2],
                    [backGroundW, backGroundH/2],
-                   [backGroundW, -backGroundH/2]].join('L') + 'Z',
+                   [backGroundW, -backGroundH/2]].join('L') + 'Z'
 //                transform: 'translate(' + [tickSize, -backGroundH/2 + padding*2] + ')'
             })
             .style(boxStyle);
@@ -49,18 +49,18 @@
         return exports;
     };
     exports.move = function(_pos){
-        if(!tooltipEl) return;
+        if(!tooltipEl){return;}
         tooltipEl.attr({transform: 'translate(' + [_pos[0], _pos[1]] + ')'})
             .style({display: 'block'});
         return exports;
     };
     exports.hide = function(){
-        if(!tooltipEl) return;
+        if(!tooltipEl){return;}
         tooltipEl.style({display: 'none'});
         return exports;
     };
     exports.show = function(){
-        if(!tooltipEl) return;
+        if(!tooltipEl){return;}
         tooltipEl.style({display: 'block'});
         return exports;
     };

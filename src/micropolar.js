@@ -656,11 +656,17 @@ var µ = micropolar;
 µ.BAR = "BarChart";
 
 µ.util._override = function(_objA, _objB) {
-    for (var x in _objA) if (x in _objB) _objB[x] = _objA[x];
+    for (var x in _objA) {
+        if (x in _objB) {
+            _objB[x] = _objA[x];
+        }
+    }
 };
 
 µ.util._extend = function(_objA, _objB) {
-    for (var x in _objA) _objB[x] = _objA[x];
+    for (var x in _objA) {
+        _objB[x] = _objA[x];
+    }
 };
 
 µ.util._rndSnd = function() {
@@ -690,12 +696,16 @@ var µ = micropolar;
         t: t,
         r: r
     };
-    if (_name) result.name = _name;
+    if (_name) {
+        result.name = _name;
+    }
     return result;
 };
 
 µ.util.ensureArray = function(_val, _count) {
-    if (typeof _val === "undefined") return null;
+    if (typeof _val === "undefined") {
+        return null;
+    }
     var arr = [].concat(_val);
     return d3.range(_count).map(function(d, i) {
         return arr[i] || arr[0];
@@ -726,7 +736,9 @@ var µ = micropolar;
 };
 
 µ.util.validateKeys = function(obj, keys) {
-    if (typeof keys === "string") keys = keys.split(".");
+    if (typeof keys === "string") {
+        keys = keys.split(".");
+    }
     var next = keys.shift();
     return obj[next] && (!keys.length || objHasKeys(obj[next], keys));
 };
@@ -758,7 +770,7 @@ var µ = micropolar;
 
 µ.util.deduplicate = function(arr) {
     return arr.filter(function(v, i, a) {
-        return a.indexOf(v) == i;
+        return a.indexOf(v) === i;
     });
 };
 
@@ -814,17 +826,29 @@ var µ = micropolar;
         sourceBranch = targetBranchCopy;
     }
     var value = sourceBranch.reduce(function(previousValue, currentValue) {
-        if (typeof previousValue != "undefined") return previousValue[currentValue];
+        if (typeof previousValue !== "undefined") {
+            return previousValue[currentValue];
+        }
     }, obj);
-    if (typeof value === "undefined") return;
+    if (typeof value === "undefined") {
+        return;
+    }
     sourceBranch.reduce(function(previousValue, currentValue, index) {
-        if (typeof previousValue == "undefined") return;
-        if (index === sourceBranch.length - 1) delete previousValue[currentValue];
+        if (typeof previousValue === "undefined") {
+            return;
+        }
+        if (index === sourceBranch.length - 1) {
+            delete previousValue[currentValue];
+        }
         return previousValue[currentValue];
     }, obj);
     targetBranch.reduce(function(previousValue, currentValue, index) {
-        if (typeof previousValue[currentValue] === "undefined") previousValue[currentValue] = {};
-        if (index === targetBranch.length - 1) previousValue[currentValue] = value;
+        if (typeof previousValue[currentValue] === "undefined") {
+            previousValue[currentValue] = {};
+        }
+        if (index === targetBranch.length - 1) {
+            previousValue[currentValue] = value;
+        }
         return previousValue[currentValue];
     }, obj);
 };
@@ -841,11 +865,17 @@ var µ = micropolar;
     function exports() {
         var geometryConfig = config[0].geometryConfig;
         var container = geometryConfig.container;
-        if (typeof container == "string") container = d3.select(container);
+        if (typeof container === "string") {
+            container = d3.select(container);
+        }
         container.datum(config).each(function(_config, _index) {
             var isStack = !!_config[0].data.yStack;
             var data = _config.map(function(d, i) {
-                if (isStack) return d3.zip(d.data.t[0], d.data.r[0], d.data.yStack[0]); else return d3.zip(d.data.t[0], d.data.r[0]);
+                if (isStack) {
+                    return d3.zip(d.data.t[0], d.data.r[0], d.data.yStack[0]);
+                } else {
+                    return d3.zip(d.data.t[0], d.data.r[0]);
+                }
             });
             var angularScale = geometryConfig.angularScale;
             var domainMin = geometryConfig.radialScale.domain()[0];
@@ -884,7 +914,7 @@ var µ = micropolar;
                 var lineData = d[2] ? data[pI].map(function(d, i) {
                     return [ d[0], d[1] + d[2] ];
                 }) : data[pI];
-                d3.select(this).each(generator["dot"]).style({
+                d3.select(this).each(generator.dot).style({
                     opacity: function(dB, iB) {
                         return +_config[pI].data.dotVisible;
                     },
@@ -892,7 +922,9 @@ var µ = micropolar;
                 }).attr({
                     "class": "mark dot"
                 });
-                if (i > 0) return;
+                if (i > 0) {
+                    return;
+                }
                 var lineSelection = d3.select(this.parentNode).selectAll("path.line").data([ 0 ]);
                 lineSelection.enter().insert("path");
                 lineSelection.attr({
@@ -996,9 +1028,13 @@ var µ = micropolar;
         });
     }
     exports.config = function(_x) {
-        if (!arguments.length) return config;
+        if (!arguments.length) {
+            return config;
+        }
         _x.forEach(function(d, i) {
-            if (!config[i]) config[i] = {};
+            if (!config[i]) {
+                config[i] = {};
+            }
             µ.util.deepExtend(config[i], µ.PolyChart.defaultConfig());
             µ.util.deepExtend(config[i], d);
         });
@@ -1114,14 +1150,18 @@ var µ = micropolar;
         data = data.filter(function(d, i) {
             return legendConfig.elements[i] && (legendConfig.elements[i].visibleInLegend || typeof legendConfig.elements[i].visibleInLegend === "undefined");
         });
-        if (legendConfig.reverseOrder) data = data.reverse();
+        if (legendConfig.reverseOrder) {
+            data = data.reverse();
+        }
         var container = legendConfig.container;
-        if (typeof container == "string" || container.nodeName) container = d3.select(container);
+        if (typeof container === "string" || container.nodeName) {
+            container = d3.select(container);
+        }
         var colors = data.map(function(d, i) {
             return d.color;
         });
         var lineHeight = legendConfig.fontSize;
-        var isContinuous = legendConfig.isContinuous == null ? typeof data[0] === "number" : legendConfig.isContinuous;
+        var isContinuous = legendConfig.isContinuous === null ? typeof data[0] === "number" : legendConfig.isContinuous;
         var height = isContinuous ? legendConfig.height : lineHeight * data.length;
         var legendContainerGroup = container.classed("legend-group", true);
         var svg = legendContainerGroup.selectAll("svg").data([ 0 ]);
@@ -1141,7 +1181,11 @@ var µ = micropolar;
             var squareSize = _size * 3;
             if (_type === "line") {
                 return "M" + [ [ -_size / 2, -_size / 12 ], [ _size / 2, -_size / 12 ], [ _size / 2, _size / 12 ], [ -_size / 2, _size / 12 ] ] + "Z";
-            } else if (d3.svg.symbolTypes.indexOf(_type) != -1) return d3.svg.symbol().type(_type).size(squareSize)(); else return d3.svg.symbol().type("square").size(squareSize)();
+            } else if (d3.svg.symbolTypes.indexOf(_type) !== -1) {
+                return d3.svg.symbol().type(_type).size(squareSize)();
+            } else {
+                return d3.svg.symbol().type("square").size(squareSize)();
+            }
         };
         if (isContinuous) {
             var gradient = svg.select(".legend-marks").append("defs").append("linearGradient").attr({
@@ -1204,7 +1248,9 @@ var µ = micropolar;
         return exports;
     }
     exports.config = function(_x) {
-        if (!arguments.length) return config;
+        if (!arguments.length) {
+            return config;
+        }
         µ.util.deepExtend(config, _x);
         return this;
     };
@@ -1297,7 +1343,9 @@ var µ = micropolar;
         return exports;
     };
     exports.move = function(_pos) {
-        if (!tooltipEl) return;
+        if (!tooltipEl) {
+            return;
+        }
         tooltipEl.attr({
             transform: "translate(" + [ _pos[0], _pos[1] ] + ")"
         }).style({
@@ -1306,14 +1354,18 @@ var µ = micropolar;
         return exports;
     };
     exports.hide = function() {
-        if (!tooltipEl) return;
+        if (!tooltipEl) {
+            return;
+        }
         tooltipEl.style({
             display: "none"
         });
         return exports;
     };
     exports.show = function() {
-        if (!tooltipEl) return;
+        if (!tooltipEl) {
+            return;
+        }
         tooltipEl.style({
             display: "block"
         });
@@ -1341,15 +1393,27 @@ var µ = micropolar;
                 toTranslate.forEach(function(d, i) {
                     µ.util.translator.apply(null, d.concat(reverse));
                 });
-                if (!reverse) delete r.marker;
-                if (reverse) delete r.groupId;
+                if (!reverse) {
+                    delete r.marker;
+                }
+                if (reverse) {
+                    delete r.groupId;
+                }
                 if (!reverse) {
                     if (r.type === "scatter") {
-                        if (r.mode === "lines") r.geometry = "LinePlot"; else if (r.mode === "markers") r.geometry = "DotPlot"; else if (r.mode === "lines+markers") {
+                        if (r.mode === "lines") {
+                            r.geometry = "LinePlot";
+                        } else if (r.mode === "markers") {
+                            r.geometry = "DotPlot";
+                        } else if (r.mode === "lines+markers") {
                             r.geometry = "LinePlot";
                             r.dotVisible = true;
                         }
-                    } else if (r.type === "area") r.geometry = "AreaChart"; else if (r.type === "bar") r.geometry = "BarChart";
+                    } else if (r.type === "area") {
+                        r.geometry = "AreaChart";
+                    } else if (r.type === "bar") {
+                        r.geometry = "BarChart";
+                    }
                     delete r.mode;
                     delete r.type;
                 } else {
@@ -1358,11 +1422,17 @@ var µ = micropolar;
                         if (r.dotVisible === true) {
                             delete r.dotVisible;
                             r.mode = "lines+markers";
-                        } else r.mode = "lines";
+                        } else {
+                            r.mode = "lines";
+                        }
                     } else if (r.geometry === "DotPlot") {
                         r.type = "scatter";
                         r.mode = "markers";
-                    } else if (r.geometry === "AreaChart") r.type = "area"; else if (r.geometry === "BarChart") r.type = "bar";
+                    } else if (r.geometry === "AreaChart") {
+                        r.type = "area";
+                    } else if (r.geometry === "BarChart") {
+                        r.type = "bar";
+                    }
                     delete r.geometry;
                 }
                 return r;
@@ -1373,7 +1443,9 @@ var µ = micropolar;
                 }));
                 outputConfig.data.forEach(function(d, i) {
                     var idx = duplicates.indexOf(d.geometry);
-                    if (idx != -1) outputConfig.data[i].groupId = idx;
+                    if (idx !== -1) {
+                        outputConfig.data[i].groupId = idx;
+                    }
                 });
             }
         }
@@ -1384,8 +1456,12 @@ var µ = micropolar;
                 µ.util.translator.apply(null, d.concat(reverse));
             });
             if (!reverse) {
-                if (r.angularAxis && typeof r.angularAxis.ticklen !== "undefined") r.tickLength = r.angularAxis.ticklen;
-                if (r.angularAxis && typeof r.angularAxis.tickcolor !== "undefined") r.tickColor = r.angularAxis.tickcolor;
+                if (r.angularAxis && typeof r.angularAxis.ticklen !== "undefined") {
+                    r.tickLength = r.angularAxis.ticklen;
+                }
+                if (r.angularAxis && typeof r.angularAxis.tickcolor !== "undefined") {
+                    r.tickColor = r.angularAxis.tickcolor;
+                }
             } else {
                 if (typeof r.tickLength !== "undefined") {
                     r.angularaxis.ticklen = r.tickLength;
@@ -1396,14 +1472,14 @@ var µ = micropolar;
                     delete r.tickColor;
                 }
             }
-            if (r.legend && typeof r.legend.reverseOrder != "boolean") {
-                r.legend.reverseOrder = r.legend.reverseOrder != "normal";
+            if (r.legend && typeof r.legend.reverseOrder !== "boolean") {
+                r.legend.reverseOrder = r.legend.reverseOrder !== "normal";
             }
-            if (r.legend && typeof r.legend.traceorder == "boolean") {
+            if (r.legend && typeof r.legend.traceorder === "boolean") {
                 r.legend.traceorder = r.legend.traceorder ? "reversed" : "normal";
                 delete r.legend.reverseOrder;
             }
-            if (r.margin && typeof r.margin.t != "undefined") {
+            if (r.margin && typeof r.margin.t !== "undefined") {
                 var source = [ "t", "r", "b", "l", "pad" ];
                 var target = [ "top", "right", "bottom", "left", "pad" ];
                 var margin = {};

@@ -24,20 +24,20 @@
                     µ.util.translator.apply(null, d.concat(reverse));
                 });
 
-                if(!reverse) delete r.marker;
-                if(reverse) delete r.groupId;
+                if(!reverse){delete r.marker;}
+                if(reverse){delete r.groupId;}
 
                 if(!reverse){
                     if(r.type === 'scatter'){
-                        if(r.mode === 'lines') r.geometry = 'LinePlot';
-                        else if(r.mode === 'markers') r.geometry = 'DotPlot';
+                        if(r.mode === 'lines'){r.geometry = 'LinePlot';}
+                        else if(r.mode === 'markers'){r.geometry = 'DotPlot';}
                         else if(r.mode === 'lines+markers'){
                             r.geometry = 'LinePlot';
                             r.dotVisible = true;
                         }
                     }
-                    else if(r.type === 'area') r.geometry = 'AreaChart';
-                    else if(r.type === 'bar') r.geometry = 'BarChart';
+                    else if(r.type === 'area'){r.geometry = 'AreaChart';}
+                    else if(r.type === 'bar'){r.geometry = 'BarChart';}
                     delete r.mode;
                     delete r.type;
                 }
@@ -48,14 +48,14 @@
                           delete r.dotVisible;
                           r.mode = 'lines+markers';
                         }
-                        else r.mode = 'lines';
+                        else{r.mode = 'lines';}
                     }
                     else if(r.geometry === 'DotPlot'){
                         r.type = 'scatter';
                         r.mode = 'markers';
                     }
-                    else if(r.geometry === 'AreaChart') r.type = 'area';
-                    else if(r.geometry === 'BarChart') r.type = 'bar';
+                    else if(r.geometry === 'AreaChart'){r.type = 'area';}
+                    else if(r.geometry === 'BarChart'){r.type = 'bar';}
                     delete r.geometry;
                 }
 
@@ -69,7 +69,7 @@
                 var duplicates = µ.util.duplicates(outputConfig.data.map(function(d, i){ return d.geometry; }));
                 outputConfig.data.forEach(function(d, i){
                     var idx = duplicates.indexOf(d.geometry);
-                    if(idx != -1) outputConfig.data[i].groupId = idx;
+                    if(idx !== -1){outputConfig.data[i].groupId = idx;}
                 });
             }
         }
@@ -115,8 +115,8 @@
             });
 
             if(!reverse){
-                if(r.angularAxis && typeof r.angularAxis.ticklen !== 'undefined') r.tickLength = r.angularAxis.ticklen;
-                if(r.angularAxis && typeof r.angularAxis.tickcolor !== 'undefined') r.tickColor = r.angularAxis.tickcolor;
+                if(r.angularAxis && typeof r.angularAxis.ticklen !== 'undefined'){r.tickLength = r.angularAxis.ticklen;}
+                if(r.angularAxis && typeof r.angularAxis.tickcolor !== 'undefined'){r.tickColor = r.angularAxis.tickcolor;}
             }
             else{
                 if(typeof r.tickLength !== 'undefined'){
@@ -129,22 +129,22 @@
                 }
             }
 
-            if(r.legend && typeof r.legend.reverseOrder != "boolean"){
-                r.legend.reverseOrder = r.legend.reverseOrder != 'normal';
+            if(r.legend && typeof r.legend.reverseOrder !== "boolean"){
+                r.legend.reverseOrder = r.legend.reverseOrder !== 'normal';
             }
-            if(r.legend && typeof r.legend.traceorder == "boolean"){
+            if(r.legend && typeof r.legend.traceorder === "boolean"){
                 r.legend.traceorder = r.legend.traceorder ? 'reversed' : 'normal';
                 delete r.legend.reverseOrder;
             }
 
-            if(r.margin && typeof r.margin.t != 'undefined'){
+            if(r.margin && typeof r.margin.t !== 'undefined'){
                 var source = ['t', 'r', 'b', 'l', 'pad'];
                 var target = ['top', 'right', 'bottom', 'left', 'pad'];
                 var margin = {};
                 d3.entries(r.margin).forEach(function(dB, iB){
                     margin[target[source.indexOf(dB.key)]] = dB.value;
                 });
-                r.margin = margin
+                r.margin = margin;
             }
 
             if(reverse){

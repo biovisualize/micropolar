@@ -6,8 +6,8 @@
 µ.DOT = 'DotPlot';
 µ.BAR = 'BarChart';
 
-µ.util._override = function(_objA, _objB){ for(var x in _objA) if(x in _objB) _objB[x] = _objA[x]; };
-µ.util._extend = function(_objA, _objB){ for(var x in _objA) _objB[x] = _objA[x]; };
+µ.util._override = function(_objA, _objB){ for(var x in _objA){if(x in _objB){_objB[x] = _objA[x];}} };
+µ.util._extend = function(_objA, _objB){ for(var x in _objA){_objB[x] = _objA[x];} };
 
 µ.util._rndSnd = function(){
     return (Math.random()*2-1)+(Math.random()*2-1)+(Math.random()*2-1);
@@ -33,12 +33,12 @@
         r.push(radius);
     });
     var result = {t: t, r: r};
-    if(_name) result.name = _name;
+    if(_name){result.name = _name;}
     return result;
 };
 
 µ.util.ensureArray = function(_val, _count){
-    if(typeof _val === 'undefined') return null;
+    if(typeof _val === 'undefined'){return null;}
     var arr = [].concat(_val);
     return d3.range(_count).map(function(d, i){
         return arr[i] || arr[0];
@@ -71,7 +71,7 @@
 };
 
 µ.util.validateKeys = function(obj, keys) {
-    if(typeof keys === 'string') keys = keys.split('.');
+    if(typeof keys === 'string'){keys = keys.split('.');}
     var next = keys.shift();
     return obj[next] && (! keys.length || objHasKeys(obj[next], keys));
 };
@@ -95,7 +95,7 @@
     return arr;
 };
 
-µ.util.deduplicate = function(arr){ return arr.filter(function (v, i, a) { return a.indexOf(v) == i }); };
+µ.util.deduplicate = function(arr){ return arr.filter(function (v, i, a) { return a.indexOf(v) === i; }); };
 
 µ.util.convertToCartesian = function(radius, theta){
     var thetaRadians = theta * Math.PI / 180;
@@ -151,19 +151,19 @@
     }
     //find value if exists
     var value = sourceBranch.reduce(function(previousValue, currentValue){
-        if(typeof previousValue != 'undefined') return previousValue[currentValue];
-    }, obj)
-    if(typeof value === 'undefined') return;
+        if(typeof previousValue !== 'undefined'){return previousValue[currentValue];}
+    }, obj);
+    if(typeof value === 'undefined'){return;}
     //delete leaf
     sourceBranch.reduce(function(previousValue, currentValue, index){
-        if(typeof previousValue == 'undefined') return;
-        if(index === sourceBranch.length-1) delete previousValue[currentValue];
+        if(typeof previousValue === 'undefined'){return;}
+        if(index === sourceBranch.length-1){delete previousValue[currentValue];}
         return previousValue[currentValue];
     }, obj);
     //set value, build branch if doesn't exists
     targetBranch.reduce(function(previousValue, currentValue, index){
-        if(typeof previousValue[currentValue] === 'undefined') previousValue[currentValue] = {};
-        if(index === targetBranch.length-1) previousValue[currentValue] = value;
+        if(typeof previousValue[currentValue] === 'undefined'){previousValue[currentValue] = {};}
+        if(index === targetBranch.length-1){previousValue[currentValue] = value;}
         return previousValue[currentValue];
     }, obj);
 };
