@@ -444,6 +444,7 @@ var µ = micropolar;
                         .on('mouseout.angular-guide', function(d, i){ guides.select('line').style({opacity: 0}); });
                 }
 
+                if(axisConfig.radialAxis.visible !== false){
                 var angularGuideCircle = guides.select('circle').style({stroke: 'grey', fill: 'none'});
                 chartGroup
                     .on('mousemove.radial-guide', function(d, i){
@@ -459,6 +460,7 @@ var µ = micropolar;
                         angularTooltip.hide();
                         radialTooltip.hide();
                     });
+                }
 
                 svg.selectAll('.geometry-group .mark')
                     .on('mouseover.tooltip', function(d, i){

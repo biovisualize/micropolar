@@ -104,6 +104,18 @@
                     });
                 };
 
+                var pieArc = d3.svg.arc()
+                    .outerRadius(geometryConfig.radialScale.range()[1]);
+                var pie = d3.layout.pie()
+                    .value(function(d) { return d[1]; });
+                var pieData = pie(data[0]);
+                generator.pie = function(d, i, pI){
+                    d3.select(this).attr({
+                        class: 'mark arc',
+                        d: pieArc(pieData[i], i)
+                    });
+                };
+
                 var markStyle = {
                     fill: function(d, i, pI){ return _config[pI].data.color; },
                     stroke: function(d, i, pI){ return _config[pI].data.strokeColor; },

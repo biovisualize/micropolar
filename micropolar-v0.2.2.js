@@ -443,28 +443,30 @@ var µ = micropolar;
                     });
                 });
             }
-            var angularGuideCircle = guides.select("circle").style({
-                stroke: "grey",
-                fill: "none"
-            });
-            chartGroup.on("mousemove.radial-guide", function(d, i) {
-                var r = µ.util.getMousePos(backgroundCircle).radius;
-                angularGuideCircle.attr({
-                    r: r
-                }).style({
-                    opacity: .5
+            if (axisConfig.radialAxis.visible !== false) {
+                var angularGuideCircle = guides.select("circle").style({
+                    stroke: "grey",
+                    fill: "none"
                 });
-                radialValue = radialScale.invert(µ.util.getMousePos(backgroundCircle).radius);
-                var pos = µ.util.convertToCartesian(r, axisConfig.radialAxis.orientation);
-                radialTooltip.text(µ.util.round(radialValue)).move([ pos[0] + chartCenter[0], pos[1] + chartCenter[1] ]);
-            }).on("mouseout.radial-guide", function(d, i) {
-                angularGuideCircle.style({
-                    opacity: 0
+                chartGroup.on("mousemove.radial-guide", function(d, i) {
+                    var r = µ.util.getMousePos(backgroundCircle).radius;
+                    angularGuideCircle.attr({
+                        r: r
+                    }).style({
+                        opacity: .5
+                    });
+                    radialValue = radialScale.invert(µ.util.getMousePos(backgroundCircle).radius);
+                    var pos = µ.util.convertToCartesian(r, axisConfig.radialAxis.orientation);
+                    radialTooltip.text(µ.util.round(radialValue)).move([ pos[0] + chartCenter[0], pos[1] + chartCenter[1] ]);
+                }).on("mouseout.radial-guide", function(d, i) {
+                    angularGuideCircle.style({
+                        opacity: 0
+                    });
+                    geometryTooltip.hide();
+                    angularTooltip.hide();
+                    radialTooltip.hide();
                 });
-                geometryTooltip.hide();
-                angularTooltip.hide();
-                radialTooltip.hide();
-            });
+            }
             svg.selectAll(".geometry-group .mark").on("mouseover.tooltip", function(d, i) {
                 var el = d3.select(this);
                 var color = el.style("fill");
@@ -654,6 +656,8 @@ var µ = micropolar;
 µ.DOT = "DotPlot";
 
 µ.BAR = "BarChart";
+
+µ.PIE = "PieChart";
 
 µ.util._override = function(_objA, _objB) {
     for (var x in _objA) {
@@ -974,6 +978,17 @@ var µ = micropolar;
                     transform: function(d, i) {
                         return "rotate(" + (geometryConfig.orientation + angularScale(d[0]) + 90) + ")";
                     }
+                });
+            };
+            var pieArc = d3.svg.arc().outerRadius(geometryConfig.radialScale.range()[1]);
+            var pie = d3.layout.pie().value(function(d) {
+                return d[1];
+            });
+            var pieData = pie(data[0]);
+            generator.pie = function(d, i, pI) {
+                d3.select(this).attr({
+                    "class": "mark arc",
+                    d: pieArc(pieData[i], i)
                 });
             };
             var markStyle = {

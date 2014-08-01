@@ -9,6 +9,7 @@
     <script type='text/javascript' src="../src/poly_chart.js"></script>
     <script type='text/javascript' src="../src/bar_chart.js"></script>
     <script type='text/javascript' src="../src/area_chart.js"></script>
+    <script type='text/javascript' src="../src/pie_chart.js"></script>
     <script type='text/javascript' src="../src/dot_plot.js"></script>
     <script type='text/javascript' src="../src/line_plot.js"></script>
     <script type='text/javascript' src="../src/tooltip.js"></script>
@@ -31,6 +32,8 @@ changes:
 
 // General test suite
 var configs = [
+    {data:[{t: ['A', 'B', 'C', 'D'], r: [1, 1, 3, 2], geometry: µ.PIE}],
+        layout: {title: 'Pie Chart', angularAxis: {gridLinesVisible: false}, radialAxis: {visible: false, gridLinesVisible: false}, showLegend: false}},
     {data:[{t: ['A', 'B', 'B', 'A'], r: [1, 1, 1, 1]}], layout: {needsEndSpacing:false, title: 'A, B, B, A'}},
     {data:[{t: [0, 120, 240, 0], r: [1, 1, 1, 1]}], layout: {needsEndSpacing:false, title: '0, 120, 240, 0'}},
     {data: [{t: d3.range(100).map(function(d, i){ return d*10; }), r: d3.range(100), geometry: µ.LINE}], layout: {title: 'Spiral'}},
@@ -85,6 +88,8 @@ configs.forEach(function(_config){
     µ.util.deepExtend(config, _config);
     micropolar.Axis().config(config).render(d3.select('body').append('div'));
 });
+
+/*
 
 // Symetrized dot pattern
 var dataCount = 50;
@@ -377,6 +382,9 @@ var config = {
 
 var translatedConfig = micropolar.adapter.plotly().convert(config);
 micropolar.Axis().config(translatedConfig).render(d3.select('body').append('div'));
+
+
+*/
 
 </script>
 
