@@ -6,13 +6,13 @@ var µ = micropolar;
         inputConfig = {},
         liveConfig = {};
     var svg, container, dispatch = d3.dispatch('hover'),
-    	radialScale, angularScale;
+        radialScale, angularScale;
     var exports = {};
     function render(_container){
         container = _container || container;
         var data = config.data;
         var axisConfig = config.layout;
-        if (typeof container == 'string' || container.nodeName) container = d3.select(container);
+        if (typeof container === 'string' || container.nodeName){container = d3.select(container);}
         container.datum(data)
             .each(function(_data, _index) {
 
@@ -48,17 +48,17 @@ var µ = micropolar;
                 // Stack
                 var isStacked = false;
                 var dataWithGroupId = data.map(function(d, i){
-                    isStacked = isStacked || (typeof d.groupId !== 'undefined')
+                    isStacked = isStacked || (typeof d.groupId !== 'undefined');
                     return d;
                 });
+                var dataYStack = [];
                 if(isStacked){
                     var grouped =  d3.nest().key(function(d, i){
-                            return (typeof d.groupId != 'undefined') ? d.groupId : 'unstacked';
+                            return (typeof d.groupId !== 'undefined') ? d.groupId : 'unstacked';
                         })
                         .entries(dataWithGroupId);
-                    var dataYStack = [];
                     var stacked = grouped.map(function(d, i){
-                        if (d.key === 'unstacked') return d.values;
+                        if (d.key === 'unstacked'){return d.values;}
                         else{
                             var prevArray = d.values[0].r.map(function(d, i){ return 0; });
                             d.values.forEach(function(d, i, a){
@@ -91,11 +91,11 @@ var µ = micropolar;
                     var highestStackedValue = d3.max(µ.util.sumArrays(µ.util.arrayLast(data).r[0], µ.util.arrayLast(dataYStack)));
                     extent = [0, highestStackedValue];
                 }
-                else extent = d3.extent(µ.util.flattenArray(data.map(function(d, i){ return d.r; })));
-                if(axisConfig.radialAxis.domain != µ.DATAEXTENT) extent[0] = 0;
+                else{extent = d3.extent(µ.util.flattenArray(data.map(function(d, i){ return d.r; })));}
+                if(axisConfig.radialAxis.domain !== µ.DATAEXTENT){extent[0] = 0;}
 
                 radialScale = d3.scale.linear()
-                    .domain((axisConfig.radialAxis.domain != µ.DATAEXTENT && axisConfig.radialAxis.domain) ? axisConfig.radialAxis.domain : extent)
+                    .domain((axisConfig.radialAxis.domain !== µ.DATAEXTENT && axisConfig.radialAxis.domain) ? axisConfig.radialAxis.domain : extent)
                     .range([0, radius]);
                 liveConfig.layout.radialAxis.domain = radialScale.domain();
 
@@ -108,13 +108,13 @@ var µ = micropolar;
                 var isOrdinal = typeof angularDataMerged[0] === 'string';
                 var ticks;
                 if(isOrdinal){
-//                    angularDataMerged = µ.util.deduplicate(angularDataMerged);
+                    if(isStacked){angularDataMerged = µ.util.deduplicate(angularDataMerged);}
                     ticks = angularDataMerged.slice();
                     angularDataMerged = d3.range(angularDataMerged.length);
                     data = data.map(function(d, i){
                         var result = d;
                         d.t = [angularDataMerged];
-                        if(isStacked) result.yStack = d.yStack;
+                        if(isStacked){result.yStack = d.yStack;}
                         return result;
                     });
                 }
@@ -123,31 +123,31 @@ var µ = micropolar;
                 var needsEndSpacing = (axisConfig.needsEndSpacing === null)? isOrdinal || !hasOnlyLineOrDotPlot : axisConfig.needsEndSpacing;
 
 
-                var useProvidedDomain = (axisConfig.angularAxis.domain && axisConfig.angularAxis.domain != µ.DATAEXTENT && !isOrdinal && (axisConfig.angularAxis.domain[0] >= 0));
+                var useProvidedDomain = (axisConfig.angularAxis.domain && axisConfig.angularAxis.domain !== µ.DATAEXTENT && !isOrdinal && (axisConfig.angularAxis.domain[0] >= 0));
                 var angularDomain = useProvidedDomain ? axisConfig.angularAxis.domain : d3.extent(angularDataMerged);
                 var angularDomainStep = Math.abs(angularDataMerged[1] - angularDataMerged[0]);
 
-                if(hasOnlyLineOrDotPlot && !isOrdinal) angularDomainStep = 0;
+                if(hasOnlyLineOrDotPlot && !isOrdinal){angularDomainStep = 0;}
 
                 var angularDomainWithPadding = angularDomain.slice();
-                if(needsEndSpacing && isOrdinal) angularDomainWithPadding[1] += angularDomainStep;
+                if(needsEndSpacing && isOrdinal){angularDomainWithPadding[1] += angularDomainStep;}
 //                angularDomainWithPadding[1] += angularDomainStep;
 //                if(needsEndSpacing) angularDomainWithPadding[1] += 0;
 
                 // Reduce the number of ticks
                 var tickCount = axisConfig.angularAxis.ticksCount || 4;
-                if(tickCount > 8) tickCount = tickCount / (tickCount / 8) + tickCount%8;
+                if(tickCount > 8){tickCount = tickCount / (tickCount / 8) + tickCount%8;}
                 if(axisConfig.angularAxis.ticksStep){
                     tickCount = (angularDomainWithPadding[1] - angularDomainWithPadding[0]) / tickCount;
                 }
-                var angularTicksStep = axisConfig.angularAxis.ticksStep
-                    || ((angularDomainWithPadding[1] - angularDomainWithPadding[0]) / (tickCount * (axisConfig.minorTicks+1)));
-                if(ticks) angularTicksStep = Math.max(Math.round(angularTicksStep), 1);
-                if(!angularDomainWithPadding[2]) angularDomainWithPadding[2] = angularTicksStep;
+                var angularTicksStep = axisConfig.angularAxis.ticksStep||
+                    ((angularDomainWithPadding[1] - angularDomainWithPadding[0]) / (tickCount * (axisConfig.minorTicks+1)));
+                if(ticks){angularTicksStep = Math.max(Math.round(angularTicksStep), 1);}
+                if(!angularDomainWithPadding[2]){angularDomainWithPadding[2] = angularTicksStep;}
 
                 var angularAxisRange = d3.range.apply(this, angularDomainWithPadding);
                 // Workaround for rounding errors
-                angularAxisRange = angularAxisRange.map(function(d, i){ return parseFloat(d.toPrecision(12)) });
+                angularAxisRange = angularAxisRange.map(function(d, i){ return parseFloat(d.toPrecision(12)); });
 
                 angularScale = d3.scale.linear()
                     .domain(angularDomainWithPadding.slice(0, 2))
@@ -201,7 +201,7 @@ var µ = micropolar;
                 // Legend and title
                 ////////////////////////////////////////////////////////////////////
 
-                var legendContainer;
+                var legendContainer, legendBBox;
                 if(axisConfig.showLegend){
                     // Offset for labels
                     legendContainer = svg.select('.legend-group')
@@ -209,7 +209,7 @@ var µ = micropolar;
                         .style({display: 'block'});
                     var elements = data.map(function(d, i){
                         var datumClone = µ.util.cloneJson(d);
-                        datumClone.symbol = (d.geometry === "DotPlot") ? (d.dotType || 'circle') : (d.geometry != 'LinePlot') ? 'square' : 'line';
+                        datumClone.symbol = (d.geometry === "DotPlot") ? (d.dotType || 'circle') : (d.geometry !== 'LinePlot') ? 'square' : 'line';
                         datumClone.visibleInLegend = (typeof d.visibleInLegend === 'undefined') || d.visibleInLegend;
                         datumClone.color = d.geometry === "LinePlot" ? d.strokeColor : d.color;
                         return datumClone;
@@ -224,11 +224,11 @@ var µ = micropolar;
                     µ.Legend().config(legendConfigMixin3)();
 
                     // Recalculate sizes
-                    var legendBBox = legendContainer.node().getBBox();
+                    legendBBox = legendContainer.node().getBBox();
                     radius = Math.min(axisConfig.width - legendBBox.width - axisConfig.margin.left - axisConfig.margin.right,
                         axisConfig.height - axisConfig.margin.top - axisConfig.margin.bottom) / 2;
                     radius = Math.max(10, radius);
-                    chartCenter = [axisConfig.margin.left + radius, axisConfig.margin.top + radius]
+                    chartCenter = [axisConfig.margin.left + radius, axisConfig.margin.top + radius];
                     radialScale.range([0, radius]);
                     liveConfig.layout.radialAxis.domain = radialScale.domain();
                     legendContainer.attr('transform', 'translate(' + [chartCenter[0] + radius, chartCenter[1] - radius] + ')');
@@ -290,17 +290,17 @@ var µ = micropolar;
                     radialAxis.selectAll('.domain').style(lineStyle);
                     radialAxis.selectAll('g>text')
                         .text(function(d, i){ return this.textContent + axisConfig.radialAxis.ticksSuffix; })
-                    	.style(fontStyle)
+                        .style(fontStyle)
                         .style({'text-anchor': 'start'})
-                    	.attr({
+                        .attr({
                             x: 0, y: 0, dx: 0, dy: 0,
-                    		transform: function(d, i){
+                            transform: function(d, i){
                                 if(axisConfig.radialAxis.tickOrientation === 'horizontal') {
                                     return 'rotate(' + (-axisConfig.radialAxis.orientation) + ') translate(' + [0, fontStyle['font-size']] + ')';
                                 }
-                                else return 'translate(' + [0, fontStyle['font-size']] + ')';
-                    		}
-                    	});
+                                else{return 'translate(' + [0, fontStyle['font-size']] + ')';}
+                            }
+                        });
                     radialAxis.selectAll('g>line')
                         .style({stroke: 'black'});
                 }
@@ -320,8 +320,8 @@ var µ = micropolar;
 
                     angularAxisEnter.append('line')
                         .classed('grid-line', true)
-                        .classed('major', function(d, i){ return (i % (axisConfig.minorTicks+1) == 0) })
-                        .classed('minor', function(d, i){ return !(i % (axisConfig.minorTicks+1) == 0) })
+                        .classed('major', function(d, i){ return (i % (axisConfig.minorTicks+1) === 0); })
+                        .classed('minor', function(d, i){ return (i % (axisConfig.minorTicks+1)) !== 0; })
                         .style(lineStyle);
                     angularAxisEnter.selectAll('.minor').style({stroke: axisConfig.minorTickColor});
                     angularAxis.select('line.grid-line')
@@ -342,9 +342,9 @@ var µ = micropolar;
                                 var angle = currentAngle(d, i);
                                 var rad = radius + axisConfig.labelOffset;
                                 var orient = axisConfig.angularAxis.tickOrientation;
-                                if(orient == 'horizontal') return 'rotate(' + (-angle) + ' ' + rad + ' 0)';
-                                else if(orient == 'radial') return (angle < 270 && angle > 90) ? 'rotate(180 ' + rad + ' 0)' : null;
-                                else return 'rotate('+ ((angle <= 180 && angle > 0) ? -90 : 90) +' ' + rad + ' 0)';
+                                if(orient === 'horizontal'){return 'rotate(' + (-angle) + ' ' + rad + ' 0)';}
+                                else if(orient === 'radial'){return (angle < 270 && angle > 90) ? 'rotate(180 ' + rad + ' 0)' : null;}
+                                else{return 'rotate('+ ((angle <= 180 && angle > 0) ? -90 : 90) +' ' + rad + ' 0)';}
                             }
                         })
                         .style({
@@ -352,19 +352,21 @@ var µ = micropolar;
                             display: axisConfig.angularAxis.labelsVisible ? 'block' : 'none'
                         })
                         .text(function(d, i) {
-                            if(i % (axisConfig.minorTicks + 1) != 0) return '';
+                            if(i % (axisConfig.minorTicks + 1) !== 0){return '';}
 //                            if(ticks) return ticks[d / (axisConfig.minorTicks + 1)] + axisConfig.angularAxis.ticksSuffix;
                             if(ticks){
                                 return ticks[d] + axisConfig.angularAxis.ticksSuffix;
                             }
-                            else return d + axisConfig.angularAxis.ticksSuffix;
+                            else{return d + axisConfig.angularAxis.ticksSuffix;}
                         })
                         .style(fontStyle);
 
-                    if (axisConfig.angularAxis.rewriteTicks) ticksText.text(function(d, i){
-                        if(i % (axisConfig.minorTicks + 1) != 0) return '';
-                        return axisConfig.angularAxis.rewriteTicks(this.textContent, i);
-                    });
+                    if (axisConfig.angularAxis.rewriteTicks){
+                        ticksText.text(function(d, i){
+                            if(i % (axisConfig.minorTicks + 1) !== 0){return '';}
+                            return axisConfig.angularAxis.rewriteTicks(this.textContent, i);
+                        });
+                    }
 
                 var rightmostTickEndX = d3.max(chartGroup.selectAll('.angular-tick text')[0].map(function(d, i){
                     return d.getCTM().e + d.getBBox().width;
@@ -390,7 +392,7 @@ var µ = micropolar;
                         var geometryConfig = {};
                         geometryConfig.radialScale = radialScale;
                         geometryConfig.angularScale = angularScale;
-                        geometryConfig.container = geometryContainer.filter(function(dB, iB){ return iB == i; });
+                        geometryConfig.container = geometryContainer.filter(function(dB, iB){ return iB === i; });
                         geometryConfig.geometry = d.geometry;
 //                        if(!geometryConfig.orientation) geometryConfig.orientation = axisConfig.orientation;
                         geometryConfig.orientation = axisConfig.orientation;
@@ -399,17 +401,17 @@ var µ = micropolar;
                         geometryConfigs.push({data: d, geometryConfig: geometryConfig});
                     });
 
-                    var geometryConfigsGrouped =  d3.nest().key(function(d, i){ return (typeof d.data.groupId != 'undefined') || 'unstacked'; }).entries(geometryConfigs);
+                    var geometryConfigsGrouped =  d3.nest().key(function(d, i){ return (typeof d.data.groupId !== 'undefined') || 'unstacked'; }).entries(geometryConfigs);
                     var geometryConfigsGrouped2 = [];
                     geometryConfigsGrouped.forEach(function(d, i){
-                        if (d.key === 'unstacked') geometryConfigsGrouped2 = geometryConfigsGrouped2.concat(d.values.map(function(d, i){ return [d]; }));
-                        else geometryConfigsGrouped2.push(d.values);
+                        if (d.key === 'unstacked'){geometryConfigsGrouped2 = geometryConfigsGrouped2.concat(d.values.map(function(d, i){ return [d]; }));}
+                        else{geometryConfigsGrouped2.push(d.values);}
                     });
 
                     geometryConfigsGrouped2.forEach(function(d, i){
                         var geometry;
-                        if(Array.isArray(d)) geometry = d[0].geometryConfig.geometry;
-                        else geometry = d.geometryConfig.geometry;
+                        if(Array.isArray(d)){geometry = d[0].geometryConfig.geometry;}
+                        else{geometry = d.geometryConfig.geometry;}
                         var finalGeometryConfig = d.map(function(dB, iB){ return µ.util.deepExtend(µ[geometry].defaultConfig(), dB); });
                         µ[geometry]().config(finalGeometryConfig)();
                     });
@@ -437,7 +439,7 @@ var µ = micropolar;
                             var angleWithOriginOffset = (mouseAngle + 180 + 360 - axisConfig.orientation) % 360;
                             angularValue = angularScale.invert(angleWithOriginOffset);
                             var pos = µ.util.convertToCartesian(radius + 12, mouseAngle + 180);
-                            angularTooltip.text(µ.util.round(angularValue)).move([pos[0] + chartCenter[0], pos[1] + chartCenter[1]])
+                            angularTooltip.text(µ.util.round(angularValue)).move([pos[0] + chartCenter[0], pos[1] + chartCenter[1]]);
                          })
                         .on('mouseout.angular-guide', function(d, i){ guides.select('line').style({opacity: 0}); });
                 }
@@ -449,7 +451,7 @@ var µ = micropolar;
                         angularGuideCircle.attr({r: r}).style({opacity: 0.5});
                         radialValue = radialScale.invert(µ.util.getMousePos(backgroundCircle).radius);
                         var pos = µ.util.convertToCartesian(r, axisConfig.radialAxis.orientation);
-                        radialTooltip.text(µ.util.round(radialValue)).move([pos[0] + chartCenter[0], pos[1] + chartCenter[1]])
+                        radialTooltip.text(µ.util.round(radialValue)).move([pos[0] + chartCenter[0], pos[1] + chartCenter[1]]);
                      })
                     .on('mouseout.radial-guide', function(d, i){
                         angularGuideCircle.style({opacity: 0});
@@ -465,13 +467,13 @@ var µ = micropolar;
                         var newColor = 'black';
                         var opacity = el.style('opacity') || 1;
                         el.attr({'data-opacity': opacity});
-                        if(color != 'none'){
+                        if(color !== 'none'){
                             el.attr({'data-fill': color});
                             newColor = d3.hsl(color).darker().toString();
                             el.style({fill: newColor, opacity: 1});
 
                             var textData = {t: µ.util.round(d[0]), r: µ.util.round(d[1])};
-                            if(isOrdinal) textData.t = ticks[d[0]];
+                            if(isOrdinal){textData.t = ticks[d[0]];}
 
                             var text = 't: ' +textData.t + ', r: ' + textData.r;
 
@@ -490,15 +492,15 @@ var µ = micropolar;
                         }
                     })
                     .on('mousemove.tooltip', function(d, i){
-                        if(d3.event.which != 0) return false;
-                        if(d3.select(this).attr('data-fill')) geometryTooltip.show();
+                        if(d3.event.which !== 0){return false;}
+                        if(d3.select(this).attr('data-fill')){geometryTooltip.show();}
                     })
                     .on('mouseout.tooltip', function(d, i){
                         geometryTooltip.hide();
                         var el = d3.select(this);
                         var fillColor = el.attr('data-fill');
-                        if(fillColor)  el.style({fill: fillColor, opacity: el.attr('data-opacity')});
-                        else el.style({stroke: el.attr('data-stroke'), opacity: el.attr('data-opacity')});
+                        if(fillColor){el.style({fill: fillColor, opacity: el.attr('data-opacity')});}
+                        else{el.style({stroke: el.attr('data-stroke'), opacity: el.attr('data-opacity')});}
                     });
             });
         return exports;
@@ -508,10 +510,10 @@ var µ = micropolar;
         return this;
     };
     exports.config = function(_x) {
-        if (!arguments.length) return config;
+        if (!arguments.length){return config;}
         var xClone =  µ.util.cloneJson(_x);
         xClone.data.forEach(function(d, i){
-            if(!config.data[i]) config.data[i] = {};
+            if(!config.data[i]){config.data[i] = {};}
             µ.util.deepExtend(config.data[i], µ.Axis.defaultConfig().data[0]);
             µ.util.deepExtend(config.data[i], d);
         });

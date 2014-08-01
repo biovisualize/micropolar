@@ -38,9 +38,7 @@
     var superformula3 = superformulaGenerator({m: 10, n1: 3, n2: 0.6, n3: 0, a: 1, b: 1});
 
     var configs = [
-        {data:[{t: ['A', 'B', 'B', 'A'], r: [1, 1, 1, 1]}], layout: {needsEndSpacing:false}},
-        {data:[{t: [0, 120, 240, 0], r: [1, 1, 1, 1]}], layout: {needsEndSpacing:false}},
-        
+
         {data:[{t:d3.range(0, 360 + 6, 6), r:d3.range(0, 360 + 6, 6).map(function(deg){ return Math.abs(Math.cos(deg * Math.PI / 180));}),color:"none",strokeColor:"peru",geometry:"LinePlot",name:"Figure8"},
             {t:d3.range(0, 360 + 6, 6), r:d3.range(0, 360 + 6, 6).map(function(deg){ return Math.abs(0.5 + 0.5 * Math.cos(deg * Math.PI / 180));}),color:"none",strokeColor:"darkviolet",geometry:"LinePlot",name:"Cardioid"},
             {t:d3.range(0, 360 + 6, 6), r:d3.range(0, 360 + 6, 6).map(function(deg){ return Math.abs(0.25 + 0.75 * Math.cos(deg * Math.PI / 180));}),color:"none",strokeColor:"deepskyblue",geometry:"LinePlot",name:"Hypercardioid"},
