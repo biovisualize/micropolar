@@ -151,16 +151,20 @@
                 delete r.needsEndSpacing;
                 delete r.minorTickColor;
                 delete r.minorTicks;
-                delete r.angularaxis.ticksCount;
-                delete r.angularaxis.ticksCount;
-                delete r.angularaxis.ticksStep;
-                delete r.angularaxis.rewriteTicks;
-                delete r.angularaxis.nticks;
-                delete r.radialaxis.ticksCount;
-                delete r.radialaxis.ticksCount;
-                delete r.radialaxis.ticksStep;
-                delete r.radialaxis.rewriteTicks;
-                delete r.radialaxis.nticks;
+                if(r.angularaxis){
+                    delete r.angularaxis.ticksCount;
+                    delete r.angularaxis.ticksCount;
+                    delete r.angularaxis.ticksStep;
+                    delete r.angularaxis.rewriteTicks;
+                    delete r.angularaxis.nticks;
+                }
+                if(r.radialaxis){
+                    delete r.radialaxis.ticksCount;
+                    delete r.radialaxis.ticksCount;
+                    delete r.radialaxis.ticksStep;
+                    delete r.radialaxis.rewriteTicks;
+                    delete r.radialaxis.nticks;
+                }
             }
 
             outputConfig.layout = r;
