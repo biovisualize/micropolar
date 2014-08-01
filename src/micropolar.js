@@ -88,7 +88,6 @@ var µ = micropolar;
             var isOrdinal = typeof angularDataMerged[0] === "string";
             var ticks;
             if (isOrdinal) {
-                angularDataMerged = µ.util.deduplicate(angularDataMerged);
                 ticks = angularDataMerged.slice();
                 angularDataMerged = d3.range(angularDataMerged.length);
                 data = data.map(function(d, i) {

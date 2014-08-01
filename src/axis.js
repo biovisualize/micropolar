@@ -108,7 +108,7 @@ var µ = micropolar;
                 var isOrdinal = typeof angularDataMerged[0] === 'string';
                 var ticks;
                 if(isOrdinal){
-                    angularDataMerged = µ.util.deduplicate(angularDataMerged);
+//                    angularDataMerged = µ.util.deduplicate(angularDataMerged);
                     ticks = angularDataMerged.slice();
                     angularDataMerged = d3.range(angularDataMerged.length);
                     data = data.map(function(d, i){
@@ -123,8 +123,8 @@ var µ = micropolar;
                 var needsEndSpacing = (axisConfig.needsEndSpacing === null)? isOrdinal || !hasOnlyLineOrDotPlot : axisConfig.needsEndSpacing;
 
 
-               	var useProvidedDomain = (axisConfig.angularAxis.domain && axisConfig.angularAxis.domain != µ.DATAEXTENT && !isOrdinal && (axisConfig.angularAxis.domain[0] >= 0));
-               	var angularDomain = useProvidedDomain ? axisConfig.angularAxis.domain : d3.extent(angularDataMerged);
+                var useProvidedDomain = (axisConfig.angularAxis.domain && axisConfig.angularAxis.domain != µ.DATAEXTENT && !isOrdinal && (axisConfig.angularAxis.domain[0] >= 0));
+                var angularDomain = useProvidedDomain ? axisConfig.angularAxis.domain : d3.extent(angularDataMerged);
                 var angularDomainStep = Math.abs(angularDataMerged[1] - angularDataMerged[0]);
 
                 if(hasOnlyLineOrDotPlot && !isOrdinal) angularDomainStep = 0;
