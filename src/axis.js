@@ -7,6 +7,8 @@ var µ = micropolar;
         liveConfig = {};
     var svg, container, dispatch = d3.dispatch('hover'),
         radialScale, angularScale;
+    var angularTooltip, radialTooltip, geometryTooltip;
+
     var exports = {};
     function render(_container){
         container = _container || container;
@@ -423,9 +425,9 @@ var µ = micropolar;
                 var guides = svg.select('.guides-group');
 
                 var tooltipContainer = svg.select('.tooltips-group');
-                var angularTooltip = µ.tooltipPanel().config({container: tooltipContainer, fontSize: 8})();
-                var radialTooltip = µ.tooltipPanel().config({container: tooltipContainer, fontSize: 8})();
-                var geometryTooltip = µ.tooltipPanel().config({container: tooltipContainer, hasTick: true})();
+                angularTooltip = angularTooltip || µ.tooltipPanel().config({container: tooltipContainer, fontSize: 8})();
+                radialTooltip = radialTooltip || µ.tooltipPanel().config({container: tooltipContainer, fontSize: 8})();
+                geometryTooltip = geometryTooltip || µ.tooltipPanel().config({container: tooltipContainer, fontSize: 8})();
                 var angularValue, radialValue;
 
                 if(!isOrdinal){
