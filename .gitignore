@@ -1,11 +1,1 @@
-.idea/inspectionProfiles/profiles_settings.xml
-.idea/inspectionProfiles/Project_Default.xml
-.idea/scopes/scope_settings.xml
-.idea/workspace.xml
-.idea/encodings.xml
-.idea/micropolar.iml
-.idea/misc.xml
-.idea/modules.xml
-.idea/vcs.xml
-examples/test.csv
-src/makefile
+.idea/*
