@@ -4,14 +4,18 @@ div{
 .example-container{
     display:inline-block;
 }
+.example-container>div{
+	float: left;
+	padding: 0px;
+	margin: 20px;
+}
 .advanced-example-container{
     display: block;
     height: 1300px;
 }
-.example-container>div{
-    float: left;
-    padding: 0px;
-    margin: 20px;
+.documentation-container{
+	display: block;
+	height: 1300px;
 }
 body{
     margin: 0;
@@ -30,6 +34,7 @@ body{
 }
 a{
     color: black;
+    padding-bottom: 50px;
 }
 
 
