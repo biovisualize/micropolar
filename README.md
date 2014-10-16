@@ -34,7 +34,7 @@ Or build your own chart with full control. Just look at the presets and the exam
 	var polarPlot = micropolar.DotPlot();
     var config = {
         geometry: polarPlot,
-        data: [[0, 500], [1, 1000], [3, 2000]]),
+        data: [[0, 500], [1, 1000], [3, 2000]],
         height: 250, 
         width: 250, 
         angularDomain: [0, 2000],
