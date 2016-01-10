@@ -1149,19 +1149,6 @@ var µ = micropolar;
     return config;
 };
 
-µ.PieChart = function module() {
-    return µ.PolyChart();
-};
-
-µ.PieChart.defaultConfig = function() {
-    var config = {
-        geometryConfig: {
-            geometryType: "pie"
-        }
-    };
-    return config;
-};
-
 µ.Legend = function module() {
     var config = µ.Legend.defaultConfig();
     var dispatch = d3.dispatch("hover");
@@ -1198,7 +1185,7 @@ var µ = micropolar;
             width: 300,
             height: height + lineHeight,
             xmlns: "http://www.w3.org/2000/svg",
-            "xmlns:xmlns:xlink": "http://www.w3.org/1999/xlink",
+            "xmlns:xlink": "http://www.w3.org/1999/xlink",
             version: "1.1"
         });
         svgEnter.append("g").classed("legend-axis", true);
