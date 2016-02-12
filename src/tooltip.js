@@ -26,7 +26,7 @@
             })
             .text(text);
         var padding = config.padding;
-        var bbox = tooltipTextEl.node().getBBox();
+        var bbox = tooltipTextEl.node().getBoundingClientRect();
         var boxStyle = {
             fill: config.color,
             stroke: strokeColor,
